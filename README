@@ -17,6 +17,9 @@ Copyright (c) 2010      Oak Ridge National Labs.  All rights reserved.
 Copyright (c) 2011      University of Houston. All rights reserved.
 Copyright (c) 2013-2015 Intel, Inc. All rights reserved
 Copyright (c) 2015      NVIDIA Corporation.  All rights reserved.
+Copyright (c) 2017      Los Alamos National Security, LLC.  All rights
+                        reserved.
+
 $COPYRIGHT$
 
 Additional copyrights may follow
@@ -78,12 +81,8 @@ General notes
 
      http://openshmem.org/
 
-  This OpenSHMEM implementation is provided on an experimental basis;
-  it has been lightly tested and will only work in Linux environments.
-  Although this implementation attempts to be portable to multiple
-  different environments and networks, it is still new and will likely
-  experience growing pains typical of any new software package.
-  End-user feedback is greatly appreciated.
+  This OpenSHMEM implementation will only work in Linux environments
+  with a restricted set of supported networks.
 
   See below for details on how to enable the OpenSHMEM implementation.
 
@@ -120,7 +119,6 @@ General notes
   - Platform LSF (v7.0.2 and later)
   - SLURM
   - Cray XE, XC, and XK
-  - Oracle Grid Engine (OGE) 6.1, 6.2 and open source Grid Engine
 
 - Systems that have been tested are:
   - Linux (various flavors/distros), 32 bit, with gcc
@@ -128,6 +126,8 @@ General notes
     Intel, and Portland (*)
   - OS X (10.8, 10.9, 10.10, 10.11), 32 and 64 bit (x86_64), with
     XCode and Absoft compilers (*)
+  - OpenBSD.  Requires configure option --enable-mca-no-build=patcher
+    with this release.
 
   (*) Be sure to read the Compiler Notes, below.
 
@@ -512,7 +512,7 @@ MPI Functionality and Features
 OSHMEM Functionality and Features
 ------------------------------
 
-- All OpenSHMEM-1.0 functionality is supported.
+- All OpenSHMEM-1.3 functionality is supported.
 
 
 MPI Collectives
@@ -596,11 +596,11 @@ OSHMEM Collectives
 Network Support
 ---------------
 
-- There are three main MPI network models available: "ob1", "cm", and
-  "yalla". "ob1" uses BTL ("Byte Transfer Layer") components for each
+- There are four main MPI network models available: "ob1", "cm", "yalla",
+  and "ucx"."ob1" uses BTL ("Byte Transfer Layer") components for each
   supported network.  "cm" uses MTL ("Matching Tranport Layer")
   components for each supported network.  "yalla" uses the Mellanox
-  MXM transport.
+  MXM transport.  "ucx" uses the OpenUCX transport.
 
   - "ob1" supports a variety of networks that can be used in
     combination with each other:
@@ -620,13 +620,13 @@ Network Support
 
     - Intel True Scale PSM (QLogic InfiniPath)
     - Intel Omni-Path PSM2
-    - Mellanox MXM
     - Portals4
     - OpenFabrics Interfaces ("libfabric" tag matching)
 
     Open MPI will, by default, choose to use "cm" when one of the
-    above transports can be used.  Otherwise, "ob1" will be used and
-    the corresponding BTLs will be selected. Users can force the use
+    above transports can be used, unless OpenUCX or MXM support is detected,
+    in which case the "ucx" or "yalla" the PML will be used by default.  Otherwise,
+    "ob1" will be used and the corresponding BTLs will be selected. Users can force the use
     of ob1 or cm if desired by setting the "pml" MCA parameter at
     run-time:
 

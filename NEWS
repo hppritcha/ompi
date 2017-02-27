@@ -12,7 +12,7 @@ Copyright (c) 2006-2017 Cisco Systems, Inc.  All rights reserved.
 Copyright (c) 2006      Voltaire, Inc. All rights reserved.
 Copyright (c) 2006      Sun Microsystems, Inc.  All rights reserved.
                         Use is subject to license terms.
-Copyright (c) 2006-2016 Los Alamos National Security, LLC.  All rights
+Copyright (c) 2006-2017 Los Alamos National Security, LLC.  All rights
                         reserved.
 Copyright (c) 2010-2012 IBM Corporation.  All rights reserved.
 Copyright (c) 2012      Oak Ridge National Labs.  All rights reserved.
@@ -75,6 +75,9 @@ JMS Any other major new features to list?
 
 Changes in behavior compared to prior versions:
 
+- Added a timeout option to mpirun command line: number of
+  seconds for mpirun to wait for a job to complete
+
 - Should be none.
   ^^^ JMS Did we change --host or --hostfile behavior?
 
@@ -98,8 +101,9 @@ Bug fixes/minor improvements:
     "file:filename").
   - orte_timeout_for_stack_trace: number of seconds to wait for stack
     traces to be reported (or <=0 to wait forever).
-- Various improvements to the Portals 4 MTL, to include adding support
-  for non-contiguous datatypes.
+  - mtl_ofi_control_prog_type/mtl_ofi_data_prog_type: specify libfabric
+    progress model to be used for control and data
+- Add support for non-contiguous datatypes to the Portals 4 OSC.
 - Various updates for the UCX PML.
 - Updates to the following man pages:
   - mpirun(1)
@@ -118,6 +122,7 @@ Bug fixes/minor improvements:
   orphan children nodes in the launch tree.
 - Fix the help message when showing deprecated MCA param names to show
   the correct (i.e., deprecated) name.
+- Enable support for OpenIB BTL use across different IB subnets.
 - Fix a minor error in MPI_AINT_DIFF.
 - Fix bugs with MPI_IN_PLACE handling in:
   - MPI_ALLGATHER[V]
@@ -125,6 +130,8 @@ Bug fixes/minor improvements:
   - MPI_[I][GATHER|SCATTER][V]
   - MPI_IREDUCE[_SCATTER]
   - Thanks to all the users who helped diagnose these issues.
+  JMS - WERE ANY OF THESE NOT FIXED in 2.0.X? See below for numerous
+  citations.
   ^^^ JMS Are there specific users to cite here?
 - Allow qrsh to tree spawn (if the back-end system supports it).
 - Fix MPI_T_PVAR_GET_INDEX to return the correct index.
@@ -169,12 +176,13 @@ Bug fixes/minor improvements:
 - Removed the --enable-openib-failover configure option.  This is not
   considered backwards-incompatible because this option was stale and
   had long-since stopped working, anyway.
+- Allow jobs launched under Cray aprun to use hyperthreads if
+  opal_hwloc_base_hwthreads_as_cpus MCA parameter is set.
 - Add support for 32-bit and floating point Cray Aries atomic
   operations.
 - Add support for network AMOs for MPI_ACCUMULATE, MPI_FETCH_AND_OP,
-  and MPI_COMPARE_AND_SWAP if the "ompi_single_intrinsice" info key is
+  and MPI_COMPARE_AND_SWAP if the "ompi_single_intrinsic" info key is
   set on the window or the "acc_single_interinsic" MCA param is set.
-  ^^^ JMS Is that the right MCA param name?
 - Automatically disqualify RDMA CM support in the openib BTL if
   MPI_THREAD_MULTIPLE is used.
 - Make configure smarter/better about auto-detecting Linux CMA
@@ -188,6 +196,10 @@ Bug fixes/minor improvements:
   parameters that accept boolean values).
 - Added --with-libmpi-name=STRING configure option for vendor releases
   of Open MPI.  See the README for more detail.
+- Fix a problem with Open MPI's internal memory checker.  Thanks to Yvan
+  Fournier for reporting.
+- Fix a multi-threaded issue with MPI_WAIT.  Thanks to Pascal Deveze for
+  reporting.
 
 Known issues (to be addressed in v2.1.1):
 
