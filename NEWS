@@ -75,11 +75,7 @@ JMS Any other major new features to list?
 
 Changes in behavior compared to prior versions:
 
-- Added a timeout option to mpirun command line: number of
-  seconds for mpirun to wait for a job to complete
-
-- Should be none.
-  ^^^ JMS Did we change --host or --hostfile behavior?
+- None.
 
 Removed legacy support:
 
@@ -102,8 +98,12 @@ Bug fixes/minor improvements:
   - orte_timeout_for_stack_trace: number of seconds to wait for stack
     traces to be reported (or <=0 to wait forever).
   - mtl_ofi_control_prog_type/mtl_ofi_data_prog_type: specify libfabric
-    progress model to be used for control and data
-- Add support for non-contiguous datatypes to the Portals 4 OSC.
+    progress model to be used for control and data.
+- Added a --timeout option to mpirun command line: number of seconds
+  for mpirun to wait for a job to complete.
+- Should be none.
+- Add support for non-contiguous datatypes to the Portals 4 one-sided
+  support.
 - Various updates for the UCX PML.
 - Updates to the following man pages:
   - mpirun(1)
@@ -112,9 +112,10 @@ Bug fixes/minor improvements:
     typo.
   - MPI_INFO_GET_[NKEYS|NTHKEY](3). Thanks to Nicolas Joly for
     reporting the typo.
-- Fix external32 support
-  ^^^ JMS probably need to explain this more
-  ^^^ JMS is there a user to cite here?
+- Fixed external32 representation in the romio314 module.  Note that
+  for now, external32 representation is not correctly supported by the
+  ompio module.  Thanks Thomas Gastine for bringing this to our
+  attention.
 - Add note how to disable a warning message about when a high-speed
   MPI transport is not found.  Thanks to Susan Schwarz for reporting
   the issue.
@@ -122,7 +123,8 @@ Bug fixes/minor improvements:
   orphan children nodes in the launch tree.
 - Fix the help message when showing deprecated MCA param names to show
   the correct (i.e., deprecated) name.
-- Enable support for OpenIB BTL use across different IB subnets.
+- Enable support for the openib BTL to use multiple different
+  InfiniBand subnets.
 - Fix a minor error in MPI_AINT_DIFF.
 - Fix bugs with MPI_IN_PLACE handling in:
   - MPI_ALLGATHER[V]
