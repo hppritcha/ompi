@@ -409,51 +409,6 @@ static inline void mca_pml_ob1_recv_request_schedule(
     (void)mca_pml_ob1_recv_request_schedule_exclusive(req, start_bml_btl);
 }
 
-#define MCA_PML_OB1_ADD_ACK_TO_PENDING(P, S, D, O, Sz)                  \
-    do {                                                                \
-        mca_pml_ob1_pckt_pending_t *_pckt;                              \
-                                                                        \
-        MCA_PML_OB1_PCKT_PENDING_ALLOC(_pckt);                          \
-        _pckt->hdr.hdr_common.hdr_type = MCA_PML_OB1_HDR_TYPE_ACK;      \
-        _pckt->hdr.hdr_ack.hdr_src_req.lval = (S);                      \
-        _pckt->hdr.hdr_ack.hdr_dst_req.pval = (D);                      \
-        _pckt->hdr.hdr_ack.hdr_send_offset = (O);                       \
-        _pckt->hdr.hdr_ack.hdr_send_size = (Sz);                        \
-        _pckt->proc = (P);                                              \
-        _pckt->bml_btl = NULL;                                          \
-        OPAL_THREAD_LOCK(&mca_pml_ob1.lock);                            \
-        opal_list_append(&mca_pml_ob1.pckt_pending,                     \
-                         (opal_list_item_t*)_pckt);                     \
-        OPAL_THREAD_UNLOCK(&mca_pml_ob1.lock);                          \
-    } while(0)
-
-int mca_pml_ob1_recv_request_ack_send_btl(ompi_proc_t* proc,
-        mca_bml_base_btl_t* bml_btl, uint64_t hdr_src_req, void *hdr_dst_req,
-        uint64_t hdr_rdma_offset, uint64_t size, bool nordma);
-
-static inline int mca_pml_ob1_recv_request_ack_send(ompi_proc_t* proc,
-        uint64_t hdr_src_req, void *hdr_dst_req, uint64_t hdr_send_offset,
-        uint64_t size, bool nordma)
-{
-    size_t i;
-    mca_bml_base_btl_t* bml_btl;
-    mca_bml_base_endpoint_t* endpoint = mca_bml_base_get_endpoint (proc);
-
-    assert (NULL != endpoint);
-
-    for(i = 0; i < mca_bml_base_btl_array_get_size(&endpoint->btl_eager); i++) {
-        bml_btl = mca_bml_base_btl_array_get_next(&endpoint->btl_eager);
-        if(mca_pml_ob1_recv_request_ack_send_btl(proc, bml_btl, hdr_src_req,
-                    hdr_dst_req, hdr_send_offset, size, nordma) == OMPI_SUCCESS)
-            return OMPI_SUCCESS;
-    }
-
-    MCA_PML_OB1_ADD_ACK_TO_PENDING(proc, hdr_src_req, hdr_dst_req,
-                                   hdr_send_offset, size);
-
-    return OMPI_ERR_OUT_OF_RESOURCE;
-}
-
 int mca_pml_ob1_recv_request_get_frag(mca_pml_ob1_rdma_frag_t* frag);
 
 /* This function tries to continue recvreq that stuck due to resource

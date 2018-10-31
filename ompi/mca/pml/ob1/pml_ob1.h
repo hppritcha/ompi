@@ -221,11 +221,11 @@ END_C_DECLS
 
 struct mca_pml_ob1_pckt_pending_t {
     opal_free_list_item_t super;
-    ompi_proc_t* proc;
+    ompi_proc_t *proc;
     mca_pml_ob1_hdr_t hdr;
+    size_t hdr_size;
     struct mca_bml_base_btl_t *bml_btl;
     uint8_t order;
-    int status;
 };
 typedef struct mca_pml_ob1_pckt_pending_t mca_pml_ob1_pckt_pending_t;
 OBJ_CLASS_DECLARATION(mca_pml_ob1_pckt_pending_t);
@@ -243,22 +243,20 @@ do {                                                            \
         (opal_free_list_item_t*)pckt);                          \
 } while(0)
 
-#define MCA_PML_OB1_ADD_FIN_TO_PENDING(P, D, Sz, B, O, S)           \
-    do {                                                            \
-        mca_pml_ob1_pckt_pending_t *_pckt;                          \
-                                                                    \
-        MCA_PML_OB1_PCKT_PENDING_ALLOC(_pckt);                      \
-        mca_pml_ob1_fin_hdr_prepare (&_pckt->hdr.hdr_fin, 0,        \
-                                     (D).lval, (Sz));               \
-        _pckt->proc = (P);                                          \
-        _pckt->bml_btl = (B);                                       \
-        _pckt->order = (O);                                         \
-        _pckt->status = (S);                                        \
-        OPAL_THREAD_LOCK(&mca_pml_ob1.lock);                        \
-        opal_list_append(&mca_pml_ob1.pckt_pending,                 \
-                (opal_list_item_t*)_pckt);                          \
-        OPAL_THREAD_UNLOCK(&mca_pml_ob1.lock);                      \
-    } while(0)
+static inline void mca_pml_ob1_add_to_pending (ompi_proc_t *proc, mca_bml_base_btl_t *bml_btl,
+                                               int order, mca_pml_ob1_hdr_t *hdr, size_t hdr_size)
+{
+    mca_pml_ob1_pckt_pending_t *pckt;
+
+    MCA_PML_OB1_PCKT_PENDING_ALLOC(pckt);
+    assert (sizeof (pckt->hdr) <= hdr_size);
+    pckt->proc = proc;
+    pckt->order = order;
+    pckt->hdr_size = hdr_size;
+    OPAL_THREAD_SCOPED_LOCK(&mca_pml_ob1.lock, {
+            opal_list_append(&mca_pml_ob1.pckt_pending, &pckt->super.super);
+        });
+}
 
 #define OB1_MATCHING_LOCK(lock)                                  \
     do {                                                         \
@@ -281,6 +279,8 @@ do {                                                            \
 
 int mca_pml_ob1_send_fin(ompi_proc_t* proc, mca_bml_base_btl_t* bml_btl,
         opal_ptr_t hdr_frag, uint64_t size, uint8_t order, int status);
+
+int mca_pml_ob1_send_cid (ompi_proc_t *proc, ompi_communicator_t *comm);
 
 /* This function tries to resend FIN/ACK packets from pckt_pending queue.
  * Packets are added to the queue when sending of FIN or ACK is failed due to
@@ -402,5 +402,10 @@ mca_pml_ob1_calc_weighted_length( mca_pml_ob1_com_btl_t *btls, int num_btls, siz
  * progress to be turned (or kept) on.
  */
 int mca_pml_ob1_enable_progress(int32_t count);
+
+int mca_pml_ob1_send_control_any (ompi_proc_t *proc, int order, mca_pml_ob1_hdr_t *hdr, size_t hdr_size,
+                                  bool add_to_pending);
+int mca_pml_ob1_send_control_btl (mca_bml_base_btl_t *bml_btl, int order, mca_pml_ob1_hdr_t *hdr, size_t hdr_size,
+                                  bool add_to_pending);
 
 #endif

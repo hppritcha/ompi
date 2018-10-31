@@ -127,6 +127,14 @@ int ompi_comm_set ( ompi_communicator_t **ncomm,
     return rc;
 }
 
+static int ompi_comm_set_simple (ompi_communicator_t **ncomm, ompi_errhandler_t *errhandler,
+                                 ompi_group_t *local_group)
+{
+    return ompi_comm_set (ncomm, NULL, local_group->grp_proc_count, NULL, 0, NULL, NULL, errhandler,
+			  false, local_group, NULL);
+}
+
+
 /*
  * if remote_group == &ompi_mpi_group_null, then the new communicator
  * is forced to be an inter communicator.
@@ -165,8 +173,6 @@ int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
     newcomm->super.s_info = NULL;
     /* fill in the inscribing hyper-cube dimensions */
     newcomm->c_cube_dim = opal_cube_dim(local_size);
-    newcomm->c_id_available   = MPI_UNDEFINED;
-    newcomm->c_id_start_index = MPI_UNDEFINED;
 
     if (NULL == local_group) {
         /* determine how the list of local_rank can be stored most
@@ -221,7 +227,7 @@ int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
     OBJ_RETAIN ( newcomm->error_handler );
 
     /* Set Topology, if required and if available */
-    if ( copy_topocomponent && (NULL != oldcomm->c_topo) ) {
+    if (NULL != oldcomm && copy_topocomponent && (NULL != oldcomm->c_topo) ) {
         /**
          * The MPI standard is pretty clear on this, the topology information
          * behave as info keys, and is copied only on MPI_Comm_dup.
@@ -233,7 +239,7 @@ int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
     }
 
     /* Copy attributes and call according copy functions, if required */
-    if (NULL != oldcomm->c_keyhash) {
+    if (NULL != oldcomm && NULL != oldcomm->c_keyhash) {
         if (NULL != attr) {
             ompi_attr_hash_init(&newcomm->c_keyhash);
             if (OMPI_SUCCESS != (ret = ompi_attr_copy_all (COMM_ATTR, oldcomm,
@@ -365,8 +371,8 @@ int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
     }
 
     /* Set name for debugging purposes */
-    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d CREATE FROM %d",
-             newcomp->c_contextid, comm->c_contextid );
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %s CREATE FROM %s",
+	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
 
     /* Activate the communicator and init coll-component */
     rc = ompi_comm_activate (&newcomp, comm, NULL, NULL, NULL, false, mode);
@@ -586,9 +592,8 @@ int ompi_comm_split_with_info( ompi_communicator_t* comm, int color, int key,
         OBJ_RELEASE(local_group);
         if (NULL != newcomp->c_local_comm) {
             snprintf(newcomp->c_local_comm->c_name, MPI_MAX_OBJECT_NAME,
-                     "MPI COMMUNICATOR %d SPLIT FROM %d",
-                     newcomp->c_local_comm->c_contextid,
-                     comm->c_local_comm->c_contextid );
+                     "MPI COMM %s SPLIT FROM %s", ompi_comm_print_cid (newcomp),
+		     ompi_comm_print_cid (comm));
         }
     }
 
@@ -607,8 +612,8 @@ int ompi_comm_split_with_info( ompi_communicator_t* comm, int color, int key,
     }
 
     /* Set name for debugging purposes */
-    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d SPLIT FROM %d",
-             newcomp->c_contextid, comm->c_contextid );
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s SPLIT FROM %s",
+	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
 
     /* Copy info if there is one */
     if (info) {
@@ -954,8 +959,8 @@ int ompi_comm_split_type (ompi_communicator_t *comm, int split_type, int key,
             *newcomm = newcomp;
 
             /* Set name for debugging purposes */
-            snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d SPLIT_TYPE FROM %d",
-                     newcomp->c_contextid, comm->c_contextid );
+            snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s SPLIT_TYPE FROM %s",
+		     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
             break;
         }
 
@@ -1024,8 +1029,8 @@ int ompi_comm_dup_with_info ( ompi_communicator_t * comm, opal_info_t *info, omp
     }
 
     /* Set name for debugging purposes */
-    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d DUP FROM %d",
-             newcomp->c_contextid, comm->c_contextid );
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s DUP FROM %s",
+	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
 
     // Copy info if there is one.
     newcomp->super.s_info = OBJ_NEW(opal_info_t);
@@ -1176,8 +1181,8 @@ static int ompi_comm_idup_with_info_activate (ompi_comm_request_t *request)
     }
 
     /* Set name for debugging purposes */
-    snprintf(context->newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d DUP FROM %d",
-             context->newcomp->c_contextid, context->comm->c_contextid );
+    snprintf(context->newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s DUP FROM %s",
+	     ompi_comm_print_cid (context->newcomp), ompi_comm_print_cid (context->comm));
 
     /* activate communicator and init coll-module */
     rc = ompi_comm_activate_nb (&context->newcomp, context->comm, NULL, NULL, NULL, false, mode, subreq);
@@ -1230,13 +1235,52 @@ int ompi_comm_create_group (ompi_communicator_t *comm, ompi_group_t *group, int 
     }
 
     /* Set name for debugging purposes */
-    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %d GROUP FROM %d",
-             newcomp->c_contextid, comm->c_contextid );
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %d GROUP FROM %d",
+	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
 
     /* activate communicator and init coll-module */
     rc = ompi_comm_activate (&newcomp, comm, NULL, &tag, NULL, false, mode);
     if ( OMPI_SUCCESS != rc ) {
         OBJ_RELEASE(newcomp);
+        return rc;
+    }
+
+    *newcomm = newcomp;
+    return MPI_SUCCESS;
+}
+
+int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info_t *info,
+                                 ompi_errhandler_t *errhandler, ompi_communicator_t **newcomm)
+{
+    ompi_communicator_t *newcomp = NULL;
+    int mode = OMPI_COMM_CID_GROUP_NEW, rc = OMPI_SUCCESS;
+
+    *newcomm = MPI_COMM_NULL;
+
+    rc = ompi_comm_set_simple (&newcomp, errhandler, group);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
+
+    /* Determine context id. It is identical to f_2_c_handle */
+    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, NULL, false, mode);
+    if ( OMPI_SUCCESS != rc ) {
+        return rc;
+    }
+
+    /* Set name for debugging purposes */
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s FROM GROUP",
+	     ompi_comm_print_cid (newcomp));
+
+    // Copy info if there is one.
+    newcomp->super.s_info = OBJ_NEW(opal_info_t);
+    if (info) {
+        opal_info_dup(info, &(newcomp->super.s_info));
+    }
+
+    /* activate communicator and init coll-module */
+    rc = ompi_comm_activate (&newcomp, NULL, NULL, &tag, NULL, false, mode);
+    if ( OMPI_SUCCESS != rc ) {
         return rc;
     }
 
@@ -1257,7 +1301,7 @@ int ompi_comm_compare(ompi_communicator_t *comm1, ompi_communicator_t *comm2, in
     comp1 = (ompi_communicator_t *) comm1;
     comp2 = (ompi_communicator_t *) comm2;
 
-    if ( comp1->c_contextid == comp2->c_contextid ) {
+    if ( comp1->c_index == comp2->c_index ) {
         *result = MPI_IDENT;
         return MPI_SUCCESS;
     }
@@ -1451,7 +1495,7 @@ static int ompi_comm_allgather_emulate_intra( void *inbuf, int incount,
 int ompi_comm_free( ompi_communicator_t **comm )
 {
     int ret;
-    int cid = (*comm)->c_contextid;
+    int cid = (*comm)->c_index;
     int is_extra_retain = OMPI_COMM_IS_EXTRA_RETAIN(*comm);
 
     /* Release attributes.  We do this now instead of during the
@@ -1521,7 +1565,7 @@ int ompi_comm_free( ompi_communicator_t **comm )
          * makes sure that the pointer to the dependent communicator
          * still contains a valid object.
          */
-        ompi_communicator_t *tmpcomm = (ompi_communicator_t *) opal_pointer_array_get_item(&ompi_mpi_communicators, cid);
+        ompi_communicator_t *tmpcomm = (ompi_communicator_t *) opal_pointer_array_get_item(&ompi_comm_array, cid);
         if ( NULL != tmpcomm ){
             ompi_comm_free(&tmpcomm);
         }
@@ -1815,7 +1859,7 @@ int ompi_comm_determine_first ( ompi_communicator_t *intercomm, int high )
 /********************************************************************************/
 int ompi_comm_dump ( ompi_communicator_t *comm )
 {
-    opal_output(0, "Dumping information for comm_cid %d\n", comm->c_contextid);
+    opal_output(0, "Dumping information for comm_cid %s\n", ompi_comm_print_cid (comm));
     opal_output(0,"  f2c index:%d cube_dim: %d\n", comm->c_f_to_c_index,
                 comm->c_cube_dim);
     opal_output(0,"  Local group: size = %d my_rank = %d\n",
@@ -1989,8 +2033,8 @@ static int ompi_comm_fill_rest(ompi_communicator_t *comm,
     /* there is no cid at this stage ... make this right and make edgars
      * code call this function and remove dupli cde
      */
-    snprintf (comm->c_name, MPI_MAX_OBJECT_NAME, "MPI_COMMUNICATOR %d",
-              comm->c_contextid);
+    snprintf (comm->c_name, MPI_MAX_OBJECT_NAME, "MPI_COMMUNICATOR %s",
+	      ompi_comm_print_cid (comm));
 
     /* determine the cube dimensions */
     comm->c_cube_dim = opal_cube_dim(comm->c_local_group->grp_proc_count);
@@ -2008,4 +2052,29 @@ static int ompi_comm_copy_topo(ompi_communicator_t *oldcomm,
     OBJ_RETAIN(newcomm->c_topo);
     newcomm->c_flags |= newcomm->c_topo->type;
     return OMPI_SUCCESS;
+}
+
+char *ompi_comm_print_cid (const ompi_communicator_t *comm)
+{
+#if OPAL_HAVE_THREAD_LOCAL
+    static opal_thread_local char cid_buffer[2][20];
+    static opal_thread_local int cid_buffer_index = 0;
+#else
+    /* no thread local == you get what you get. upgrade your compiler */
+    static char cid_buffer[2][20];
+    static int cid_buffer_index = 0;
+#endif
+    int bindex = cid_buffer_index;
+
+    if (mca_pml_base_supports_extended_cid () && !OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+	snprintf (cid_buffer[bindex], sizeof (cid_buffer[0]), "0x%" PRIx64 "%08" PRIx64,
+	    comm->c_contextid.cid_base,
+	    comm->c_contextid.cid_sub.u64);
+    } else {
+	snprintf (cid_buffer[bindex], sizeof (cid_buffer[0]), "%d", comm->c_index);
+    }
+
+    cid_buffer_index = cid_buffer_index ? 0 : 1;
+
+    return cid_buffer[bindex];
 }

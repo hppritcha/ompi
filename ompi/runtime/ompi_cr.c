@@ -127,10 +127,10 @@ notify_collectives(int msg)
 
     memset(&modules, 0, sizeof(mca_coll_base_module_t*) * NUM_COLLECTIVES);
 
-    max = opal_pointer_array_get_size(&ompi_mpi_communicators);
+    max = opal_pointer_array_get_size(&ompi_comm_array);
     for (i = 0 ; i < max ; ++i) {
         ompi_communicator_t *comm =
-            (ompi_communicator_t *)opal_pointer_array_get_item(&ompi_mpi_communicators, i);
+            (ompi_communicator_t *)opal_pointer_array_get_item(&ompi_comm_array, i);
         if (NULL == comm) continue;
 
         SIGNAL(comm, modules, highest_module, msg, ret, allgather);

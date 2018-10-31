@@ -440,5 +440,10 @@ int ompi_group_dump (ompi_group_t* group);
  */
 int ompi_group_div_ceil (int num, int den);
 
+/**
+ * Create a process name array from a group
+ */
+int ompi_group_to_proc_name_array (ompi_group_t *group, opal_process_name_t **name_array, size_t *name_array_size);
+
 END_C_DECLS
 #endif /* OMPI_GROUP_H */

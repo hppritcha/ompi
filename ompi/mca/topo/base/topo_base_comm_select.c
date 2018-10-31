@@ -88,8 +88,8 @@ int mca_topo_base_comm_select(const ompi_communicator_t*  comm,
         return err;
     }
     opal_output_verbose(10, ompi_topo_base_framework.framework_output,
-                        "topo:base:comm_select: new communicator: %s (cid %d)",
-                        comm->c_name, comm->c_contextid);
+                        "topo:base:comm_select: new communicator: %s (cid %s)",
+                        comm->c_name, ompi_comm_print_cid (comm));
 
     /* Check and see if a preferred component was provided. If it was
        provided then it should be used (if possible) */
