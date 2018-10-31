@@ -1372,6 +1372,8 @@ OMPI_DECLSPEC  int MPI_Comm_create_keyval(MPI_Comm_copy_attr_function *comm_copy
                                           MPI_Comm_delete_attr_function *comm_delete_attr_fn,
                                           int *comm_keyval, void *extra_state);
 OMPI_DECLSPEC  int MPI_Comm_create_group(MPI_Comm comm, MPI_Group group, int tag, MPI_Comm *newcomm);
+OMPI_DECLSPEC  int MPI_Comm_create_from_group(MPI_Group group, const char *tag, MPI_Info info,
+					      MPI_Errhandler errhandler, MPI_Comm *newcomm);
 OMPI_DECLSPEC  int MPI_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm);
 OMPI_DECLSPEC  int MPI_Comm_delete_attr(MPI_Comm comm, int comm_keyval);
 OMPI_DECLSPEC  int MPI_Comm_disconnect(MPI_Comm *comm);
@@ -2056,6 +2058,8 @@ OMPI_DECLSPEC  int PMPI_Comm_create_keyval(MPI_Comm_copy_attr_function *comm_cop
                                            MPI_Comm_delete_attr_function *comm_delete_attr_fn,
                                            int *comm_keyval, void *extra_state);
 OMPI_DECLSPEC  int PMPI_Comm_create_group(MPI_Comm comm, MPI_Group group, int tag, MPI_Comm *newcomm);
+OMPI_DECLSPEC  int PMPI_Comm_create_from_group(MPI_Group group, const char *tag, MPI_Info info,
+					       MPI_Errhandler errhandler, MPI_Comm *newcomm);
 OMPI_DECLSPEC  int PMPI_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm);
 OMPI_DECLSPEC  int PMPI_Comm_delete_attr(MPI_Comm comm, int comm_keyval);
 OMPI_DECLSPEC  int PMPI_Comm_disconnect(MPI_Comm *comm);

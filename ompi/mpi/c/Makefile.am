@@ -106,6 +106,7 @@ libmpi_c_mpi_la_SOURCES = \
         comm_connect.c \
         comm_create.c \
         comm_create_errhandler.c \
+        comm_create_from_group.c \
         comm_create_group.c \
         comm_create_keyval.c \
         comm_delete_attr.c \

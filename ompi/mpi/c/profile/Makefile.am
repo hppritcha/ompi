@@ -86,6 +86,7 @@ nodist_libmpi_c_pmpi_la_SOURCES = \
         pcomm_connect.c \
         pcomm_create.c \
         pcomm_create_errhandler.c \
+        pcomm_create_from_group.c \
         pcomm_create_group.c \
         pcomm_create_keyval.c \
         pcomm_delete_attr.c \

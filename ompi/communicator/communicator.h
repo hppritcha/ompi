@@ -47,6 +47,8 @@
 #include "ompi/info/info.h"
 #include "ompi/proc/proc.h"
 
+#include "opal/util/printf.h"
+
 BEGIN_C_DECLS
 
 OMPI_DECLSPEC OBJ_CLASS_DECLARATION(ompi_communicator_t);
@@ -63,6 +65,7 @@ OMPI_DECLSPEC OBJ_CLASS_DECLARATION(ompi_communicator_t);
 #define OMPI_COMM_PML_ADDED    0x00001000
 #define OMPI_COMM_EXTRA_RETAIN 0x00004000
 #define OMPI_COMM_MAPBY_NODE   0x00008000
+#define OMPI_COMM_GLOBAL_INDEX 0x00010000
 
 /* some utility #defines */
 #define OMPI_COMM_IS_INTER(comm) ((comm)->c_flags & OMPI_COMM_INTER)
@@ -80,6 +83,7 @@ OMPI_DECLSPEC OBJ_CLASS_DECLARATION(ompi_communicator_t);
                                  OMPI_COMM_IS_GRAPH((comm)) || \
                                  OMPI_COMM_IS_DIST_GRAPH((comm)))
 #define OMPI_COMM_IS_MAPBY_NODE(comm) ((comm)->c_flags & OMPI_COMM_MAPBY_NODE)
+#define OMPI_COMM_IS_GLOBAL_INDEX(comm) ((comm)->c_flags & OMPI_COMM_GLOBAL_INDEX)
 
 #define OMPI_COMM_SET_DYNAMIC(comm) ((comm)->c_flags |= OMPI_COMM_DYNAMIC)
 #define OMPI_COMM_SET_INVALID(comm) ((comm)->c_flags |= OMPI_COMM_INVALID)
@@ -111,24 +115,108 @@ OMPI_DECLSPEC OBJ_CLASS_DECLARATION(ompi_communicator_t);
 #define OMPI_COMM_CID_INTRA_BRIDGE 0x00000080
 #define OMPI_COMM_CID_INTRA_PMIX   0x00000100
 #define OMPI_COMM_CID_GROUP        0x00000200
+#define OMPI_COMM_CID_GROUP_NEW    0x00000400
 #if OPAL_ENABLE_FT_MPI
-#define OMPI_COMM_CID_INTRA_FT        0x00000400
-#define OMPI_COMM_CID_INTER_FT        0x00000800
-#define OMPI_COMM_CID_INTRA_PMIX_FT   0x00001000
+#define OMPI_COMM_CID_INTRA_FT        0x00000800
+#define OMPI_COMM_CID_INTER_FT        0x00001000
+#define OMPI_COMM_CID_INTRA_PMIX_FT   0x00002000
 #endif /* OPAL_ENABLE_FT_MPI */
 
-/**
- * The block of CIDs allocated for MPI_COMM_WORLD
- * and other communicators
- */
-#define OMPI_COMM_BLOCK_WORLD      16
-#define OMPI_COMM_BLOCK_OTHERS     8
-
-/* A macro comparing two CIDs */
-#define OMPI_COMM_CID_IS_LOWER(comm1,comm2) ( ((comm1)->c_contextid < (comm2)->c_contextid)? 1:0)
-
-OMPI_DECLSPEC extern opal_pointer_array_t ompi_mpi_communicators;
+OMPI_DECLSPEC extern opal_hash_table_t ompi_comm_hash;
+OMPI_DECLSPEC extern opal_pointer_array_t ompi_comm_array;
 OMPI_DECLSPEC extern opal_pointer_array_t ompi_comm_f_to_c_table;
+
+struct ompi_comm_extended_cid_t {
+    uint64_t  cid_base;
+    union {
+        uint64_t u64;
+	uint8_t  u8[8];
+    } cid_sub;
+};
+typedef struct ompi_comm_extended_cid_t ompi_comm_extended_cid_t;
+
+struct ompi_comm_extended_cid_block_t {
+    ompi_comm_extended_cid_t block_cid;
+    uint64_t                 block_nexttag;
+    uint8_t                  block_nextsub;
+    uint8_t                  block_level;
+};
+typedef struct ompi_comm_extended_cid_block_t ompi_comm_extended_cid_block_t;
+
+static inline void ompi_comm_extended_cid_block_initialize (ompi_comm_extended_cid_block_t *block, uint64_t cid_base,
+							    uint64_t cid_sub, uint8_t block_level)
+{
+    block->block_cid.cid_base = cid_base;
+    block->block_cid.cid_sub.u64 = cid_sub;
+    block->block_level = block_level;
+    block->block_nextsub = 0;
+    block->block_nexttag = 0;
+}
+
+static inline bool ompi_comm_extended_cid_block_available (ompi_comm_extended_cid_block_t *block)
+{
+    return (4 > block->block_level && 0xff > block->block_nextsub);
+}
+
+static inline char *ompi_comm_extended_cid_get_unique_tag (ompi_comm_extended_cid_block_t *block, int tag,
+                                                           int leader)
+{
+    char *id;
+
+    /* create a unique ID for this */
+    if (-1 == tag) {
+        opal_asprintf (&id, "ALL:%" PRIx64 "-%" PRIx64 "-%" PRIx64, block->block_cid.cid_base,
+                       block->block_cid.cid_sub.u64, ++block->block_nexttag);
+    } else {
+        opal_asprintf (&id, "GROUP:%" PRIx64 "-%" PRIx64 "-%d-%d", block->block_cid.cid_base,
+                       block->block_cid.cid_sub.u64, tag, leader);
+    }
+
+    return id;
+}
+>>>>>>> WIP: sessions -- will split later
+
+/**
+ * Create a new sub-block from an existing block
+ *
+ * @param[in]  block       block
+ * @param[out] new_block   new CID block
+ * @param[in]  use_current use the current CID of the existing block as the base
+ *
+ * This function creates a new CID block from an existing block. The use_current flag
+ * can be used to indicate that the new block should use the existing CID. This can
+ * be used to assign the first CID in a new block.
+ */
+static inline int ompi_comm_extended_cid_block_new (ompi_comm_extended_cid_block_t *block,
+						    ompi_comm_extended_cid_block_t *new_block,
+                                                    bool use_current)
+{
+    if (!ompi_comm_extended_cid_block_available (block)) {
+	/* a new block is needed */
+	return OMPI_ERR_OUT_OF_RESOURCE;
+    }
+
+    new_block->block_cid = block->block_cid;
+    if (!use_current) {
+        new_block->block_cid.cid_sub.u8[3 - block->block_level] = ++block->block_nextsub;
+    }
+
+    new_block->block_level = block->block_level + 1;
+    new_block->block_nextsub = 0;
+
+    return OMPI_SUCCESS;
+}
+
+struct ompi_comm_cid_t {
+    opal_object_t            super;
+    ompi_group_t             cid_group;
+    ompi_comm_extended_cid_t cid_value;
+    uint8_t                  cid_sublevel;
+};
+typedef struct ompi_comm_cid_t ompi_comm_cid_t;
+
+OBJ_CLASS_DECLARATION(ompi_comm_cid_t);
+
 #if OPAL_ENABLE_FT_MPI
 /**
  * This array holds the number of time each id has been used. In the case where a communicator
@@ -151,19 +239,19 @@ OMPI_DECLSPEC extern opal_pointer_array_t ompi_mpi_comm_epoch;
 typedef void (ompi_comm_rank_failure_callback_t)(struct ompi_communicator_t *comm, int rank, bool remote);
 
 OMPI_DECLSPEC extern ompi_comm_rank_failure_callback_t *ompi_rank_failure_cbfunc;
-#endif  /* OPAL_ENABLE_FT_MPI */
 
 struct ompi_communicator_t {
     opal_infosubscriber_t      super;
     opal_mutex_t               c_lock; /* mutex for name and potentially
                                           attributes */
     char  c_name[MPI_MAX_OBJECT_NAME];
-    uint32_t              c_contextid;
-    int                     c_my_rank;
-    uint32_t                  c_flags; /* flags, e.g. intercomm,
-                                          topology, etc. */
-    uint32_t                  c_assertions; /* info assertions */
-
+    ompi_comm_extended_cid_t      c_contextid;
+    ompi_comm_extended_cid_block_t c_contextidb;
+    int                           c_index;
+    int                           c_my_rank;
+    uint32_t                      c_flags; /* flags, e.g. intercomm,
+                                              topology, etc. */
+    uint32_t                      c_assertions; /* info assertions */
     int c_id_available; /* the currently available Cid for allocation
                to a child*/
     int c_id_start_index; /* the starting index of the block of cids
@@ -372,7 +460,7 @@ OMPI_DECLSPEC extern ompi_predefined_communicator_t *ompi_mpi_comm_null_addr;
  * ompi_comm_invalid() but also explictily checks to see if the
  * handle is MPI_COMM_NULL.
  */
-static inline int ompi_comm_invalid(ompi_communicator_t* comm)
+static inline int ompi_comm_invalid (const ompi_communicator_t* comm)
 {
     if ((NULL == comm) || (MPI_COMM_NULL == comm) ||
         (OMPI_COMM_IS_FREED(comm)) || (OMPI_COMM_IS_INVALID(comm)) )
@@ -384,7 +472,7 @@ static inline int ompi_comm_invalid(ompi_communicator_t* comm)
 /**
  * rank w/in the communicator
  */
-static inline int ompi_comm_rank(ompi_communicator_t* comm)
+static inline int ompi_comm_rank (const ompi_communicator_t* comm)
 {
     return comm->c_my_rank;
 }
@@ -392,7 +480,7 @@ static inline int ompi_comm_rank(ompi_communicator_t* comm)
 /**
  * size of the communicator
  */
-static inline int ompi_comm_size(ompi_communicator_t* comm)
+static inline int ompi_comm_size (const ompi_communicator_t* comm)
 {
     return comm->c_local_group->grp_proc_count;
 }
@@ -401,7 +489,7 @@ static inline int ompi_comm_size(ompi_communicator_t* comm)
  * size of the remote group for inter-communicators.
  * returns zero for an intra-communicator
  */
-static inline int ompi_comm_remote_size(ompi_communicator_t* comm)
+static inline int ompi_comm_remote_size (const ompi_communicator_t* comm)
 {
     return (comm->c_flags & OMPI_COMM_INTER ? comm->c_remote_group->grp_proc_count : 0);
 }
@@ -410,20 +498,41 @@ static inline int ompi_comm_remote_size(ompi_communicator_t* comm)
  * Context ID for the communicator, suitable for passing to
  * ompi_comm_lookup for getting the communicator back
  */
-static inline uint32_t ompi_comm_get_cid(ompi_communicator_t* comm)
+static inline uint32_t ompi_comm_get_local_cid (const ompi_communicator_t* comm)
+{
+    return comm->c_index;
+}
+
+/**
+ * Get the extended context ID for the communicator, suitable for passing
+ * to ompi_comm_lookup_cid for getting the communicator back
+ */
+static inline ompi_comm_extended_cid_t ompi_comm_get_extended_cid (const ompi_communicator_t *comm)
 {
     return comm->c_contextid;
 }
 
-/* return pointer to communicator associated with context id cid,
- * No error checking is done*/
-static inline ompi_communicator_t *ompi_comm_lookup(uint32_t cid)
+static inline bool ompi_communicator_cid_compare (const ompi_communicator_t *comm, const ompi_comm_extended_cid_t cid)
 {
-    /* array of pointers to communicators, indexed by context ID */
-    return (ompi_communicator_t*)opal_pointer_array_get_item(&ompi_mpi_communicators, cid);
+    return comm->c_contextid.cid_base == cid.cid_base && comm->c_contextid.cid_sub.u64 == cid.cid_sub.u64;
 }
 
-static inline struct ompi_proc_t* ompi_comm_peer_lookup(ompi_communicator_t* comm, int peer_id)
+/* return pointer to communicator associated with context id cid,
+ * No error checking is done*/
+static inline ompi_communicator_t *ompi_comm_lookup (const uint32_t c_index)
+{
+    /* array of pointers to communicators, indexed by context ID */
+    return (ompi_communicator_t *) opal_pointer_array_get_item (&ompi_comm_array, c_index);
+}
+
+static inline ompi_communicator_t *ompi_comm_lookup_cid (const ompi_comm_extended_cid_t cid)
+{
+    ompi_communicator_t *comm = NULL;
+    (void) opal_hash_table_get_value_ptr (&ompi_comm_hash, &cid, sizeof (cid), (void *) &comm);
+    return comm;
+}
+
+static inline struct ompi_proc_t* ompi_comm_peer_lookup (const ompi_communicator_t* comm, const int peer_id)
 {
 #if OPAL_ENABLE_DEBUG
     if(peer_id >= comm->c_remote_group->grp_proc_count) {
@@ -616,7 +725,7 @@ OMPI_DECLSPEC int ompi_comm_revoke_finalize(void);
 
 #endif /* OPAL_ENABLE_FT_MPI */
 
-static inline bool ompi_comm_peer_invalid(ompi_communicator_t* comm, int peer_id)
+static inline bool ompi_comm_peer_invalid (const ompi_communicator_t* comm, const int peer_id)
 {
     if(peer_id < 0 || peer_id >= comm->c_remote_group->grp_proc_count) {
         return true;
@@ -624,6 +733,7 @@ static inline bool ompi_comm_peer_invalid(ompi_communicator_t* comm, int peer_id
     return false;
 }
 
+char *ompi_comm_print_cid (const ompi_communicator_t *comm);
 
 /**
  * Initialise MPI_COMM_WORLD and MPI_COMM_SELF
@@ -647,6 +757,12 @@ int ompi_comm_create (ompi_communicator_t* comm, ompi_group_t *group,
  */
 int ompi_comm_create_group (ompi_communicator_t *comm, ompi_group_t *group, int tag,
                             ompi_communicator_t **newcomm);
+
+/**
+ * Non-collective create communicator based on a group with no base communicator
+ */
+int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info_t *info,
+                                 ompi_errhandler_t *errhandler, ompi_communicator_t **newcomm);
 
 /**
  * Take an almost complete communicator and reserve the CID as well
