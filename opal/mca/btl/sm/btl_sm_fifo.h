@@ -157,7 +157,7 @@ static inline bool sm_fifo_write_ep(mca_btl_sm_hdr_t *hdr, struct mca_btl_base_e
         opal_atomic_wmb();
         return mca_btl_sm_fbox_sendi(ep, 0xfe, &rhdr, sizeof(rhdr), NULL, 0);
     }
-    mca_btl_sm_try_fbox_setup(ep, hdr);
+    mca_btl_sm_try_fbox_setup (ep, hdr);
     hdr->next = SM_FIFO_FREE;
     sm_fifo_write(ep->fifo, rhdr);
 

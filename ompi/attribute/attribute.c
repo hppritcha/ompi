@@ -243,6 +243,7 @@
 #include "ompi/datatype/ompi_datatype.h"
 #include "ompi/communicator/communicator.h"  /* ompi_communicator_t generated in [COPY|DELETE]_ATTR_CALLBACKS */
 #include "ompi/win/win.h"                    /* ompi_win_t generated in [COPY|DELETE]_ATTR_CALLBACKS */
+#include "ompi/instance/instance.h"
 #include "ompi/mpi/fortran/base/fint_2_int.h"
 
 
