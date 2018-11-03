@@ -373,7 +373,6 @@ int ompi_comm_nextcid_nb (ompi_communicator_t *newcomm, ompi_communicator_t *com
 {
     ompi_comm_cid_context_t *context;
     ompi_comm_request_t *request;
-    int rc;
 
     if (mca_pml_base_supports_extended_cid() && OMPI_COMM_CID_INTER != mode &&
         OMPI_COMM_CID_INTRA_BRIDGE != mode && OMPI_COMM_CID_INTRA_PMIX != mode) {

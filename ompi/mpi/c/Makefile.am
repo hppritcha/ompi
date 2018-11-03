@@ -402,7 +402,9 @@ libmpi_c_mpi_la_SOURCES = \
         get.c \
         put.c \
 	win_allocate.c \
+	win_allocate_from_group.c \
 	win_allocate_shared.c \
+	win_allocate_shared_from_group.c \
 	win_attach.c \
         win_c2f.c \
         win_call_errhandler.c \
@@ -410,7 +412,9 @@ libmpi_c_mpi_la_SOURCES = \
         win_create_errhandler.c \
         win_create_keyval.c \
         win_create.c \
+        win_create_from_group.c \
 	win_create_dynamic.c \
+	win_create_dynamic_from_group.c \
         win_delete_attr.c \
 	win_detach.c \
         win_f2c.c \
