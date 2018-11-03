@@ -1904,15 +1904,26 @@ OMPI_DECLSPEC  int MPI_Waitsome(int incount, MPI_Request array_of_requests[],
                                 MPI_Status array_of_statuses[]);
 OMPI_DECLSPEC  int MPI_Win_allocate(MPI_Aint size, int disp_unit, MPI_Info info,
                                     MPI_Comm comm, void *baseptr, MPI_Win *win);
+OMPI_DECLSPEC  int MPI_Win_allocate_from_group (MPI_Aint size, int disp_unit, MPI_Info info,
+                                                MPI_Group group, const char *tag, void *baseptr,
+                                                MPI_Win *win);
 OMPI_DECLSPEC  int MPI_Win_allocate_shared(MPI_Aint size, int disp_unit, MPI_Info info,
                                            MPI_Comm comm, void *baseptr, MPI_Win *win);
+OMPI_DECLSPEC  int MPI_Win_allocate_shared_from_group (MPI_Aint size, int disp_unit, MPI_Info info,
+                                                       MPI_Group group, const char *tag, void *baseptr,
+                                                       MPI_Win *win);
 OMPI_DECLSPEC  int MPI_Win_attach(MPI_Win win, void *base, MPI_Aint size);
 OMPI_DECLSPEC  MPI_Fint MPI_Win_c2f(MPI_Win win);
 OMPI_DECLSPEC  int MPI_Win_call_errhandler(MPI_Win win, int errorcode);
 OMPI_DECLSPEC  int MPI_Win_complete(MPI_Win win);
 OMPI_DECLSPEC  int MPI_Win_create(void *base, MPI_Aint size, int disp_unit,
                                   MPI_Info info, MPI_Comm comm, MPI_Win *win);
+OMPI_DECLSPEC  int MPI_Win_create_from_group (void *base, MPI_Aint size, int disp_unit,
+                                              MPI_Info info, MPI_Group group, const char *tag,
+                                              MPI_Win *win);
 OMPI_DECLSPEC  int MPI_Win_create_dynamic(MPI_Info info, MPI_Comm comm, MPI_Win *win);
+OMPI_DECLSPEC  int MPI_Win_create_dynamic_from_group(MPI_Info info, MPI_Group group, const char *tag,
+                                                     MPI_Win *win);
 OMPI_DECLSPEC  int MPI_Win_create_errhandler(MPI_Win_errhandler_function *function,
                                              MPI_Errhandler *errhandler);
 OMPI_DECLSPEC  int MPI_Win_create_keyval(MPI_Win_copy_attr_function *win_copy_attr_fn,
@@ -2571,15 +2582,26 @@ OMPI_DECLSPEC  int PMPI_Waitsome(int incount, MPI_Request array_of_requests[],
                                  MPI_Status array_of_statuses[]);
 OMPI_DECLSPEC  int PMPI_Win_allocate(MPI_Aint size, int disp_unit, MPI_Info info,
                                      MPI_Comm comm, void *baseptr, MPI_Win *win);
+OMPI_DECLSPEC  int PMPI_Win_allocate_from_group (MPI_Aint size, int disp_unit, MPI_Info info,
+                                                 MPI_Group group, const char *tag, void *baseptr,
+                                                 MPI_Win *win);
 OMPI_DECLSPEC  int PMPI_Win_allocate_shared(MPI_Aint size, int disp_unit, MPI_Info info,
                                             MPI_Comm comm, void *baseptr, MPI_Win *win);
+OMPI_DECLSPEC  int PMPI_Win_allocate_shared_from_group (MPI_Aint size, int disp_unit, MPI_Info info,
+                                                        MPI_Group group, const char *tag, void *baseptr,
+                                                        MPI_Win *win);
 OMPI_DECLSPEC  int PMPI_Win_attach(MPI_Win win, void *base, MPI_Aint size);
 OMPI_DECLSPEC  MPI_Fint PMPI_Win_c2f(MPI_Win win);
 OMPI_DECLSPEC  int PMPI_Win_call_errhandler(MPI_Win win, int errorcode);
 OMPI_DECLSPEC  int PMPI_Win_complete(MPI_Win win);
 OMPI_DECLSPEC  int PMPI_Win_create(void *base, MPI_Aint size, int disp_unit,
                                    MPI_Info info, MPI_Comm comm, MPI_Win *win);
+OMPI_DECLSPEC  int PMPI_Win_create_from_group (void *base, MPI_Aint size, int disp_unit,
+                                               MPI_Info info, MPI_Group group, const char *tag,
+                                               MPI_Win *win);
 OMPI_DECLSPEC  int PMPI_Win_create_dynamic(MPI_Info info, MPI_Comm comm, MPI_Win *win);
+OMPI_DECLSPEC  int PMPI_Win_create_dynamic_from_group (MPI_Info info, MPI_Group group,
+                                                       const char *tag, MPI_Win *win);
 OMPI_DECLSPEC  int PMPI_Win_create_errhandler(MPI_Win_errhandler_function *function,
                                               MPI_Errhandler *errhandler);
 OMPI_DECLSPEC  int PMPI_Win_create_keyval(MPI_Win_copy_attr_function *win_copy_attr_fn,
