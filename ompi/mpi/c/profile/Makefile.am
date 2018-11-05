@@ -247,6 +247,7 @@ nodist_libmpi_c_pmpi_la_SOURCES = \
         pinit_thread.c \
         pinitialized.c \
         pintercomm_create.c \
+        pintercomm_create_from_groups.c \
         pintercomm_merge.c \
         piprobe.c \
         pirecv.c \

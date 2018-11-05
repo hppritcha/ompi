@@ -486,10 +486,9 @@ bcast_rportlen:
                          NULL  ,                   /* remote_procs */
                          NULL,                     /* attrs */
                          comm->error_handler,      /* error handler */
-                         NULL,                     /* topo component */
                          group,                    /* local group */
-                         new_group_pointer         /* remote group */
-                         );
+                         new_group_pointer,        /* remote group */
+                         0);                       /* flags */
     if (OMPI_SUCCESS != rc) {
         goto exit;
     }
