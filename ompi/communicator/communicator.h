@@ -137,6 +137,7 @@ typedef struct ompi_comm_extended_cid_t ompi_comm_extended_cid_t;
 
 struct ompi_comm_extended_cid_block_t {
     ompi_comm_extended_cid_t block_cid;
+    /** can be used to get a unique string tag for pmix context creation */
     uint64_t                 block_nexttag;
     uint8_t                  block_nextsub;
     uint8_t                  block_level;
@@ -541,6 +542,20 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
                                  ompi_errhandler_t *errhandler, ompi_communicator_t **newcomm);
 
 /**
+ * create an intercommunicator
+ */
+int ompi_intercomm_create (ompi_communicator_t *local_comm, int local_leader, ompi_communicator_t *bridge_comm,
+                           int remote_leader, int tag, ompi_communicator_t **newintercomm);
+
+/**
+ * Non-collective create intercommunicator based on a group with no base communicator
+ */
+int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_leader,
+                                       ompi_group_t *remote_group, int remote_leader, const char *tag,
+                                       opal_info_t *info, ompi_errhandler_t *errhandler,
+                                       ompi_communicator_t **newintercomm);
+
+/**
  * Take an almost complete communicator and reserve the CID as well
  * as activate it (initialize the collective and the topologies).
  */
@@ -733,6 +748,7 @@ int ompi_comm_finalize (void);
  * @param[in]  copy_topocomponent whether to copy the topology
  * @param[in]  local_group        local process group (may be NULL if local_ranks array supplied)
  * @param[in]  remote_group       remote process group (may be NULL)
+ * @param[in]  flags              flags to control the behavior of ompi_comm_set_nb
  */
 OMPI_DECLSPEC int ompi_comm_set ( ompi_communicator_t** newcomm,
                                   ompi_communicator_t* oldcomm,
@@ -742,9 +758,20 @@ OMPI_DECLSPEC int ompi_comm_set ( ompi_communicator_t** newcomm,
                                   int *remote_ranks,
                                   opal_hash_table_t *attr,
                                   ompi_errhandler_t *errh,
-                                  bool copy_topocomponent,
                                   ompi_group_t *local_group,
-                                  ompi_group_t *remote_group   );
+                                  ompi_group_t *remote_group,
+                                  uint32_t flags);
+
+/**
+ * @brief Don't duplicate the local communicator. just reference it directly. This
+ *        flag passes ownership to the new communicator.
+ */
+#define OMPI_COMM_SET_FLAG_LOCAL_COMM_NODUP 0x00000001
+
+/**
+ * @brief Copy the topology from the old communicator
+ */
+#define OMPI_COMM_SET_FLAG_COPY_TOPOLOGY    0x00000002
 
 /**
  * This is THE routine, where all the communicator stuff
@@ -761,6 +788,7 @@ OMPI_DECLSPEC int ompi_comm_set ( ompi_communicator_t** newcomm,
  * @param[in]  copy_topocomponent whether to copy the topology
  * @param[in]  local_group        local process group (may be NULL if local_ranks array supplied)
  * @param[in]  remote_group       remote process group (may be NULL)
+ * @param[in]  flags              flags to control the behavior of ompi_comm_set_nb
  * @param[out] req                ompi_request_t object for tracking completion
  */
 OMPI_DECLSPEC int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
@@ -771,30 +799,10 @@ OMPI_DECLSPEC int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
                                      int *remote_ranks,
                                      opal_hash_table_t *attr,
                                      ompi_errhandler_t *errh,
-                                     bool copy_topocomponent,
                                      ompi_group_t *local_group,
                                      ompi_group_t *remote_group,
-                                     ompi_request_t **req );
-
-/**
- * This is a short-hand routine used in intercomm_create.
- * The routine makes sure, that all processes have afterwards
- * a list of ompi_proc_t pointers for the remote group.
- */
-int ompi_comm_get_rprocs ( ompi_communicator_t *local_comm,
-                           ompi_communicator_t *bridge_comm,
-                           int local_leader,
-                           int remote_leader,
-                           int tag,
-                           int rsize,
-                           struct ompi_proc_t ***prprocs );
-
-/**
- * This routine verifies, whether local_group and remote group are overlapping
- * in intercomm_create
- */
-int ompi_comm_overlapping_groups (int size, struct ompi_proc_t ** lprocs,
-                                  int rsize, struct ompi_proc_t ** rprocs);
+                                     uint32_t flags,
+                                     ompi_request_t **req);
 
 /**
  * This is a routine determining whether the local or the

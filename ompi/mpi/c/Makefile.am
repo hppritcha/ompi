@@ -267,6 +267,7 @@ libmpi_c_mpi_la_SOURCES = \
         init_thread.c \
         initialized.c \
         intercomm_create.c \
+        intercomm_create_from_groups.c \
         intercomm_merge.c \
         iprobe.c \
         irecv.c \

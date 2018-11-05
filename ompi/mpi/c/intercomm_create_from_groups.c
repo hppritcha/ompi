@@ -38,17 +38,17 @@
 
 #if OMPI_BUILD_MPI_PROFILING
 #if OPAL_HAVE_WEAK_SYMBOLS
-#pragma weak MPI_Intercomm_create = PMPI_Intercomm_create
+#pragma weak MPI_Intercomm_create_from_groups = PMPI_Intercomm_create_from_groups
 #endif
-#define MPI_Intercomm_create PMPI_Intercomm_create
+#define MPI_Intercomm_create_from_groups PMPI_Intercomm_create_from_groups
 #endif
 
-static const char FUNC_NAME[] = "MPI_Intercomm_create";
+static const char FUNC_NAME[] = "MPI_Intercomm_create_from_groups";
 
 
-int MPI_Intercomm_create(MPI_Comm local_comm, int local_leader,
-                         MPI_Comm bridge_comm, int remote_leader,
-                         int tag, MPI_Comm *newintercomm)
+int MPI_Intercomm_create_from_groups (MPI_Group local_group, int local_leader, MPI_Group remote_group,
+                                      int remote_leader, const char *tag, MPI_Info info, MPI_Errhandler errhandler,
+                                      MPI_Comm *newintercomm)
 {
     int rc;
 
@@ -57,29 +57,36 @@ int MPI_Intercomm_create(MPI_Comm local_comm, int local_leader,
         memchecker_comm(bridge_comm);
     );
 
-    if ( MPI_PARAM_CHECK ) {
+    if (MPI_PARAM_CHECK) {
         OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
 
-        if ( ompi_comm_invalid ( local_comm ) ||
-             ( local_comm->c_flags & OMPI_COMM_INTER ) )
-            return OMPI_ERRHANDLER_INVOKE ( MPI_COMM_WORLD, MPI_ERR_COMM,
-                                            FUNC_NAME);
+        if (NULL == errhandler) {
+            return MPI_ERR_ARG;
+        }
 
-        if ( NULL == newintercomm )
-            return OMPI_ERRHANDLER_INVOKE ( local_comm, MPI_ERR_ARG,
-                                            FUNC_NAME);
-
-        /* if ( tag < 0 || tag > MPI_TAG_UB )
-             return OMPI_ERRHANDLER_INVOKE ( local_comm, MPI_ERR_ARG,
-                                             FUNC_NAME);
-        */
+        if (NULL == local_group || NULL == remote_group) {
+            return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
+                                           MPI_ERR_GROUP, FUNC_NAME);
+        }
+        if (NULL == info) {
+            return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
+                                           MPI_ERR_INFO, FUNC_NAME);
+        }
+        if (NULL == tag) {
+            return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
+                                           MPI_ERR_TAG, FUNC_NAME);
+        }
+        if (NULL == newintercomm) {
+            return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
+                                           MPI_ERR_ARG, FUNC_NAME);
+        }
     }
 
     OPAL_CR_ENTER_LIBRARY();
-    rc = ompi_intercomm_create (local_comm, local_leader, bridge_comm, remote_leader, tag,
-                                newintercomm);
+    rc = ompi_intercomm_create_from_groups (local_group, local_leader, remote_group, remote_leader, tag,
+                                            &info->super, errhandler, newintercomm);
     OPAL_CR_EXIT_LIBRARY();
 
-    OMPI_ERRHANDLER_RETURN (rc, local_comm, rc, FUNC_NAME);
+    OMPI_ERRHANDLER_RETURN (rc, MPI_COMM_SELF, rc, FUNC_NAME);
 }
 

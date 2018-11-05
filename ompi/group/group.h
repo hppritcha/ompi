@@ -376,15 +376,15 @@ static inline ompi_proc_t *ompi_group_get_proc_ptr (ompi_group_t *group, int ran
 #if OMPI_GROUP_SPARSE
     do {
         if (OMPI_GROUP_IS_DENSE(group)) {
-            return ompi_group_dense_lookup (group, rank, allocate);
+            break;
         }
         int ranks1 = rank;
         ompi_group_translate_ranks (group, 1, &ranks1, group->grp_parent_group_ptr, &rank);
         group = group->grp_parent_group_ptr;
     } while (1);
-#else
-    return ompi_group_dense_lookup (group, rank, allocate);
 #endif
+
+    return ompi_group_dense_lookup (group, rank, allocate);
 }
 
 /**
@@ -394,9 +394,23 @@ static inline ompi_proc_t *ompi_group_get_proc_ptr (ompi_group_t *group, int ran
  * or cached in the proc hash table) or a sentinel value representing the proc. This
  * differs from ompi_group_get_proc_ptr() which returns the ompi_proc_t or NULL.
  */
-ompi_proc_t *ompi_group_get_proc_ptr_raw (ompi_group_t *group, int rank);
+static inline ompi_proc_t *ompi_group_get_proc_ptr_raw (const ompi_group_t *group, int rank)
+{
+#if OMPI_GROUP_SPARSE
+    do {
+        if (OMPI_GROUP_IS_DENSE(group)) {
+            break;
+        }
+        int ranks1 = rank;
+        ompi_group_translate_ranks (group, 1, &ranks1, group->grp_parent_group_ptr, &rank);
+        group = group->grp_parent_group_ptr;
+    } while (1);
+#endif
 
-static inline opal_process_name_t ompi_group_get_proc_name (ompi_group_t *group, int rank)
+    return group->grp_proc_pointers[rank];
+}
+
+static inline opal_process_name_t ompi_group_get_proc_name (const ompi_group_t *group, int rank)
 {
     ompi_proc_t *proc = ompi_group_get_proc_ptr_raw (group, rank);
     if (ompi_proc_is_sentinel (proc)) {
@@ -429,6 +443,17 @@ bool ompi_group_have_remote_peers (ompi_group_t *group);
  * Count the number of processes on the local node.
  */
 int ompi_group_count_local_peers (ompi_group_t *group);
+
+/**
+ * @brief Check if groups overlap
+ *
+ * @param[in] group1    ompi group
+ * @param[in] group2    ompi group
+ *
+ * @returns true if any proc in group1 is also in group2
+ * @returns false otherwise
+ */
+bool ompi_group_overlap (const ompi_group_t *group1, const ompi_group_t *group2);
 
 /**
  *  Function to print the group info

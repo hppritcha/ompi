@@ -334,15 +334,21 @@ static int ompi_comm_nextcid_ext_nb (ompi_communicator_t *newcomm, ompi_communic
         block = &comm->c_contextidb;
     }
 
-    if (OMPI_COMM_CID_GROUP == mode || OMPI_COMM_CID_GROUP_NEW == mode ||
-        !ompi_comm_extended_cid_block_available (&comm->c_contextidb)) {
-        /* need a new block. it will be either assigned the the new communicator (MPI_Comm_create*_group)
-         * or the parent (which has no more CIDs in its block) */
-        rc = ompi_comm_ext_cid_new_block (newcomm, comm, block, arg0, arg1, send_first, mode, req);
-        if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
-            return rc;
-        }
+    if (NULL == arg1) {
+        if (OMPI_COMM_CID_GROUP == mode || OMPI_COMM_CID_GROUP_NEW == mode ||
+            !ompi_comm_extended_cid_block_available (&comm->c_contextidb)) {
+            /* need a new block. it will be either assigned the the new communicator (MPI_Comm_create*_group)
+             * or the parent (which has no more CIDs in its block) */
+            rc = ompi_comm_ext_cid_new_block (newcomm, comm, block, arg0, arg1, send_first, mode, req);
+            if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+                return rc;
+            }
 
+            is_new_block = true;
+        }
+    } else {
+        /* got a block already */
+        *block = *((ompi_comm_extended_cid_block_t *) arg1);
         is_new_block = true;
     }
 

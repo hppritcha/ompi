@@ -53,6 +53,8 @@
 #include "ompi/mca/pml/pml.h"
 #include "ompi/request/request.h"
 
+#include "ompi/runtime/params.h"
+
 /*
 ** sort-function for MPI_Comm_split
 */
@@ -91,6 +93,10 @@ static int ompi_comm_idup_internal (ompi_communicator_t *comm, ompi_group_t *gro
                                     opal_info_t *info, ompi_communicator_t **newcomm, ompi_request_t **req);
 
 
+static int ompi_comm_get_rprocs (ompi_communicator_t *local_comm, ompi_communicator_t *bridge_comm,
+                                 int local_leader, int remote_leader, int tag, int rsize,
+                                 ompi_proc_t ***rprocs);
+
 /**********************************************************************/
 /**********************************************************************/
 /**********************************************************************/
@@ -107,15 +113,15 @@ int ompi_comm_set ( ompi_communicator_t **ncomm,
                     int *remote_ranks,
                     opal_hash_table_t *attr,
                     ompi_errhandler_t *errh,
-                    bool copy_topocomponent,
                     ompi_group_t *local_group,
-                    ompi_group_t *remote_group )
+                    ompi_group_t *remote_group,
+                    uint32_t flags)
 {
     ompi_request_t *req;
     int rc;
 
     rc = ompi_comm_set_nb (ncomm, oldcomm, local_size, local_ranks, remote_size, remote_ranks,
-                           attr, errh, copy_topocomponent, local_group, remote_group, &req);
+                           attr, errh, local_group, remote_group, flags, &req);
     if (OMPI_SUCCESS != rc) {
         return rc;
     }
@@ -131,7 +137,7 @@ static int ompi_comm_set_simple (ompi_communicator_t **ncomm, ompi_errhandler_t 
                                  ompi_group_t *local_group)
 {
     return ompi_comm_set (ncomm, NULL, local_group->grp_proc_count, NULL, 0, NULL, NULL, errhandler,
-			  false, local_group, NULL);
+			  local_group, NULL, 0);
 }
 
 
@@ -139,19 +145,13 @@ static int ompi_comm_set_simple (ompi_communicator_t **ncomm, ompi_errhandler_t 
  * if remote_group == &ompi_mpi_group_null, then the new communicator
  * is forced to be an inter communicator.
  */
-int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
-                       ompi_communicator_t *oldcomm,
-                       int local_size,
-                       int *local_ranks,
-                       int remote_size,
-                       int *remote_ranks,
-                       opal_hash_table_t *attr,
-                       ompi_errhandler_t *errh,
-                       bool copy_topocomponent,
-                       ompi_group_t *local_group,
-                       ompi_group_t *remote_group,
-                       ompi_request_t **req )
+int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm, int local_size,
+                      int *local_ranks, int remote_size, int *remote_ranks, opal_hash_table_t *attr,
+                      ompi_errhandler_t *errh, ompi_group_t *local_group, ompi_group_t *remote_group,
+                      uint32_t flags, ompi_request_t **req)
 {
+    bool copy_topocomponent = !!(flags & OMPI_COMM_SET_FLAG_COPY_TOPOLOGY);
+    bool dup_comm = !(OMPI_COMM_SET_FLAG_LOCAL_COMM_NODUP);
     ompi_communicator_t *newcomm = NULL;
     int ret;
 
@@ -205,11 +205,17 @@ int ompi_comm_set_nb ( ompi_communicator_t **ncomm,
 
         newcomm->c_flags |= OMPI_COMM_INTER;
 
-        old_localcomm = OMPI_COMM_IS_INTRA(oldcomm) ? oldcomm : oldcomm->c_local_comm;
+        if (dup_comm) {
+            old_localcomm = OMPI_COMM_IS_INTRA(oldcomm) ? oldcomm : oldcomm->c_local_comm;
 
-        /* NTH: use internal idup function that takes a local group argument */
-        ompi_comm_idup_internal (old_localcomm, newcomm->c_local_group, NULL, NULL,
-                                 &newcomm->c_local_comm, req);
+            /* NTH: use internal idup function that takes a local group argument */
+            ompi_comm_idup_internal (old_localcomm, newcomm->c_local_group, NULL, NULL,
+                                     &newcomm->c_local_comm, req);
+        } else {
+            /* take ownership of the old communicator (it must be an intracommunicator) */
+            assert (OMPI_COMM_IS_INTRA(oldcomm));
+            newcomm->c_local_comm = oldcomm;
+        }
     } else {
         newcomm->c_remote_group = newcomm->c_local_group;
         OBJ_RETAIN(newcomm->c_remote_group);
@@ -356,9 +362,9 @@ int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
                          rranks,                   /* remote_ranks */
                          NULL,                     /* attrs */
                          comm->error_handler,      /* error handler */
-                         false,                    /* dont copy the topo */
                          group,                    /* local group */
-                         remote_group);            /* remote group */
+                         remote_group,             /* remote group */
+                         0);                       /* flags */
 
     if ( OMPI_SUCCESS != rc ) {
         goto exit;
@@ -580,9 +586,9 @@ int ompi_comm_split_with_info( ompi_communicator_t* comm, int color, int key,
                          rranks,             /* remote_ranks */
                          NULL,               /* attrs */
                          comm->error_handler,/* error handler */
-                         pass_on_topo,
-                         local_group,       /* local group */
-                         remote_group);     /* remote group */
+                         local_group,        /* local group */
+                         remote_group,       /* remote group */
+                         pass_on_topo ? OMPI_COMM_SET_FLAG_COPY_TOPOLOGY : 0); /* flags */
 
     if ( OMPI_SUCCESS != rc  ) {
         goto exit;
@@ -920,8 +926,7 @@ int ompi_comm_split_type (ompi_communicator_t *comm, int split_type, int key,
 
     do {
         rc = ompi_comm_set (&newcomp, comm, my_size, lranks, my_rsize,
-                            rranks, NULL, comm->error_handler, false,
-                            NULL, NULL);
+                            rranks, NULL, comm->error_handler, NULL, NULL, 0);
         if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
             break;
         }
@@ -1014,9 +1019,9 @@ int ompi_comm_dup_with_info ( ompi_communicator_t * comm, opal_info_t *info, omp
                           NULL,                                   /* remote_procs */
                           comm->c_keyhash,                        /* attrs */
                           comm->error_handler,                    /* error handler */
-                          true,                                   /* copy the topo */
                           comm->c_local_group,                    /* local group */
-                          remote_group );                         /* remote group */
+                          remote_group,                           /* remote group */
+                          OMPI_COMM_SET_FLAG_COPY_TOPOLOGY);      /* flags */
     if ( OMPI_SUCCESS != rc) {
         return rc;
     }
@@ -1110,9 +1115,9 @@ static int ompi_comm_idup_internal (ompi_communicator_t *comm, ompi_group_t *gro
                             NULL,                                   /* remote_procs */
                             comm->c_keyhash,                        /* attrs */
                             comm->error_handler,                    /* error handler */
-                            true,                                   /* copy the topo */
                             group,                                  /* local group */
                             remote_group,                           /* remote group */
+                            OMPI_COMM_SET_FLAG_COPY_TOPOLOGY,       /* flags */
                             subreq);                                /* new subrequest */
     if (OMPI_SUCCESS != rc) {
         ompi_comm_request_return (request);
@@ -1220,9 +1225,9 @@ int ompi_comm_create_group (ompi_communicator_t *comm, ompi_group_t *group, int 
                           NULL,                                   /* remote_procs */
                           comm->c_keyhash,                        /* attrs */
                           comm->error_handler,                    /* error handler */
-                          true,                                   /* copy the topo */
                           group,                                  /* local group */
-                          NULL);                                  /* remote group */
+                          NULL,                                   /* remote group */
+                          OMPI_COMM_SET_FLAG_COPY_TOPOLOGY);      /* flags */
     if ( OMPI_SUCCESS != rc) {
         return rc;
     }
@@ -1285,6 +1290,285 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
     }
 
     *newcomm = newcomp;
+    return MPI_SUCCESS;
+}
+
+int ompi_intercomm_create (ompi_communicator_t *local_comm, int local_leader, ompi_communicator_t *bridge_comm,
+                           int remote_leader, int tag, ompi_communicator_t **newintercomm)
+{
+    int local_size = 0, local_rank = 0, lleader = 0, rleader = 0, rc, rsize = 0;
+    struct ompi_proc_t **rprocs;
+    ompi_communicator_t *newcomp;
+    ompi_group_t *new_group_pointer;
+
+    *newintercomm = MPI_COMM_NULL;
+
+    local_size = ompi_comm_size ( local_comm );
+    local_rank = ompi_comm_rank ( local_comm );
+    lleader = local_leader;
+    rleader = remote_leader;
+
+    if ( MPI_PARAM_CHECK ) {
+        if ( (0 > local_leader) || (local_leader >= local_size) ) {
+            return OMPI_ERR_BAD_PARAM;
+        }
+
+        /* remember that the remote_leader and bridge_comm arguments
+           just have to be valid at the local_leader */
+        if ( local_rank == local_leader ) {
+            if (ompi_comm_invalid (bridge_comm) || (bridge_comm->c_flags & OMPI_COMM_INTER)) {
+                return MPI_ERR_COMM;
+            }
+
+            if ((remote_leader < 0) || (remote_leader >= ompi_comm_size(bridge_comm))) {
+                return OMPI_ERR_BAD_PARAM;
+            }
+        } /* if ( local_rank == local_leader ) */
+    }
+
+    if (local_rank == local_leader) {
+        MPI_Request req;
+
+        /* local leader exchange group sizes lists */
+        rc = MCA_PML_CALL(irecv (&rsize, 1, MPI_INT, rleader, tag, bridge_comm, &req));
+        if ( rc != MPI_SUCCESS ) {
+            return rc;
+        }
+        rc = MCA_PML_CALL(send (&local_size, 1, MPI_INT, rleader, tag,
+                                MCA_PML_BASE_SEND_STANDARD, bridge_comm));
+        if ( rc != MPI_SUCCESS ) {
+            return rc;
+        }
+        rc = ompi_request_wait (&req, MPI_STATUS_IGNORE);
+        if ( rc != MPI_SUCCESS ) {
+            return rc;
+        }
+    }
+
+    /* bcast size and list of remote processes to all processes in local_comm */
+    rc = local_comm->c_coll->coll_bcast ( &rsize, 1, MPI_INT, lleader,
+                                         local_comm,
+                                         local_comm->c_coll->coll_bcast_module);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
+
+    rc = ompi_comm_get_rprocs (local_comm, bridge_comm, lleader, remote_leader, tag, rsize, &rprocs);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
+
+    /* put group elements in the list */
+    new_group_pointer = ompi_group_allocate_plist_w_procs (rprocs, rsize);
+    /* don't need the rprocs array anymore */
+    free (rprocs);
+    if (OPAL_UNLIKELY(NULL == new_group_pointer)) {
+        return MPI_ERR_GROUP;
+    }
+
+    if (MPI_PARAM_CHECK) {
+        bool overlap = ompi_group_overlap (local_comm->c_local_group, new_group_pointer);
+        if (overlap && MPI_THREAD_MULTIPLE != ompi_mpi_thread_provided) {
+            ompi_group_free (&new_group_pointer);
+            return OMPI_ERR_BAD_PARAM;
+        }
+    }
+
+    rc = ompi_comm_set (&newcomp,                                     /* new comm */
+                        local_comm,                                   /* old comm */
+                        local_comm->c_local_group->grp_proc_count,    /* local_size */
+                        NULL,                                         /* local_procs*/
+                        rsize,                                        /* remote_size */
+                        NULL,                                         /* remote_procs */
+                        NULL,                                         /* attrs */
+                        local_comm->error_handler,                    /* error handler*/
+                        local_comm->c_local_group,                    /* local group */
+                        new_group_pointer,                            /* remote group */
+                        0);                                           /* flags */
+
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        ompi_group_free (&new_group_pointer);
+        return rc;
+    }
+
+    /* Determine context id. It is identical to f_2_c_handle */
+    rc = ompi_comm_nextcid (newcomp, local_comm, bridge_comm, &lleader,
+                            &rleader, false, OMPI_COMM_CID_INTRA_BRIDGE);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        ompi_comm_free (&newcomp);
+        return rc;
+    }
+
+    /* activate comm and init coll-module */
+    rc = ompi_comm_activate (&newcomp, local_comm, bridge_comm, &lleader, &rleader,
+                             false, OMPI_COMM_CID_INTRA_BRIDGE);
+    if ( MPI_SUCCESS != rc ) {
+        ompi_comm_free (&newcomp);
+        return rc;
+    }
+
+    *newintercomm = newcomp;
+
+    return OMPI_SUCCESS;
+}
+
+int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_leader,
+                                       ompi_group_t *remote_group, int remote_leader, const char *tag,
+                                       opal_info_t *info, ompi_errhandler_t *errhandler,
+                                       ompi_communicator_t **newintercomm)
+{
+    ompi_communicator_t *newcomp = NULL, *local_comm, *leader_comm = MPI_COMM_NULL;
+    ompi_comm_extended_cid_block_t new_block;
+    bool i_am_leader = local_leader == local_group->grp_my_rank;
+    ompi_proc_t **rprocs;
+    uint64_t data[4];
+    int leader_comm_remote_leader;
+    char *sub_tag = NULL;
+    size_t rsize;
+    int rc;
+
+    *newintercomm = MPI_COMM_NULL;
+
+    /* create a local communicator first. create a unique tag for this communicator */
+    asprintf (&sub_tag, "%s-OMPIi-%s", tag, OPAL_NAME_PRINT(ompi_group_get_proc_name (local_group, local_leader)));
+    if (OPAL_UNLIKELY(NULL == sub_tag)) {
+        return OMPI_ERR_OUT_OF_RESOURCE;
+    }
+
+    rc = ompi_comm_create_from_group (local_group, sub_tag, info, errhandler, &local_comm);
+    free (sub_tag);
+    sub_tag = NULL;
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
+
+    if (i_am_leader) {
+        /* create a bridge communicator for the leaders (so we can use the existing collectives
+         * for activation). there are probably more efficient ways to do this but for intercommunicator
+         * creation is not considered a performance critical operation. */
+        ompi_proc_t *leader_procs[2];
+        ompi_group_t *leader_group;
+
+        leader_procs[0] = ompi_group_get_proc_ptr (local_group, local_leader, true);
+        leader_procs[1] = ompi_group_get_proc_ptr (remote_group, remote_leader, true);
+
+        if (leader_procs[0] != leader_procs[1]) {
+            /* NTH: they are definitely different (can the ever be the same) */
+            if (leader_procs[0]->super.proc_name.jobid > leader_procs[1]->super.proc_name.jobid ||
+                (leader_procs[0]->super.proc_name.jobid == leader_procs[1]->super.proc_name.jobid &&
+                 leader_procs[0]->super.proc_name.vpid > leader_procs[1]->super.proc_name.vpid)) {
+                ompi_proc_t *tmp = leader_procs[0];
+                leader_procs[0] = leader_procs[1];
+                leader_procs[1] = tmp;
+            }
+
+            /* create a unique tag for allocating the leader communicator. we can eliminate this step
+             * if we take a CID from the newly allocated block belonging to local_comm. this is
+             * a note to make this change at a later time. */
+            asprintf (&sub_tag, "%s-OMPIi-LC", tag);
+            if (OPAL_UNLIKELY(NULL == sub_tag)) {
+                ompi_comm_free (&local_comm);
+                return OMPI_ERR_OUT_OF_RESOURCE;
+            }
+
+            leader_group = ompi_group_allocate_plist_w_procs (leader_procs, 2);
+            if (OPAL_UNLIKELY(NULL == leader_group)) {
+                free (sub_tag);
+                ompi_comm_free (&local_comm);
+                return OMPI_ERR_OUT_OF_RESOURCE;
+            }
+
+            /* remote leader is whichever rank I am not */
+            leader_comm_remote_leader = !(leader_group->grp_my_rank);
+
+            rc = ompi_comm_create_from_group (leader_group, sub_tag, info, errhandler, &leader_comm);
+            OBJ_RELEASE(leader_group);
+            free (sub_tag);
+            sub_tag = NULL;
+            if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+                ompi_comm_free (&local_comm);
+                return rc;
+            }
+
+            /* grab a CID for the intercomm while we are at it */
+            ompi_comm_extended_cid_block_new (&leader_comm->c_contextidb, &new_block, false);
+
+            data[0] = remote_group->grp_proc_count;
+            /* store the relevant new_block data */
+            data[1] = new_block.block_cid.cid_base;
+            data[2] = new_block.block_cid.cid_sub.u64;
+            data[3] = new_block.block_level;
+        }
+
+        rsize = remote_group->grp_proc_count;
+    }
+
+    /* bcast size and list of remote processes to all processes in local_comm */
+    rc = local_comm->c_coll->coll_bcast (data, 4, MPI_UINT64_T, local_leader, local_comm,
+                                         local_comm->c_coll->coll_bcast_module);
+    rsize = data[0];
+    if (OPAL_UNLIKELY(OPAL_SUCCESS != rc)) {
+        ompi_comm_free (&local_comm);
+        return rc;
+    }
+
+    /* using 0 for the tag because we control both local_comm and leader_comm */
+    rprocs = ompi_comm_get_rprocs (local_comm, leader_comm, local_leader, remote_leader, 0, rsize);
+    if (OPAL_UNLIKELY(NULL == rprocs)) {
+        ompi_comm_free (&local_comm);
+        return OMPI_ERR_OUT_OF_RESOURCE;
+    }
+
+    if (!i_am_leader) {
+        /* create a new group containing the remote processes for non-leader ranks */
+        remote_group = ompi_group_allocate_plist_w_procs (rprocs, rsize);
+    } else {
+        OBJ_RETAIN(remote_group);
+    }
+
+    rc = ompi_comm_set (&newcomp, local_comm, local_group->grp_proc_count, NULL, remote_group->grp_proc_count,
+                        NULL, NULL, errhandler, local_group, remote_group, OMPI_COMM_SET_FLAG_LOCAL_COMM_NODUP);
+    OBJ_RELEASE(remote_group);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        ompi_comm_free (&local_comm);
+        return rc;
+    }
+
+    /* will be using a communicator ID derived from the bridge communicator to save some time */
+    new_block.block_cid.cid_base = data[1];
+    new_block.block_cid.cid_sub.u64 = data[2];
+    new_block.block_nextsub = 0;
+    new_block.block_nexttag = 0;
+    new_block.block_level = (int8_t) data[3];
+
+    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, &new_block, false, OMPI_COMM_CID_GROUP_NEW);
+    if ( OMPI_SUCCESS != rc ) {
+        OBJ_RELEASE(newcomp);
+        return rc;
+    }
+
+    /* Set name for debugging purposes */
+    snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI INTERCOMM %s FROM GROUP", ompi_comm_print_cid (newcomp));
+
+    // Copy info if there is one.
+    newcomp->super.s_info = OBJ_NEW(opal_info_t);
+    if (info) {
+        opal_info_dup(info, &(newcomp->super.s_info));
+    }
+
+    /* activate communicator and init coll-module */
+    rc = ompi_comm_activate (&newcomp, local_comm, leader_comm, &tag, NULL, false, OMPI_COMM_CID_INTRA_BRIDGE);
+    if (MPI_COMM_NULL != leader_comm) {
+        ompi_comm_free (&leader_comm);
+    }
+
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        ompi_comm_free (&newcomp);
+        return rc;
+    }
+
+    *newintercomm = newcomp;
+
     return MPI_SUCCESS;
 }
 
@@ -1578,13 +1862,13 @@ int ompi_comm_free( ompi_communicator_t **comm )
 /**********************************************************************/
 /**********************************************************************/
 /**********************************************************************/
-int ompi_comm_get_rprocs ( ompi_communicator_t *local_comm,
-                           ompi_communicator_t *bridge_comm,
-                           int local_leader,
-                           int remote_leader,
-                           int tag,
-                           int rsize,
-                           ompi_proc_t ***prprocs )
+/**
+ * This is a short-hand routine used in intercomm_create.
+ * The routine makes sure, that all processes have afterwards
+ * a list of ompi_proc_t pointers for the remote group.
+ */
+int ompi_comm_get_rprocs (ompi_communicator_t *local_comm, ompi_communicator_t *bridge_comm,
+			  int local_leader, int remote_leader, int tag, int rsize, ompi_proc_t ***prprocs)
 {
     MPI_Request req;
     int rc = OMPI_SUCCESS;
@@ -1750,31 +2034,6 @@ int ompi_comm_get_rprocs ( ompi_communicator_t *local_comm,
     }
 
     *prprocs = rprocs;
-    return rc;
-}
-/**********************************************************************/
-/**********************************************************************/
-/**********************************************************************/
-/**
- * This routine verifies, whether local_group and remote group are overlapping
- * in intercomm_create
- */
-int ompi_comm_overlapping_groups (int size, ompi_proc_t **lprocs,
-                                  int rsize, ompi_proc_t ** rprocs)
-
-{
-    int rc=OMPI_SUCCESS;
-    int i,j;
-
-    for (i=0; i<size; i++) {
-        for ( j=0; j<rsize; j++) {
-            if ( lprocs[i] == rprocs[j] ) {
-                rc = MPI_ERR_COMM;
-                return rc;
-            }
-        }
-    }
-
     return rc;
 }
 /**********************************************************************/
