@@ -182,6 +182,7 @@ libmpi_c_mpi_la_SOURCES = \
         file_iwrite_all.c \
         file_iwrite_shared.c \
         file_open.c \
+        file_open_from_group.c \
         file_preallocate.c \
         file_read_all_begin.c \
         file_read_all.c \
