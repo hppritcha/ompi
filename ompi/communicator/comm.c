@@ -1363,8 +1363,7 @@ int ompi_intercomm_create (ompi_communicator_t *local_comm, int local_leader, om
     }
 
     /* bcast size and list of remote processes to all processes in local_comm */
-    rc = local_comm->c_coll->coll_bcast ( &rsize, 1, MPI_INT, lleader,
-                                         local_comm,
+    rc = local_comm->c_coll->coll_bcast (&rsize, 1, MPI_INT, lleader, local_comm,
                                          local_comm->c_coll->coll_bcast_module);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;
@@ -1462,8 +1461,10 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         /* create a bridge communicator for the leaders (so we can use the existing collectives
          * for activation). there are probably more efficient ways to do this but for intercommunicator
          * creation is not considered a performance critical operation. */
-        ompi_proc_t *leader_procs[2], *my_proc;
+        ompi_proc_t **leader_procs, *my_proc;
         ompi_group_t *leader_group;
+
+        leader_procs = calloc (2, sizeof (*leader_procs));
 
         my_proc = leader_procs[0] = ompi_group_get_proc_ptr (local_group, local_leader, true);
         leader_procs[1] = ompi_group_get_proc_ptr (remote_group, remote_leader, true);
@@ -1501,7 +1502,6 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
             rc = ompi_comm_create_from_group (leader_group, sub_tag, info, errhandler, &leader_comm);
             OBJ_RELEASE(leader_group);
             free (sub_tag);
-            sub_tag = NULL;
             if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
                 ompi_comm_free (&local_comm);
                 return rc;
@@ -1515,6 +1515,8 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
             data[1] = new_block.block_cid.cid_base;
             data[2] = new_block.block_cid.cid_sub.u64;
             data[3] = new_block.block_level;
+        } else {
+            free (leader_procs);
         }
 
         rsize = remote_group->grp_proc_count;
@@ -1530,7 +1532,7 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
     }
 
     /* using 0 for the tag because we control both local_comm and leader_comm */
-    rprocs = ompi_comm_get_rprocs (local_comm, leader_comm, local_leader, remote_leader, 0, rsize);
+    rprocs = ompi_comm_get_rprocs (local_comm, leader_comm, local_leader, leader_comm_remote_leader, 0, rsize);
     if (OPAL_UNLIKELY(NULL == rprocs)) {
         ompi_comm_free (&local_comm);
         return OMPI_ERR_OUT_OF_RESOURCE;
@@ -1579,7 +1581,8 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
     }
 
     /* activate communicator and init coll-module */
-    rc = ompi_comm_activate (&newcomp, local_comm, leader_comm, &tag, NULL, false, OMPI_COMM_CID_INTRA_BRIDGE);
+    rc = ompi_comm_activate (&newcomp, local_comm, leader_comm, &local_leader, &leader_comm_remote_leader,
+                             false, OMPI_COMM_CID_INTRA_BRIDGE);
     if (MPI_COMM_NULL != leader_comm) {
         ompi_comm_free (&leader_comm);
     }
