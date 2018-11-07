@@ -24,6 +24,8 @@
  * Copyright (c) 2015      Mellanox Technologies. All rights reserved.
  * Copyright (c) 2017      IBM Corporation. All rights reserved.
  * Copyright (c) 2021      Nanook Consulting.  All rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -283,8 +285,8 @@ int ompi_comm_group ( ompi_communicator_t* comm, ompi_group_t **group )
 /*
 ** Counterpart to MPI_Comm_create. To be used within OMPI.
 */
-int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
-                       ompi_communicator_t **newcomm )
+int ompi_comm_create_w_info (ompi_communicator_t *comm, ompi_group_t *group, opal_info_t *info,
+                             ompi_communicator_t **newcomm)
 {
     ompi_communicator_t *newcomp = NULL;
     int rsize;
@@ -376,6 +378,12 @@ int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
         goto exit;
     }
 
+    /* Copy info if there is one. */
+    newcomp->super.s_info = OBJ_NEW(opal_info_t);
+    if (info) {
+        opal_info_dup(info, &(newcomp->super.s_info));
+    }
+
     /* Set name for debugging purposes */
     snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMMUNICATOR %s CREATE FROM %s",
 	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
@@ -409,6 +417,11 @@ int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
     return ( rc );
 }
 
+int ompi_comm_create ( ompi_communicator_t *comm, ompi_group_t *group,
+                       ompi_communicator_t **newcomm )
+{
+    return ompi_comm_create_w_info (comm, group, NULL, newcomm);
+}
 
 /**********************************************************************/
 /**********************************************************************/
@@ -1259,7 +1272,7 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
                                  ompi_errhandler_t *errhandler, ompi_communicator_t **newcomm)
 {
     ompi_communicator_t *newcomp = NULL;
-    int mode = OMPI_COMM_CID_GROUP_NEW, rc = OMPI_SUCCESS;
+    int rc;
 
     *newcomm = MPI_COMM_NULL;
 
@@ -1269,7 +1282,8 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
     }
 
     /* Determine context id. It is identical to f_2_c_handle */
-    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, NULL, false, mode);
+    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, NULL, false,
+                            OMPI_COMM_CID_GROUP_NEW);
     if ( OMPI_SUCCESS != rc ) {
         return rc;
     }
@@ -1284,8 +1298,11 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
         opal_info_dup(info, &(newcomp->super.s_info));
     }
 
-    /* activate communicator and init coll-module */
-    rc = ompi_comm_activate (&newcomp, NULL, NULL, &tag, NULL, false, mode);
+    /* activate communicator and init coll-module. use the group allreduce implementation as
+     * no collective module has yet been selected. the tag does not matter as any tag will
+     * be unique on the new communicator. */
+    rc = ompi_comm_activate (&newcomp, newcomp, NULL, &(int) {0xfeed}, NULL,
+                             false, OMPI_COMM_CID_GROUP);
     if ( OMPI_SUCCESS != rc ) {
         return rc;
     }
@@ -1361,9 +1378,8 @@ int ompi_intercomm_create (ompi_communicator_t *local_comm, int local_leader, om
 
     /* put group elements in the list */
     new_group_pointer = ompi_group_allocate_plist_w_procs (rprocs, rsize);
-    /* don't need the rprocs array anymore */
-    free (rprocs);
     if (OPAL_UNLIKELY(NULL == new_group_pointer)) {
+        free (rprocs);
         return MPI_ERR_GROUP;
     }
 
@@ -1447,10 +1463,10 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         /* create a bridge communicator for the leaders (so we can use the existing collectives
          * for activation). there are probably more efficient ways to do this but for intercommunicator
          * creation is not considered a performance critical operation. */
-        ompi_proc_t *leader_procs[2];
+        ompi_proc_t *leader_procs[2], *my_proc;
         ompi_group_t *leader_group;
 
-        leader_procs[0] = ompi_group_get_proc_ptr (local_group, local_leader, true);
+        my_proc = leader_procs[0] = ompi_group_get_proc_ptr (local_group, local_leader, true);
         leader_procs[1] = ompi_group_get_proc_ptr (remote_group, remote_leader, true);
 
         if (leader_procs[0] != leader_procs[1]) {
@@ -1473,6 +1489,7 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
             }
 
             leader_group = ompi_group_allocate_plist_w_procs (leader_procs, 2);
+            ompi_set_group_rank (leader_group, my_proc);
             if (OPAL_UNLIKELY(NULL == leader_group)) {
                 free (sub_tag);
                 ompi_comm_free (&local_comm);
@@ -1523,6 +1540,11 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
     if (!i_am_leader) {
         /* create a new group containing the remote processes for non-leader ranks */
         remote_group = ompi_group_allocate_plist_w_procs (rprocs, rsize);
+        if (OPAL_UNLIKELY(NULL == remote_group)) {
+            free (rprocs);
+            ompi_comm_free (&local_comm);
+            return OMPI_ERR_OUT_OF_RESOURCE;
+        }
     } else {
         OBJ_RETAIN(remote_group);
     }
