@@ -153,7 +153,7 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
                       uint32_t flags, ompi_request_t **req)
 {
     bool copy_topocomponent = !!(flags & OMPI_COMM_SET_FLAG_COPY_TOPOLOGY);
-    bool dup_comm = !(OMPI_COMM_SET_FLAG_LOCAL_COMM_NODUP);
+    bool dup_comm = !(flags & OMPI_COMM_SET_FLAG_LOCAL_COMM_NODUP);
     ompi_communicator_t *newcomm = NULL;
     int ret;
 
