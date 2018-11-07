@@ -62,7 +62,7 @@ int MPI_Comm_create_from_group (MPI_Group group, const char *tag, MPI_Info info,
                                            MPI_ERR_GROUP, FUNC_NAME);
         }
 
-        if (NULL == info) {
+        if (NULL == info || ompi_info_is_freed(info)) {
             return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
                                            MPI_ERR_INFO, FUNC_NAME);
         }

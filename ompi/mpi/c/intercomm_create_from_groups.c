@@ -68,7 +68,7 @@ int MPI_Intercomm_create_from_groups (MPI_Group local_group, int local_leader, M
             return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
                                            MPI_ERR_GROUP, FUNC_NAME);
         }
-        if (NULL == info) {
+        if (NULL == info || ompi_info_is_freed(info)) {
             return ompi_errhandler_invoke (errhandler, MPI_COMM_SELF, errhandler->eh_mpi_object_type,
                                            MPI_ERR_INFO, FUNC_NAME);
         }
