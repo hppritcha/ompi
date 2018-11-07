@@ -713,11 +713,8 @@ int ompi_comm_activate_nb (ompi_communicator_t **newcomm, ompi_communicator_t *c
     ompi_request_t *subreq;
     int ret = 0;
 
-    if (NULL == comm) {
-        /* special case for MPI_Comm_create_from_group */
-        comm = *newcomm;
-    }
-
+    /* the caller should not pass NULL for comm (it may be the same as *newcomm) */
+    assert (NULL != comm);
     context = mca_comm_cid_context_alloc (*newcomm, comm, bridgecomm, arg0, arg1, "activate",
                                           send_first, mode);
     if (NULL == context) {

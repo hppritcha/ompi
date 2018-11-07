@@ -92,6 +92,7 @@ libmpi_c_mpi_la_SOURCES = \
         cancel.c \
         cart_coords.c \
         cart_create.c \
+        cart_create_from_group.c \
         cartdim_get.c \
         cart_get.c \
         cart_map.c \
@@ -130,7 +131,9 @@ libmpi_c_mpi_la_SOURCES = \
         comm_set_attr.c \
         comm_set_info.c \
         dist_graph_create.c \
+        dist_graph_create_from_group.c \
         dist_graph_create_adjacent.c \
+        dist_graph_create_adjacent_from_group.c \
         dist_graph_neighbors.c \
         dist_graph_neighbors_count.c \
         comm_set_errhandler.c \
@@ -228,6 +231,7 @@ libmpi_c_mpi_la_SOURCES = \
         get_processor_name.c \
         get_version.c \
         graph_create.c \
+        graph_create_from_group.c \
         graph_get.c \
         graph_map.c \
         graph_neighbors_count.c \

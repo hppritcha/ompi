@@ -578,8 +578,6 @@ int mca_pml_ob1_send_request_start_copy( mca_pml_ob1_send_request_t* sendreq,
         );
     }
 
-    fprintf (stderr, "start_copy with ext match %d\n", (int) need_ext_match);
-
     /* build match header */
     hdr = (mca_pml_ob1_hdr_t*)segment->seg_addr.pval;
     if (OPAL_UNLIKELY(need_ext_match)) {

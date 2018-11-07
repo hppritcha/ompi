@@ -15,12 +15,14 @@
  * Copyright (c) 2009      Sun Microsystems, Inc. All rights reserved.
  * Copyright (c) 2011-2013 Inria.  All rights reserved.
  * Copyright (c) 2011-2013 Universite Bordeaux 1
- * Copyright (c) 2012-2013 Los Alamos National Security, LLC.  All rights
+ * Copyright (c) 2012-2018 Los Alamos National Security, LLC.  All rights
  *                         reserved.
  * Copyright (c) 2014-2015 Intel, Inc.  All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2016-2017 IBM Corporation. All rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -527,6 +529,9 @@ OMPI_DECLSPEC int ompi_comm_group (ompi_communicator_t *comm, ompi_group_t **gro
  */
 int ompi_comm_create (ompi_communicator_t* comm, ompi_group_t *group,
                       ompi_communicator_t** newcomm);
+
+int ompi_comm_create_w_info (ompi_communicator_t *comm, ompi_group_t *group, opal_info_t *info,
+                             ompi_communicator_t **newcomm);
 
 
 /**
