@@ -133,7 +133,6 @@ OMPI_DECLSPEC extern ompi_predefined_win_t ompi_mpi_win_null;
 OMPI_DECLSPEC extern ompi_predefined_win_t *ompi_mpi_win_null_addr;
 
 int ompi_win_init(void);
-int ompi_win_finalize(void);
 
 int ompi_win_create(void *base, size_t size, int disp_unit,
                     ompi_communicator_t *comm, opal_info_t *info,

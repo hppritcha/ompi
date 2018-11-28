@@ -40,9 +40,9 @@
 static const char FUNC_NAME[] = "MPI_File_create_errhandler";
 
 
-int MPI_File_create_errhandler(MPI_File_errhandler_function *function,
-		                        MPI_Errhandler *errhandler) {
-    int err = MPI_SUCCESS;
+int MPI_File_create_errhandler (MPI_File_errhandler_function *function,
+                                MPI_Errhandler *errhandler) {
+    int err;
 
     /* Error checking */
 

@@ -420,6 +420,8 @@ typedef struct mca_base_var_enum_t *MPI_T_enum;
 typedef struct ompi_mpit_cvar_handle_t *MPI_T_cvar_handle;
 typedef struct mca_base_pvar_handle_t *MPI_T_pvar_handle;
 typedef struct mca_base_pvar_session_t *MPI_T_pvar_session;
+typedef struct ompi_instance_t *MPI_Session;
+
 
 /*
  * MPI_Status
@@ -459,6 +461,7 @@ typedef int (MPI_Datarep_extent_function)(MPI_Datatype, MPI_Aint *, void *);
 typedef int (MPI_Datarep_conversion_function)(void *, MPI_Datatype,
                                               int, void *, MPI_Offset, void *);
 typedef void (MPI_Comm_errhandler_function)(MPI_Comm *, int *, ...);
+typedef void (MPI_Session_errhandler_function) (MPI_Session *, int *, ...);
 
     /* This is a little hackish, but errhandler.h needs space for a
        MPI_File_errhandler_function.  While it could just be removed, this
@@ -477,9 +480,12 @@ typedef int (MPI_Type_delete_attr_function)(MPI_Datatype, int,
 typedef int (MPI_Win_copy_attr_function)(MPI_Win, int, void *,
                                            void *, void *, int *);
 typedef int (MPI_Win_delete_attr_function)(MPI_Win, int, void *, void *);
+typedef int (MPI_Session_delete_attr_function)(MPI_Session, int, void *, void *);
 typedef int (MPI_Grequest_query_function)(void *, MPI_Status *);
 typedef int (MPI_Grequest_free_function)(void *);
 typedef int (MPI_Grequest_cancel_function)(void *, int);
+
+typedef unsigned long MPI_Flags;
 
 /*
  * Deprecated typedefs.  Usage is discouraged, as these may be deleted
@@ -695,6 +701,15 @@ enum {
 #define MPI_ERR_LASTCODE              92
 
 /*
+ * Session flags valid for MPI_Session_init
+ */
+
+#define MPI_FLAG_THREAD_NONCONCURRENT_SINGLE     0x00000001ul
+#define MPI_FLAG_THREAD_NONCONCURRENT_FUNNELED   0x00000002ul
+#define MPI_FLAG_THREAD_NONCONCURRENT_SERIALIZED 0x00000004ul
+#define MPI_FLAG_THREAD_CONCURRENT               0x00000008ul
+
+/*
  * Comparison results.  Don't change the order of these, the group
  * comparison functions rely on it.
  * Do not change the order of these without also modifying mpif.h.in.
@@ -829,6 +844,7 @@ enum {
 /*
  * NULL handles
  */
+#define MPI_SESSION_NULL OMPI_PREDEFINED_GLOBAL(MPI_Session, ompi_mpi_instance_null)
 #define MPI_GROUP_NULL OMPI_PREDEFINED_GLOBAL(MPI_Group, ompi_mpi_group_null)
 #define MPI_COMM_NULL OMPI_PREDEFINED_GLOBAL(MPI_Comm, ompi_mpi_comm_null)
 #define MPI_REQUEST_NULL OMPI_PREDEFINED_GLOBAL(MPI_Request, ompi_request_null)
@@ -1611,6 +1627,7 @@ OMPI_DECLSPEC  int MPI_Group_excl(MPI_Group group, int n, const int ranks[],
                                   MPI_Group *newgroup);
 OMPI_DECLSPEC  MPI_Group MPI_Group_f2c(MPI_Fint group);
 OMPI_DECLSPEC  int MPI_Group_free(MPI_Group *group);
+OMPI_DECLSPEC  int MPI_Group_from_session_pset (MPI_Session session, const char *pset_name, MPI_Group *newgroup);
 OMPI_DECLSPEC  int MPI_Group_incl(MPI_Group group, int n, const int ranks[],
                                   MPI_Group *newgroup);
 OMPI_DECLSPEC  int MPI_Group_intersection(MPI_Group group1, MPI_Group group2,
@@ -1804,6 +1821,21 @@ OMPI_DECLSPEC  int MPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatype
 OMPI_DECLSPEC  int MPI_Sendrecv_replace(void * buf, int count, MPI_Datatype datatype,
                                         int dest, int sendtag, int source, int recvtag,
                                         MPI_Comm comm, MPI_Status *status);
+OMPI_DECLSPEC  int MPI_Session_create_errhandler (MPI_Session_errhandler_function *session_errhandler_fn,
+                                                  MPI_Errhandler *errhandler);
+OMPI_DECLSPEC  int MPI_Session_create_keyval (MPI_Session_delete_attr_function *session_delete_attr_fn,
+                                              int *session_keyval, void *extra_state);
+OMPI_DECLSPEC  int MPI_Session_delete_attr (MPI_Session session, int session_keyval);
+OMPI_DECLSPEC  int MPI_Session_finalize (MPI_Session *session);
+OMPI_DECLSPEC  int MPI_Session_free_keyval(int *session_keyval);
+OMPI_DECLSPEC  int MPI_Session_get_attr (MPI_Session datatype, int session_keyval,
+                                         void *attribute_val, int *flag);
+OMPI_DECLSPEC  int MPI_Session_get_num_psets (MPI_Session session, int *npset_names);
+OMPI_DECLSPEC  int MPI_Session_get_psetlen (MPI_Session session, int n, int *pset_name_len);
+OMPI_DECLSPEC  int MPI_Session_get_nth_pset (MPI_Session session, int n, int len, char *pset_name);
+OMPI_DECLSPEC  int MPI_Session_init (MPI_Flags *flags, MPI_Info info, MPI_Errhandler errhandler,
+                                     MPI_Session *session);
+OMPI_DECLSPEC  int MPI_Session_set_attr (MPI_Session session, int session_keyval, void *attribute_val);
 OMPI_DECLSPEC  int MPI_Ssend_init(const void *buf, int count, MPI_Datatype datatype,
                                   int dest, int tag, MPI_Comm comm,
                                   MPI_Request *request);
@@ -2307,6 +2339,7 @@ OMPI_DECLSPEC  int PMPI_Group_excl(MPI_Group group, int n, const int ranks[],
                                    MPI_Group *newgroup);
 OMPI_DECLSPEC  MPI_Group PMPI_Group_f2c(MPI_Fint group);
 OMPI_DECLSPEC  int PMPI_Group_free(MPI_Group *group);
+OMPI_DECLSPEC  int PMPI_Group_from_session_pset (MPI_Session session, const char *pset_name, MPI_Group *newgroup);
 OMPI_DECLSPEC  int PMPI_Group_incl(MPI_Group group, int n, const int ranks[],
                                    MPI_Group *newgroup);
 OMPI_DECLSPEC  int PMPI_Group_intersection(MPI_Group group1, MPI_Group group2,
@@ -2500,6 +2533,21 @@ OMPI_DECLSPEC  int PMPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatyp
 OMPI_DECLSPEC  int PMPI_Sendrecv_replace(void * buf, int count, MPI_Datatype datatype,
                                          int dest, int sendtag, int source, int recvtag,
                                          MPI_Comm comm, MPI_Status *status);
+OMPI_DECLSPEC  int PMPI_Session_create_errhandler (MPI_Session_errhandler_function *session_errhandler_fn,
+                                                   MPI_Errhandler *errhandler);
+OMPI_DECLSPEC  int PMPI_Session_create_keyval (MPI_Session_delete_attr_function *session_delete_attr_fn,
+                                               int *session_keyval, void *extra_state);
+OMPI_DECLSPEC  int PMPI_Session_delete_attr (MPI_Session session, int session_keyval);
+OMPI_DECLSPEC  int PMPI_Session_finalize (MPI_Session *session);
+OMPI_DECLSPEC  int PMPI_Session_free_keyval(int *session_keyval);
+OMPI_DECLSPEC  int PMPI_Session_get_attr (MPI_Session datatype, int session_keyval,
+                                          void *attribute_val, int *flag);
+OMPI_DECLSPEC  int PMPI_Session_get_num_psets (MPI_Session session, int *npset_names);
+OMPI_DECLSPEC  int PMPI_Session_get_nth_pset (MPI_Session session, int n, int len, char *pset_name);
+OMPI_DECLSPEC  int PMPI_Session_get_psetlen (MPI_Session session, int n, int *pset_name_len);
+OMPI_DECLSPEC  int PMPI_Session_init (MPI_Flags *flags, MPI_Info info, MPI_Errhandler errhandler,
+                                     MPI_Session *session);
+OMPI_DECLSPEC  int PMPI_Session_set_attr (MPI_Session session, int session_keyval, void *attribute_val);
 OMPI_DECLSPEC  int PMPI_Ssend_init(const void *buf, int count, MPI_Datatype datatype,
                                    int dest, int tag, MPI_Comm comm,
                                    MPI_Request *request);
