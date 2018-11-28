@@ -3,14 +3,13 @@
  * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
  *                         Corporation.  All rights reserved.
- * Copyright (c) 2004-2020 The University of Tennessee and The University
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
  * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2008-2009 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2018      Triad National Security, LLC. All rights
@@ -28,41 +27,33 @@
 #include "ompi/runtime/params.h"
 #include "ompi/communicator/communicator.h"
 #include "ompi/errhandler/errhandler.h"
-#include "ompi/win/win.h"
+#include "ompi/attribute/attribute.h"
 
 #if OMPI_BUILD_MPI_PROFILING
 #if OPAL_HAVE_WEAK_SYMBOLS
-#pragma weak MPI_Win_create_errhandler = PMPI_Win_create_errhandler
+#pragma weak MPI_Session_free_keyval = PMPI_Session_free_keyval
 #endif
-#define MPI_Win_create_errhandler PMPI_Win_create_errhandler
+#define MPI_Session_free_keyval PMPI_Session_free_keyval
 #endif
 
-static const char FUNC_NAME[] = "MPI_Win_create_errhandler";
+static const char FUNC_NAME[] = "MPI_Session_free_keyval";
 
 
-int MPI_Win_create_errhandler(MPI_Win_errhandler_function *function,
-                              MPI_Errhandler *errhandler)
+int MPI_Session_free_keyval (int *session_keyval)
 {
-    int err;
+    int ret;
+
+    /* Check for valid key pointer */
 
     if (MPI_PARAM_CHECK) {
         OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
-        if (NULL == function ||
-            NULL == errhandler) {
-            return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG,
-                                          FUNC_NAME);
+        if (NULL == session_keyval) {
+            return MPI_ERR_ARG;
         }
     }
 
     OPAL_CR_ENTER_LIBRARY();
 
-    /* Create and cache the errhandler.  Sets a refcount of 1. */
-    *errhandler =
-        ompi_errhandler_create(OMPI_ERRHANDLER_TYPE_WIN,
-                               (ompi_errhandler_generic_handler_fn_t*) function,
-                               OMPI_ERRHANDLER_LANG_C);
-    if (NULL == *errhandler) {
-        err = MPI_ERR_INTERN;
-    }
-
+    ret = ompi_attr_free_keyval (INSTANCE_ATTR, session_keyval, 0);
+    return ompi_errcode_get_mpi_code (ret);
 }

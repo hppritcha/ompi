@@ -48,6 +48,10 @@
 #include "ompi/request/request.h"
 #include "ompi/runtime/mpiruntime.h"
 
+
+/* for use when we don't have a PMIx that supports CID generation */
+opal_atomic_int64_t ompi_comm_next_base_cid = 1;
+
 /* A macro comparing two CIDs */
 #define OMPI_COMM_CID_IS_LOWER(comm1,comm2) ( ((comm1)->c_index < (comm2)->c_index)? 1:0)
 
@@ -264,7 +268,6 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     size_t proc_count, cid_base;
     int rc, leader_rank;
 
-    /* NTH: TODO. need to add support for NULL == comm for both cases */
     rc = ompi_group_to_proc_name_array (newcomm->c_local_group, &name_array, &proc_count);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;

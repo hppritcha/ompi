@@ -246,6 +246,7 @@ libmpi_c_mpi_la_SOURCES = \
         group_excl.c \
         group_f2c.c \
         group_free.c \
+        group_from_session_pset.c \
         group_incl.c \
         group_intersection.c \
         group_range_excl.c \
@@ -341,6 +342,17 @@ libmpi_c_mpi_la_SOURCES = \
         send_init.c \
         sendrecv.c \
         sendrecv_replace.c \
+        session_create_errhandler.c \
+        session_create_keyval.c \
+        session_delete_attr.c \
+        session_get_attr.c \
+        session_get_num_psets.c \
+        session_get_nth_pset.c \
+        session_get_psetlen.c \
+        session_init.c \
+        session_finalize.c \
+        session_free_keyval.c \
+        session_set_attr.c \
         ssend_init.c \
         ssend.c \
         start.c \

@@ -33,6 +33,7 @@
 #include "opal/mca/base/base.h"
 #include "math.h"
 #include "ompi/mca/pml/pml.h"
+#include "ompi/runtime/mpiruntime.h"
 #include <unistd.h>
 
 /*Based on ROMIO's domain partitioning implementaion

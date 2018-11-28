@@ -226,6 +226,7 @@ nodist_libmpi_c_pmpi_la_SOURCES = \
         pgroup_excl.c \
         pgroup_f2c.c \
         pgroup_free.c \
+        pgroup_from_session_pset.c \
         pgroup_incl.c \
         pgroup_intersection.c \
         pgroup_range_excl.c \
@@ -321,6 +322,17 @@ nodist_libmpi_c_pmpi_la_SOURCES = \
         psend_init.c \
         psendrecv.c \
         psendrecv_replace.c \
+        psession_create_errhandler.c \
+        psession_create_keyval.c \
+        psession_delete_attr.c \
+        psession_get_attr.c \
+        psession_get_num_psets.c \
+        psession_get_nth_pset.c \
+        psession_get_psetlen.c \
+        psession_init.c \
+        psession_finalize.c \
+        psession_free_keyval.c \
+        psession_set_attr.c \
         pssend_init.c \
         pssend.c \
         pstart.c \

@@ -12,10 +12,12 @@
  *                         All rights reserved.
  * Copyright (c) 2010      Oracle and/or its affiliates.  All rights reserved
  * Copyright (c) 2011      Sandia National Laboratories. All rights reserved.
- * Copyright (c) 2012-2017 Los Alamos National Security, LLC. All rights
+ * Copyright (c) 2012-2018 Los Alamos National Security, LLC. All rights
  *                         reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -41,6 +43,7 @@
 #include "ompi/mca/bml/base/base.h"
 #include "ompi/proc/proc.h"
 #include "opal/mca/allocator/base/base.h"
+#include "ompi/runtime/mpiruntime.h"
 
 BEGIN_C_DECLS
 

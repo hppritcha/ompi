@@ -20,6 +20,8 @@
  * Copyright (c) 2014-2020 Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2018      Amazon.com, Inc. or its affiliates.  All Rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -1598,7 +1600,6 @@ int ompi_dpm_dyn_init(void)
 
     return OMPI_SUCCESS;
 }
-
 
 /*
  * finalize the module

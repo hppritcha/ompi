@@ -1,4 +1,4 @@
-/* -*- Mode: C; c-basic-offset:4 ; -*- */
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -13,6 +13,8 @@
  * Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -35,7 +37,7 @@
 #define MPI_Info_f2c PMPI_Info_f2c
 #endif
 
-static const char FUNC_NAME[] = "MPI_Info_f2c";
+/* static const char FUNC_NAME[] = "MPI_Info_f2c"; */
 
 
 /**
@@ -49,12 +51,6 @@ MPI_Info MPI_Info_f2c(MPI_Fint info)
     int info_index = OMPI_FINT_2_INT(info);
 
     OPAL_CR_NOOP_PROGRESS();
-
-    /* check the arguments */
-
-    if (MPI_PARAM_CHECK) {
-        OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
-    }
 
     /* Per MPI-2:4.12.4, do not invoke an error handler if we get an
        invalid fortran handle.  If we get an invalid fortran handle,

@@ -34,6 +34,8 @@
 static void ompi_group_construct(ompi_group_t *);
 static void ompi_group_destruct(ompi_group_t *);
 
+static int ompi_group_finalize (void);
+
 OBJ_CLASS_INSTANCE(ompi_group_t,
                    opal_object_t,
                    ompi_group_construct,
@@ -272,6 +274,8 @@ ompi_group_t *ompi_group_flatten (ompi_group_t *group, int max_procs)
         new_group->grp_my_rank = group->grp_my_rank;
     }
 
+    new_group->grp_instance = group->grp_instance;
+
     OMPI_GROUP_SET_DENSE(new_group);
 
     ompi_group_increment_proc_count (new_group);
@@ -405,6 +409,8 @@ int ompi_group_init(void)
     ompi_mpi_group_empty.group.grp_flags            |= OMPI_GROUP_DENSE;
     ompi_mpi_group_empty.group.grp_flags            |= OMPI_GROUP_INTRINSIC;
 
+    ompi_mpi_instance_append_finalize (ompi_group_finalize);
+
     return OMPI_SUCCESS;
 }
 
@@ -412,7 +418,7 @@ int ompi_group_init(void)
 /*
  * Clean up group infrastructure
  */
-int ompi_group_finalize(void)
+static int ompi_group_finalize (void)
 {
     ompi_mpi_group_null.group.grp_flags = 0;
     OBJ_DESTRUCT(&ompi_mpi_group_null);

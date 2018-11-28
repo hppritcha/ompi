@@ -199,6 +199,8 @@ int ompi_mpiinfo_init(void)
         opal_info_set(&ompi_mpi_info_env.info.super, "ompi_positioned_file_dir", ompi_process_info.proc_session_dir);
     }
 
+    ompi_mpi_instance_append_finalize (ompi_mpiinfo_finalize);
+
     /* All done */
 
     return OMPI_SUCCESS;

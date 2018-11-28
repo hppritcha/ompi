@@ -40,6 +40,7 @@
 #include "mpi.h"
 #include "opal/class/opal_pointer_array.h"
 #include "opal/util/output.h"
+#include "ompi/instance/instance.h"
 
 BEGIN_C_DECLS
 
@@ -99,6 +100,8 @@ struct ompi_group_t {
         struct ompi_group_strided_data_t  grp_strided;
         struct ompi_group_bitmap_data_t   grp_bitmap;
     } sparse_data;
+
+    ompi_instance_t *grp_instance; /**< instance this group was allocated within */
 };
 
 typedef struct ompi_group_t ompi_group_t;
@@ -198,14 +201,6 @@ OMPI_DECLSPEC void ompi_group_decrement_proc_count(ompi_group_t *group);
  * @return Error code
  */
 int ompi_group_init(void);
-
-
-/**
- * Clean up OMPI group infrastructure.
- *
- * @return Error code
- */
-int ompi_group_finalize(void);
 
 
 /**

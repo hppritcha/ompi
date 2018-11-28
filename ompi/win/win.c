@@ -76,8 +76,39 @@ static void ompi_win_destruct(ompi_win_t *win);
 OBJ_CLASS_INSTANCE(ompi_win_t, opal_infosubscriber_t,
                    ompi_win_construct, ompi_win_destruct);
 
-int
-ompi_win_init(void)
+
+static void ompi_win_dump (ompi_win_t *win)
+{
+    opal_output(0, "Dumping information for window: %s\n", win->w_name);
+    opal_output(0,"  Fortran window handle: %d, window size: %d\n",
+                win->w_f_to_c_index, ompi_group_size (win->w_group));
+}
+
+static int ompi_win_finalize(void)
+{
+    size_t size = opal_pointer_array_get_size (&ompi_mpi_windows);
+    /* start at 1 to skip win null */
+    for (size_t i = 1 ; i < size ; ++i) {
+        ompi_win_t *win =
+            (ompi_win_t *) opal_pointer_array_get_item (&ompi_mpi_windows, i);
+        if (NULL != win) {
+            if (ompi_debug_show_handle_leaks && !ompi_win_invalid(win)){
+                opal_output(0,"WARNING: MPI_Win still allocated in MPI_Finalize\n");
+                ompi_win_dump (win);
+            }
+            ompi_win_free (win);
+        }
+    }
+
+    OBJ_DESTRUCT(&ompi_mpi_win_null.win);
+    OBJ_DESTRUCT(&ompi_mpi_windows);
+    OBJ_RELEASE(ompi_win_accumulate_ops);
+    OBJ_RELEASE(ompi_win_accumulate_order);
+
+    return OMPI_SUCCESS;
+}
+
+int ompi_win_init (void)
 {
     int ret;
 
@@ -108,36 +139,7 @@ ompi_win_init(void)
         return ret;
     }
 
-    return OMPI_SUCCESS;
-}
-
-static void ompi_win_dump (ompi_win_t *win)
-{
-    opal_output(0, "Dumping information for window: %s\n", win->w_name);
-    opal_output(0,"  Fortran window handle: %d, window size: %d\n",
-                win->w_f_to_c_index, ompi_group_size (win->w_group));
-}
-
-int ompi_win_finalize(void)
-{
-    size_t size = opal_pointer_array_get_size (&ompi_mpi_windows);
-    /* start at 1 to skip win null */
-    for (size_t i = 1 ; i < size ; ++i) {
-        ompi_win_t *win =
-            (ompi_win_t *) opal_pointer_array_get_item (&ompi_mpi_windows, i);
-        if (NULL != win) {
-            if (ompi_debug_show_handle_leaks && !ompi_win_invalid(win)){
-                opal_output(0,"WARNING: MPI_Win still allocated in MPI_Finalize\n");
-                ompi_win_dump (win);
-            }
-            ompi_win_free (win);
-        }
-    }
-
-    OBJ_DESTRUCT(&ompi_mpi_win_null.win);
-    OBJ_DESTRUCT(&ompi_mpi_windows);
-    OBJ_RELEASE(ompi_win_accumulate_ops);
-    OBJ_RELEASE(ompi_win_accumulate_order);
+    ompi_mpi_instance_append_finalize (ompi_win_finalize);
 
     return OMPI_SUCCESS;
 }

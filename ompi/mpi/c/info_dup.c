@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -11,6 +12,8 @@
  *                         All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2018      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -64,8 +67,14 @@ int MPI_Info_dup(MPI_Info info, MPI_Info *newinfo) {
      * and copy them to newinfo one by one
      */
 
+    err = ompi_mpi_instance_retain ();
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != err)) {
+        /* NTH: seriously, what can we do other than abort () or return? we failed to
+         * set up the most basic infrastructure! */
+        return err;
+    }
+
     if (MPI_PARAM_CHECK) {
-        OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
         if (NULL == info || MPI_INFO_NULL == info || NULL == newinfo ||
             ompi_info_is_freed(info)) {
             return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_INFO,

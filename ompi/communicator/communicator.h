@@ -515,9 +515,14 @@ static inline bool ompi_comm_peer_invalid (const ompi_communicator_t* comm, cons
 char *ompi_comm_print_cid (const ompi_communicator_t *comm);
 
 /**
- * Initialise MPI_COMM_WORLD and MPI_COMM_SELF
+ * @brief Initialize the communicator subsystem as well as MPI_COMM_NULL.
  */
 int ompi_comm_init(void);
+
+/**
+ * Initialise MPI_COMM_WORLD and MPI_COMM_SELF
+ */
+int ompi_comm_init_mpi3 (void);
 
 /**
  * extract the local group from a communicator
@@ -732,11 +737,6 @@ OMPI_DECLSPEC int ompi_comm_nextcid (ompi_communicator_t *newcomm, ompi_communic
 OMPI_DECLSPEC int ompi_comm_nextcid_nb (ompi_communicator_t *newcomm, ompi_communicator_t *comm,
                                         ompi_communicator_t *bridgecomm, const void *arg0, const void *arg1,
                                         bool send_first, int mode, ompi_request_t **req);
-
-/**
- * shut down the communicator infrastructure.
- */
-int ompi_comm_finalize (void);
 
 /**
  * This is THE routine, where all the communicator stuff

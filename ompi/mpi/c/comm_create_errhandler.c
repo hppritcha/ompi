@@ -68,5 +68,5 @@ int MPI_Comm_create_errhandler(MPI_Comm_errhandler_function *function,
         err = MPI_ERR_INTERN;
     }
 
-  OMPI_ERRHANDLER_NOHANDLE_RETURN(err, MPI_ERR_INTERN, FUNC_NAME);
+    OMPI_ERRHANDLER_NOHANDLE_RETURN(err, MPI_ERR_INTERN, FUNC_NAME);
 }
