@@ -1821,6 +1821,7 @@ OMPI_DECLSPEC  int MPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatype
 OMPI_DECLSPEC  int MPI_Sendrecv_replace(void * buf, int count, MPI_Datatype datatype,
                                         int dest, int sendtag, int source, int recvtag,
                                         MPI_Comm comm, MPI_Status *status);
+OMPI_DECLSPEC  MPI_Fint MPI_Session_c2f (const MPI_Session session);
 OMPI_DECLSPEC  int MPI_Session_create_errhandler (MPI_Session_errhandler_function *session_errhandler_fn,
                                                   MPI_Errhandler *errhandler);
 OMPI_DECLSPEC  int MPI_Session_create_keyval (MPI_Session_delete_attr_function *session_delete_attr_fn,
@@ -1835,6 +1836,7 @@ OMPI_DECLSPEC  int MPI_Session_get_psetlen (MPI_Session session, int n, int *pse
 OMPI_DECLSPEC  int MPI_Session_get_nth_pset (MPI_Session session, int n, int len, char *pset_name);
 OMPI_DECLSPEC  int MPI_Session_init (MPI_Flags *flags, MPI_Info info, MPI_Errhandler errhandler,
                                      MPI_Session *session);
+OMPI_DECLSPEC  MPI_Session MPI_Session_f2c (MPI_Fint session);
 OMPI_DECLSPEC  int MPI_Session_set_attr (MPI_Session session, int session_keyval, void *attribute_val);
 OMPI_DECLSPEC  int MPI_Ssend_init(const void *buf, int count, MPI_Datatype datatype,
                                   int dest, int tag, MPI_Comm comm,
@@ -2533,6 +2535,7 @@ OMPI_DECLSPEC  int PMPI_Sendrecv(const void *sendbuf, int sendcount, MPI_Datatyp
 OMPI_DECLSPEC  int PMPI_Sendrecv_replace(void * buf, int count, MPI_Datatype datatype,
                                          int dest, int sendtag, int source, int recvtag,
                                          MPI_Comm comm, MPI_Status *status);
+OMPI_DECLSPEC  MPI_Fint PMPI_Session_c2f (const MPI_Session session);
 OMPI_DECLSPEC  int PMPI_Session_create_errhandler (MPI_Session_errhandler_function *session_errhandler_fn,
                                                    MPI_Errhandler *errhandler);
 OMPI_DECLSPEC  int PMPI_Session_create_keyval (MPI_Session_delete_attr_function *session_delete_attr_fn,
@@ -2547,6 +2550,7 @@ OMPI_DECLSPEC  int PMPI_Session_get_nth_pset (MPI_Session session, int n, int le
 OMPI_DECLSPEC  int PMPI_Session_get_psetlen (MPI_Session session, int n, int *pset_name_len);
 OMPI_DECLSPEC  int PMPI_Session_init (MPI_Flags *flags, MPI_Info info, MPI_Errhandler errhandler,
                                      MPI_Session *session);
+OMPI_DECLSPEC  MPI_Session PMPI_Session_f2c (MPI_Fint session);
 OMPI_DECLSPEC  int PMPI_Session_set_attr (MPI_Session session, int session_keyval, void *attribute_val);
 OMPI_DECLSPEC  int PMPI_Ssend_init(const void *buf, int count, MPI_Datatype datatype,
                                    int dest, int tag, MPI_Comm comm,
