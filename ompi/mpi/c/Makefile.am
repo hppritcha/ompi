@@ -342,6 +342,7 @@ libmpi_c_mpi_la_SOURCES = \
         send_init.c \
         sendrecv.c \
         sendrecv_replace.c \
+        session_c2f.c \
         session_create_errhandler.c \
         session_create_keyval.c \
         session_delete_attr.c \
@@ -350,6 +351,7 @@ libmpi_c_mpi_la_SOURCES = \
         session_get_nth_pset.c \
         session_get_psetlen.c \
         session_init.c \
+        session_f2c.c \
         session_finalize.c \
         session_free_keyval.c \
         session_set_attr.c \
