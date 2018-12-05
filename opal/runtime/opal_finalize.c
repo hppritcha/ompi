@@ -112,6 +112,9 @@ void opal_finalize_append_cleanup (opal_cleanup_fn_t cleanup_fn, const char *fn_
     (void) fn_name;
 #endif
 
+    fprintf (stderr, "OPAL finalize append cleanup: fn: %p, name: %s, domain: %s\n", (void *) cleanup_fn,
+             fn_name, current_finalize_domain->domain_name);
+
     opal_mutex_lock (&opal_finalize_cleanup_fns_lock);
     opal_list_append (&current_finalize_domain->super, &cleanup_item->super);
     opal_mutex_unlock (&opal_finalize_cleanup_fns_lock);
@@ -170,6 +173,7 @@ int opal_finalize(void)
         return OPAL_SUCCESS;
     }
 
+<<<<<<< variant A
     opal_finalize_cleanup_domain (&opal_init_domain);
     OBJ_DESTRUCT(&opal_init_domain);
 
@@ -200,4 +204,52 @@ void opal_warn_fork(void)
         pthread_atfork(warn_fork_cb, NULL, NULL);
         atfork_called = true;
     }
+>>>>>>> variant B
+    opal_finalize_cleanup_domain (&opal_init_domain);
+    OBJ_DESTRUCT(&opal_init_domain);
+
+    /* finalize util code */
+    opal_finalize_util();
+
+    return OPAL_SUCCESS;
+####### Ancestor
+    opal_progress_finalize();
+
+    /* close the checkpoint and restart service */
+    opal_cr_finalize();
+
+#if OPAL_ENABLE_FT_CR    == 1
+    (void) mca_base_framework_close(&opal_compress_base_framework);
+#endif
+
+    (void) mca_base_framework_close(&opal_reachable_base_framework);
+
+    (void) mca_base_framework_close(&opal_event_base_framework);
+
+    /* close high resolution timers */
+    (void) mca_base_framework_close(&opal_timer_base_framework);
+
+    (void) mca_base_framework_close(&opal_backtrace_base_framework);
+    (void) mca_base_framework_close(&opal_memchecker_base_framework);
+
+    /* close the memcpy framework */
+    (void) mca_base_framework_close(&opal_memcpy_base_framework);
+
+    /* finalize the memory manager / tracker */
+    opal_mem_hooks_finalize();
+
+    /* close the hwloc framework */
+    (void) mca_base_framework_close(&opal_hwloc_base_framework);
+
+    /* close the shmem framework */
+    (void) mca_base_framework_close(&opal_shmem_base_framework);
+
+    /* cleanup the main thread specific stuff */
+    opal_tsd_keys_destruct();
+
+    /* finalize util code */
+    opal_finalize_util();
+
+    return OPAL_SUCCESS;
+======= end
 }
