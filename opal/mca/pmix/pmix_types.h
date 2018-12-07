@@ -366,6 +366,10 @@ BEGIN_C_DECLS
                                                                         //         is being requested
 #define OPAL_PMIX_TIME_REMAINING                "pmix.time.remaining"   // (char*) query number of seconds (uint32_t) remaining in allocation
                                                                         //         for the specified nspace
+#define OPAL_PMIX_QUERY_NUM_PSETS               "pmix.qry.psetnum"      // (size_t) return the number of psets defined
+                                                                        //          in the specified range (defaults to session)
+#define OPAL_PMIX_QUERY_PSET_NAMES              "pmix.qry.psets"        // (char*) return a comma-delimited list of the names of the
+                                                                        //         psets defined in the specified range (defaults to session)
 
 
 /* log attributes */
