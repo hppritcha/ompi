@@ -73,17 +73,8 @@ static const char *ompi_instance_builtin_psets[] = {
 static const int32_t ompi_instance_builtin_count = 3;
 
 /** finalization functions that need to be called on teardown */
-static opal_list_t ompi_instance_finalize_fns;
-static opal_list_t ompi_instance_finalize_fns_basic;
-
-struct ompi_instance_finalize_fn_item_t {
-    opal_list_item_t super;
-    ompi_instance_finalize_fn_t finalize_fn;
-};
-
-typedef struct ompi_instance_finalize_fn_item_t ompi_instance_finalize_fn_item_t;
-OBJ_CLASS_DECLARATION(ompi_instance_finalize_fn_item_t);
-OBJ_CLASS_INSTANCE(ompi_instance_finalize_fn_item_t, opal_list_item_t, NULL, NULL);
+static opal_finalize_domain_t ompi_instance_basic_domain;
+static opal_finalize_domain_t ompi_instance_common_domain;
 
 static void ompi_instance_construct (ompi_instance_t *instance)
 {
@@ -108,6 +99,8 @@ static mca_base_framework_t *ompi_lazy_frameworks[] = {
     &ompi_io_base_framework, &ompi_topo_base_framework, NULL,
 };
 
+
+static int ompi_mpi_instance_finalize_common (void);
 
 /*
  * Hash tables for MPI_Type_create_f90* functions
@@ -189,23 +182,18 @@ static bool ompi_instance_basic_init;
 
 void ompi_mpi_instance_release (void)
 {
-    ompi_instance_finalize_fn_item_t *finalize_item;
-    
     opal_mutex_lock (&instance_lock);
-
-    opal_argv_free (ompi_mpi_instance_pmix_psets);
-    ompi_mpi_instance_pmix_psets = NULL;
 
     if (0 != --ompi_mpi_instance_init_basic_count) {
         opal_mutex_unlock (&instance_lock);
         return;
     }
 
-    OPAL_LIST_FOREACH_REV(finalize_item, &ompi_instance_finalize_fns_basic, ompi_instance_finalize_fn_item_t) {
-        (void) finalize_item->finalize_fn ();
-    }
+    opal_argv_free (ompi_mpi_instance_pmix_psets);
+    ompi_mpi_instance_pmix_psets = NULL;
 
-    OPAL_LIST_DESTRUCT(&ompi_instance_finalize_fns_basic);
+    opal_finalize_cleanup_domain (&ompi_instance_basic_domain);
+    OBJ_DESTRUCT(&ompi_instance_basic_domain);
 
     opal_finalize_util ();
 
@@ -231,7 +219,9 @@ int ompi_mpi_instance_retain (void)
 
     ompi_instance_basic_init = true;
 
-    OBJ_CONSTRUCT(&ompi_instance_finalize_fns_basic, opal_list_t);
+    OBJ_CONSTRUCT(&ompi_instance_basic_domain, opal_finalize_domain_t);
+    opal_finalize_domain_init (&ompi_instance_basic_domain, "ompi_mpi_instance_retain");
+    opal_finalize_set_domain (&ompi_instance_basic_domain);
 
     /* Setup f to c table */
     OBJ_CONSTRUCT(&ompi_instance_f_to_c_table, opal_pointer_array_t);
@@ -304,7 +294,9 @@ static int ompi_mpi_instance_init_common (void)
         return ret;
     }
 
-    OBJ_CONSTRUCT(&ompi_instance_finalize_fns, opal_list_t);
+    OBJ_CONSTRUCT(&ompi_instance_common_domain, opal_finalize_domain_t);
+    opal_finalize_domain_init (&ompi_instance_common_domain, "ompi_mpi_instance_init_common");
+    opal_finalize_set_domain (&ompi_instance_common_domain);
 
     if (OPAL_SUCCESS != (ret = opal_arch_set_fortran_logical_size(sizeof(ompi_fortran_logical_t)))) {
         return ompi_instance_print_error ("ompi_mpi_init: opal_arch_set_fortran_logical_size failed", ret);
@@ -599,14 +591,10 @@ static int ompi_mpi_instance_init_common (void)
 
 int ompi_mpi_instance_init (MPI_Flags *flags, opal_info_t *info, ompi_errhandler_t *errhandler, ompi_instance_t **instance)
 {
-    ompi_instance_t *new_instance = OBJ_NEW(ompi_instance_t);
+    ompi_instance_t *new_instance;
     int ret;
 
     *instance = &ompi_mpi_instance_null.instance;
-
-    if (OPAL_UNLIKELY(NULL == new_instance)) {
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
 
     /* If thread support was enabled, then setup OPAL to allow for them by deault. This must be done
      * early to prevent a race condition that can occur with orte_init(). */
@@ -619,11 +607,21 @@ int ompi_mpi_instance_init (MPI_Flags *flags, opal_info_t *info, ompi_errhandler
         ret = ompi_mpi_instance_init_common ();
         if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
             opal_mutex_unlock (&instance_lock);
-            OBJ_RELEASE(new_instance);
             return ret;
         }
     }
-    opal_mutex_unlock (&instance_lock);
+
+    new_instance = OBJ_NEW(ompi_instance_t);
+    if (OPAL_UNLIKELY(NULL == new_instance)) {
+        if (0 == opal_atomic_add_fetch_32 (&ompi_instance_count, -1)) {
+            ret = ompi_mpi_instance_finalize_common ();
+            if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
+                opal_mutex_unlock (&instance_lock);
+            }
+        }
+        opal_mutex_unlock (&instance_lock);
+        return OMPI_ERR_OUT_OF_RESOURCE;
+    }
 
     new_instance->error_handler = errhandler;
     OBJ_RETAIN(new_instance->error_handler);
@@ -636,8 +634,6 @@ int ompi_mpi_instance_init (MPI_Flags *flags, opal_info_t *info, ompi_errhandler
         }
     }
 
-
-
     *instance = new_instance;
 
     return OMPI_SUCCESS;
@@ -645,7 +641,6 @@ int ompi_mpi_instance_init (MPI_Flags *flags, opal_info_t *info, ompi_errhandler
 
 static int ompi_mpi_instance_finalize_common (void)
 {
-    ompi_instance_finalize_fn_item_t *finalize_item;
     uint32_t key;
     ompi_datatype_t *datatype;
     int ret;
@@ -680,14 +675,7 @@ static int ompi_mpi_instance_finalize_common (void)
         mca_mpool_base_tree_print (ompi_debug_show_mpi_alloc_mem_leaks);
     }
 
-    OPAL_LIST_FOREACH_REV(finalize_item, &ompi_instance_finalize_fns, ompi_instance_finalize_fn_item_t) {
-        ret = finalize_item->finalize_fn ();
-        if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
-            return ret;
-        }
-    }
-
-    OPAL_LIST_DESTRUCT(&ompi_instance_finalize_fns);
+    opal_finalize_cleanup_domain (&ompi_instance_common_domain);
 
     if (NULL != ompi_mpi_main_thread) {
         OBJ_RELEASE(ompi_mpi_main_thread);
@@ -713,7 +701,12 @@ static int ompi_mpi_instance_finalize_common (void)
         }
     }
 
-    for (int j = 0 ; ompi_framework_dependencies[j] ; ++j) {
+    int last_framework = 0;
+    for (int i = 0 ; ompi_framework_dependencies[i] ; ++i) {
+        last_framework = i;
+    }
+
+    for (int j = last_framework ; j >= 0; --j) {
         ret = mca_base_framework_close (ompi_framework_dependencies[j]);
         if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
             return ret;
@@ -774,11 +767,8 @@ static void ompi_instance_get_num_psets_complete (int status, opal_list_t *info,
                 opal_argv_free (ompi_mpi_instance_pmix_psets);
             }
 
-            fprintf (stderr, "PSETS: %s\n", kv->data.string);
-
             ompi_mpi_instance_pmix_psets = opal_argv_split (kv->data.string, ',');
             ompi_mpi_instance_num_pmix_psets = opal_argv_count (ompi_mpi_instance_pmix_psets);
-            fprintf (stderr, "Num PSETS: %d\n", ompi_mpi_instance_num_pmix_psets);
         }
     }
 
@@ -1043,19 +1033,4 @@ int ompi_group_from_pset (ompi_instance_t *instance, const char *pset_name, ompi
     }
 
     return ompi_instance_group_pmix_pset (instance, pset_name, group_out);
-}
-
-void ompi_mpi_instance_append_finalize (ompi_instance_finalize_fn_t finalize_fn)
-{
-    ompi_instance_finalize_fn_item_t *item = OBJ_NEW(ompi_instance_finalize_fn_item_t);
-    /* NTH: this is tiny. if we couldn't allocate the sky is falling and we need to just
-     * abort. */
-    assert (NULL != item && NULL != finalize_fn);
-
-    item->finalize_fn = finalize_fn;
-    if (ompi_instance_basic_init) {
-        opal_list_append (&ompi_instance_finalize_fns_basic, &item->super);
-    } else {
-        opal_list_append (&ompi_instance_finalize_fns, &item->super);
-    }
 }

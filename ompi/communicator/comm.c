@@ -189,6 +189,7 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
         OBJ_RETAIN(newcomm->c_local_group);
     }
     newcomm->c_my_rank = newcomm->c_local_group->grp_my_rank;
+    newcomm->c_assertions = 0;
 
     /* Set remote group and duplicate the local comm, if applicable */
     if ( NULL != remote_group ) {
@@ -950,10 +951,10 @@ int ompi_comm_split_type (ompi_communicator_t *comm, int split_type, int key,
             break;
         }
 
-        // Copy info if there is one.
-        newcomp->super.s_info = OBJ_NEW(opal_info_t);
+        ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_LAZY_BARRIER);
+        ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_ACTIVE_POLL);
         if (info) {
-            opal_info_dup(info, &(newcomp->super.s_info));
+            opal_infosubscribe_change_info(&newcomp->super, info);
         }
 
         /* Activate the communicator and init coll-component */
@@ -1051,9 +1052,10 @@ int ompi_comm_dup_with_info ( ompi_communicator_t * comm, opal_info_t *info, omp
 	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));
 
     // Copy info if there is one.
-    newcomp->super.s_info = OBJ_NEW(opal_info_t);
+    ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_LAZY_BARRIER);
+    ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_ACTIVE_POLL);
     if (info) {
-        opal_info_dup(info, &(newcomp->super.s_info));
+        opal_infosubscribe_change_info(&newcomp->super, info);
     }
 
     /* activate communicator and init coll-module */
@@ -1292,10 +1294,18 @@ int ompi_comm_create_from_group (ompi_group_t *group, const char *tag, opal_info
     snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s FROM GROUP",
 	     ompi_comm_print_cid (newcomp));
 
-    // Copy info if there is one.
-    newcomp->super.s_info = OBJ_NEW(opal_info_t);
-    if (info) {
-        opal_info_dup(info, &(newcomp->super.s_info));
+    /* NTH: HACK IN SLEEPY STUFF */
+    {
+        opal_info_entry_t *info_entry;
+        OPAL_LIST_FOREACH(info_entry, &group->grp_instance->super.s_info->super, opal_info_entry_t) {
+            opal_info_set (newcomp->super.s_info, info_entry->ie_key, info_entry->ie_value);
+        }
+
+        ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_LAZY_BARRIER);
+        ompi_comm_assert_subscribe (newcomp, OMPI_COMM_ASSERT_ACTIVE_POLL);
+        if (info) {
+            opal_infosubscribe_change_info(&newcomp->super, info);
+        }
     }
 
     /* activate communicator and init coll-module. use the group allreduce implementation as

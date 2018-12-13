@@ -68,7 +68,5 @@ int MPI_Info_free(MPI_Info *info)
     }
 
     err = ompi_info_free(info);
-    /* release the retain() from info create/dup */
-    ompi_mpi_instance_release ();
     OMPI_ERRHANDLER_NOHANDLE_RETURN(err, err, FUNC_NAME);
 }

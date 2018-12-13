@@ -100,8 +100,6 @@ OMPI_DECLSPEC extern opal_pointer_array_t ompi_instance_f_to_c_table;
 
 extern ompi_instance_t *ompi_mpi_instance_default;
 
-typedef int (*ompi_instance_finalize_fn_t) (void);
-
 /**
  * @brief Bring up the bare minimum infrastructure to support pre-session_init functions.
  *
@@ -136,7 +134,7 @@ OMPI_DECLSPEC int ompi_mpi_instance_finalize (ompi_instance_t **instance);
  * @brief Add a function to the finalize chain. Note this function will be called
  *        when the last instance has been destroyed.
  */
-OMPI_DECLSPEC void ompi_mpi_instance_append_finalize (ompi_instance_finalize_fn_t finalize_fn);
+#define ompi_mpi_instance_append_finalize opal_finalize_register_cleanup
 
 /**
  * @brief Get an MPI group object for a named process set.
