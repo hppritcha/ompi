@@ -67,13 +67,6 @@ int MPI_Info_dup(MPI_Info info, MPI_Info *newinfo) {
      * and copy them to newinfo one by one
      */
 
-    err = ompi_mpi_instance_retain ();
-    if (OPAL_UNLIKELY(OMPI_SUCCESS != err)) {
-        /* NTH: seriously, what can we do other than abort () or return? we failed to
-         * set up the most basic infrastructure! */
-        return err;
-    }
-
     if (MPI_PARAM_CHECK) {
         if (NULL == info || MPI_INFO_NULL == info || NULL == newinfo ||
             ompi_info_is_freed(info)) {

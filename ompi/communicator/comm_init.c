@@ -539,6 +539,8 @@ OMPI_COMM_SET_INFO_FN(no_any_source, OMPI_COMM_ASSERT_NO_ANY_SOURCE)
 OMPI_COMM_SET_INFO_FN(no_any_tag, OMPI_COMM_ASSERT_NO_ANY_TAG)
 OMPI_COMM_SET_INFO_FN(allow_overtake, OMPI_COMM_ASSERT_ALLOW_OVERTAKE)
 OMPI_COMM_SET_INFO_FN(exact_length, OMPI_COMM_ASSERT_EXACT_LENGTH)
+OMPI_COMM_SET_INFO_FN(lazy_barrier, OMPI_COMM_ASSERT_LAZY_BARRIER)
+OMPI_COMM_SET_INFO_FN(active_poll, OMPI_COMM_ASSERT_ACTIVE_POLL)
 
 void ompi_comm_assert_subscribe (ompi_communicator_t *comm, int32_t assert_flag)
 {
@@ -554,6 +556,12 @@ void ompi_comm_assert_subscribe (ompi_communicator_t *comm, int32_t assert_flag)
         break;
     case OMPI_COMM_ASSERT_EXACT_LENGTH:
         opal_infosubscribe_subscribe (&comm->super, "mpi_assert_exact_length", "false", ompi_comm_set_exact_length);
+        break;
+    case OMPI_COMM_ASSERT_LAZY_BARRIER:
+        opal_infosubscribe_subscribe (&comm->super, "ompi_assert_lazy_barrier", "false", ompi_comm_set_lazy_barrier);
+        break;
+    case OMPI_COMM_ASSERT_ACTIVE_POLL:
+        opal_infosubscribe_subscribe (&comm->super, "ompi_assert_active_poll", "true", ompi_comm_set_active_poll);
         break;
     }
 }

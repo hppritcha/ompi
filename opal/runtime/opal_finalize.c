@@ -112,9 +112,6 @@ void opal_finalize_append_cleanup (opal_cleanup_fn_t cleanup_fn, const char *fn_
     (void) fn_name;
 #endif
 
-    fprintf (stderr, "OPAL finalize append cleanup: fn: %p, name: %s, domain: %s\n", (void *) cleanup_fn,
-             fn_name, current_finalize_domain->domain_name);
-
     opal_mutex_lock (&opal_finalize_cleanup_fns_lock);
     opal_list_append (&current_finalize_domain->super, &cleanup_item->super);
     opal_mutex_unlock (&opal_finalize_cleanup_fns_lock);
