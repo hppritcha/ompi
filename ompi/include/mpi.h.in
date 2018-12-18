@@ -978,6 +978,8 @@ OMPI_DECLSPEC extern struct ompi_predefined_communicator_t ompi_mpi_comm_null;
 OMPI_DECLSPEC extern struct ompi_predefined_group_t ompi_mpi_group_empty;
 OMPI_DECLSPEC extern struct ompi_predefined_group_t ompi_mpi_group_null;
 
+OMPI_DECLSPEC extern struct ompi_predefined_instance_t ompi_mpi_instance_null;
+
 OMPI_DECLSPEC extern struct ompi_predefined_request_t ompi_request_null;
 
 OMPI_DECLSPEC extern struct ompi_predefined_message_t ompi_message_null;
