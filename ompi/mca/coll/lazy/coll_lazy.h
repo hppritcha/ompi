@@ -56,9 +56,6 @@ int mca_coll_lazy_barrier (struct ompi_communicator_t *comm, mca_coll_base_modul
 
 typedef struct mca_coll_lazy_module_t {
     mca_coll_base_module_t super;
-
-    pthread_barrier_t pth_barrier;
-    bool pth_barrier_init;
 } mca_coll_lazy_module_t;
 
 OBJ_CLASS_DECLARATION(mca_coll_lazy_module_t);

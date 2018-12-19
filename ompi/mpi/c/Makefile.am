@@ -347,14 +347,17 @@ libmpi_c_mpi_la_SOURCES = \
         session_create_keyval.c \
         session_delete_attr.c \
         session_get_attr.c \
+        session_get_info.c \
         session_get_num_psets.c \
         session_get_nth_pset.c \
+        session_get_pset_info.c \
         session_get_psetlen.c \
         session_init.c \
         session_f2c.c \
         session_finalize.c \
         session_free_keyval.c \
         session_set_attr.c \
+        session_set_info.c \
         ssend_init.c \
         ssend.c \
         start.c \
