@@ -972,7 +972,7 @@ static int ompi_instance_group_pmix_pset (ompi_instance_t *instance, const char 
         return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
-    for (size_t i = 0 ; i < size ; ++i) {
+    for (size_t i = 0 ; i < ompi_process_info.num_procs ; ++i) {
         opal_process_name_t name = {.vpid = i, .jobid = OMPI_PROC_MY_NAME->jobid};
         opal_value_t *val = NULL;
         int ret;
@@ -1020,17 +1020,83 @@ static int ompi_instance_group_pmix_pset (ompi_instance_t *instance, const char 
     return OMPI_SUCCESS;
 }
 
+static int ompi_instance_get_pmix_pset_size (ompi_instance_t *instance, const char *pset_name, size_t *size_out)
+{
+    size_t size = 0;
+
+    for (size_t i = 0 ; i < ompi_process_info.num_procs ; ++i) {
+        opal_process_name_t name = {.vpid = i, .jobid = OMPI_PROC_MY_NAME->jobid};
+        opal_value_t *val = NULL;
+        int ret;
+
+        ret = opal_pmix.get (&name, OPAL_PMIX_PSET_NAME, NULL, &val);
+        if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
+            return ret;
+        }
+
+        size += (0 == strcmp (pset_name, val->data.string));
+        OBJ_RELEASE(val);
+
+        ++size;
+    }
+
+    *size_out = size;
+
+    return OMPI_SUCCESS;
+}
+
 int ompi_group_from_pset (ompi_instance_t *instance, const char *pset_name, ompi_group_t **group_out)
 {
-    if (0 == strcmp (pset_name, "mpi://world")) {
+    if (0 == strncmp (pset_name, "mpi://", 6)) {
+        pset_name += 6;
+        if (0 == strcmp (pset_name, "world")) {
         return ompi_instance_group_world (instance, group_out);
-    }
-    if (0 == strcmp (pset_name, "mpi://self")) {
-        return ompi_instance_group_self (instance, group_out);
-    }
-    if (0 == strcmp (pset_name, "mpi://shared")) {
-        return ompi_instance_group_shared (instance, group_out);
+        }
+        if (0 == strcmp (pset_name, "self")) {
+            return ompi_instance_group_self (instance, group_out);
+        }
+        if (0 == strcmp (pset_name, "shared")) {
+            return ompi_instance_group_shared (instance, group_out);
+        }
     }
 
     return ompi_instance_group_pmix_pset (instance, pset_name, group_out);
+}
+
+int ompi_instance_get_pset_info (ompi_instance_t *instance, const char *pset_name, opal_info_t **info_used)
+{
+    ompi_info_t *info = ompi_info_allocate ();
+    char tmp[16];
+    size_t size;
+    int ret;
+
+    *info_used = (opal_info_t *) MPI_INFO_NULL;
+
+    if (OPAL_UNLIKELY(NULL == info)) {
+        return OMPI_ERR_OUT_OF_RESOURCE;
+    }
+
+    if (0 == strncmp (pset_name, "mpi://", 6)) {
+        pset_name += 6;
+        if (0 == strcmp (pset_name, "world")) {
+            size = ompi_process_info.num_procs;
+        } else if (0 == strcmp (pset_name, "self")) {
+            size = 1;
+        } else if (0 == strcmp (pset_name, "shared")) {
+            size = ompi_process_info.num_local_peers + 1;
+        }
+    } else {
+        ompi_instance_get_pmix_pset_size (instance, pset_name, &size);
+    }
+
+    snprintf (tmp, 16, "%" PRIsize_t, size);
+    ret = opal_info_set (&info->super, MPI_INFO_KEY_SESSION_PSET_SIZE, tmp);
+    if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
+        ompi_info_free (&info);
+        return ret;
+    }
+
+    *info_used = &info->super;
+
+    return OMPI_SUCCESS;
 }

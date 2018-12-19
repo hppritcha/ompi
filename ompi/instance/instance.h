@@ -148,6 +148,7 @@ OMPI_DECLSPEC int ompi_group_from_pset (ompi_instance_t *instance, const char *p
 OMPI_DECLSPEC int ompi_instance_get_num_psets (ompi_instance_t *instance, int *npset_names);
 OMPI_DECLSPEC int ompi_instance_get_psetlen (ompi_instance_t *instance, int n, int *pset_name_len);
 OMPI_DECLSPEC int ompi_instance_get_nth_pset (ompi_instance_t *instance, int n, int len, char *pset_name);
+OMPI_DECLSPEC int ompi_instance_get_pset_info (ompi_instance_t *instance, const char *pset_name, opal_info_t **info_used);
 
 /**
  * @brief current number of active instances

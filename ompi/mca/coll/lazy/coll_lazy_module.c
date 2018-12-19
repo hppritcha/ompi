@@ -44,22 +44,7 @@
 #include "coll_lazy.h"
 
 
-static void mca_coll_lazy_module_construct(mca_coll_lazy_module_t *module)
-{
-    module->pth_barrier_init = false;
-}
-
-static void mca_coll_lazy_module_destruct(mca_coll_lazy_module_t *module)
-{
-    if (module->pth_barrier_init) {
-	pthread_barrier_destroy (&module->pth_barrier);
-	module->pth_barrier_init = false;
-    }
-}
-
-OBJ_CLASS_INSTANCE(mca_coll_lazy_module_t, mca_coll_base_module_t,
-                   mca_coll_lazy_module_construct,
-                   mca_coll_lazy_module_destruct);
+OBJ_CLASS_INSTANCE(mca_coll_lazy_module_t, mca_coll_base_module_t, NULL, NULL);
 
 
 /*
@@ -111,15 +96,5 @@ mca_coll_base_module_t *mca_coll_lazy_comm_query (ompi_communicator_t *comm, int
  */
 int mca_coll_lazy_module_enable (mca_coll_base_module_t *module, ompi_communicator_t *comm)
 {
-    mca_coll_lazy_module_t *lazy_module = (mca_coll_lazy_module_t *) module;
-    int rc;
-
-    rc = pthread_barrier_init (&lazy_module->pth_barrier, NULL, comm->c_local_group->grp_proc_count);
-    if (0 != rc) {
-	return OMPI_ERR_NOT_FOUND;
-    }
-
-    lazy_module->pth_barrier_init = true;
-
     return OMPI_SUCCESS;
 }
