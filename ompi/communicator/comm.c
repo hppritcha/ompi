@@ -1542,10 +1542,10 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
     }
 
     /* using 0 for the tag because we control both local_comm and leader_comm */
-    rprocs = ompi_comm_get_rprocs (local_comm, leader_comm, local_leader, leader_comm_remote_leader, 0, rsize);
-    if (OPAL_UNLIKELY(NULL == rprocs)) {
+    rc = ompi_comm_get_rprocs (local_comm, leader_comm, local_leader, leader_comm_remote_leader, 0, rsize, &rprocs);
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         ompi_comm_free (&local_comm);
-        return OMPI_ERR_OUT_OF_RESOURCE;
+        return rc;
     }
 
     if (!i_am_leader) {

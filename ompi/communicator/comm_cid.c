@@ -516,7 +516,7 @@ static int ompi_comm_checkcid (ompi_comm_request_t *request)
 
     if (OMPI_SUCCESS != request->super.req_status.MPI_ERROR) {
         if (participate) {
-            opal_pointer_array_set_item(&ompi_mpi_communicators, context->nextlocal_cid, NULL);
+            opal_pointer_array_set_item(&ompi_comm_array, context->nextlocal_cid, NULL);
         }
         return request->super.req_status.MPI_ERROR;
     }
@@ -560,7 +560,7 @@ static int ompi_comm_nextcid_check_flag (ompi_comm_request_t *request)
 
     if (OMPI_SUCCESS != request->super.req_status.MPI_ERROR) {
         if (participate) {
-            opal_pointer_array_set_item(&ompi_mpi_communicators, context->nextcid, NULL);
+            opal_pointer_array_set_item(&ompi_comm_array, context->nextcid, NULL);
         }
         return request->super.req_status.MPI_ERROR;
     }
