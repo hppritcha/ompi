@@ -19,6 +19,8 @@
  * Copyright (c) 2016      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2018      FUJITSU LIMITED.  All rights reserved.
+ * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -765,11 +767,11 @@ int mca_pml_ob1_send_request_start_rdma( mca_pml_ob1_send_request_t* sendreq,
 
     /* build match header */
     hdr = (mca_pml_ob1_hdr_t *) des->des_segments->seg_addr.pval;
-    if (MCA_PML_OB1_PROC_REQUIRES_EXT_MATCH(sendreq->ob1_proc)) {
+    if (need_ext_match) {
         hdr_rget = &hdr->hdr_ext_rget.hdr_rget;
         mca_pml_ob1_cid_hdr_prepare (&hdr->hdr_cid, sendreq->req_send.req_base.req_comm);
     } else {
-        hdr_rget = &hdr->hdr_ext_rget.hdr_rget;
+        hdr_rget = &hdr->hdr_rget;
     }
 
     /* TODO -- Add support for multiple segments for get */

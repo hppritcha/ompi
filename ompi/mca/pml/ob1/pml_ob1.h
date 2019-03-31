@@ -16,7 +16,7 @@
  *                         reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2018      Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -252,10 +252,12 @@ static inline void mca_pml_ob1_add_to_pending (ompi_proc_t *proc, mca_bml_base_b
     mca_pml_ob1_pckt_pending_t *pckt;
 
     MCA_PML_OB1_PCKT_PENDING_ALLOC(pckt);
-    assert (sizeof (pckt->hdr) <= hdr_size);
+    assert (sizeof (pckt->hdr) >= hdr_size);
     pckt->proc = proc;
     pckt->order = order;
     pckt->hdr_size = hdr_size;
+    pckt->bml_btl = bml_btl;
+    memcpy (&pckt->hdr, hdr, hdr_size);
     OPAL_THREAD_SCOPED_LOCK(&mca_pml_ob1.lock, {
             opal_list_append(&mca_pml_ob1.pckt_pending, &pckt->super.super);
         });
