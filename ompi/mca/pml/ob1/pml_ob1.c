@@ -22,6 +22,8 @@
  *                         All rights reserved.
  * Copyright (c) 2018 IBM Corporation. All rights reserved.
  * Copyright (c) 2019-2020 Intel, Inc.  All rights reserved.
+ * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
+ *                         reseved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -796,7 +798,7 @@ void mca_pml_ob1_process_pending_packets(mca_bml_base_btl_t* bml_btl)
     mca_pml_ob1_pckt_pending_t *pckt;
     int32_t rc, max = (int32_t) opal_list_get_size (&mca_pml_ob1.pckt_pending);
 
-    for (int32_t i = 0; i < max ; +i) {
+    for (int32_t i = 0; i < max ; ++i) {
         mca_bml_base_btl_t *send_dst = NULL;
         OPAL_THREAD_SCOPED_LOCK(&mca_pml_ob1.lock, {
                 pckt = (mca_pml_ob1_pckt_pending_t*)
