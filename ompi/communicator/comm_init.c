@@ -23,7 +23,7 @@
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2015-2019 Intel, Inc.  All rights reserved.
  * Copyright (c) 2016-2017 IBM Corporation. All rights reserved.
- * Copyright (c) 2018      Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -51,6 +51,7 @@
 #include "ompi/dpm/dpm.h"
 #include "ompi/memchecker.h"
 #include "ompi/instance/instance.h"
+#include "ompi/mpi/fortran/use-mpi-f08/constants.h"
 
 /*
 ** Table for Fortran <-> C communicator handle conversion
@@ -111,6 +112,31 @@ int ompi_comm_init(void)
     OBJ_CONSTRUCT(&ompi_comm_f_to_c_table, opal_pointer_array_t);
     if( OPAL_SUCCESS != opal_pointer_array_init (&ompi_comm_f_to_c_table, 8,
                                                  OMPI_FORTRAN_HANDLE_MAX, 32) ) {
+        return OMPI_ERROR;
+    }
+
+    /*
+     * reserve indices in the F to C table for:
+     * MPI_COMM_WORLD
+     * MPI_COMM_SELF
+     * MPI_COMM_NULL
+     */
+
+    if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
+                                                      OMPI_MPI_COMM_NULL,
+                                                      (void *)-1L)) {
+        return OMPI_ERROR;
+    }
+
+    if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
+                                                      OMPI_MPI_COMM_WORLD,
+                                                      (void *)-1L)) {
+        return OMPI_ERROR;
+    }
+
+    if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
+                                                      OMPI_MPI_COMM_SELF,
+                                                      (void *)-1L)) {
         return OMPI_ERROR;
     }
 
@@ -414,7 +440,7 @@ static int ompi_comm_finalize (void)
 
 static void ompi_comm_construct(ompi_communicator_t* comm)
 {
-    comm->c_f_to_c_index = opal_pointer_array_add(&ompi_comm_f_to_c_table, comm);
+    int idx;
     comm->c_name[0]      = '\0';
     comm->c_index        = MPI_UNDEFINED;
     comm->c_flags        = 0;
@@ -427,6 +453,20 @@ static void ompi_comm_construct(ompi_communicator_t* comm)
     comm->c_topo         = NULL;
     comm->c_coll         = NULL;
     comm->c_nbc_tag      = MCA_COLL_BASE_TAG_NONBLOCKING_BASE;
+
+    /*
+     * magic numerology - see TOPDIR/ompi/include/mpif-values.pl
+     */
+    idx = (comm == ompi_mpi_comm_world_addr) ? OMPI_MPI_COMM_WORLD :
+              (comm == ompi_mpi_comm_self_addr) ? OMPI_MPI_COMM_SELF :
+                  (comm == ompi_mpi_comm_null_addr) ? OMPI_MPI_COMM_NULL : -1;
+    if (-1 == idx) {
+        comm->c_f_to_c_index = opal_pointer_array_add(&ompi_comm_f_to_c_table,
+                                                      comm);
+    } else {
+        opal_pointer_array_set_item(&ompi_comm_f_to_c_table, idx, comm);
+        comm->c_f_to_c_index = idx;
+    }
 
     /* A keyhash will be created if/when an attribute is cached on
        this communicator */
