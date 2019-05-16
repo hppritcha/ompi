@@ -184,7 +184,7 @@ int ompi_comm_init_mpi3 (void)
 
     /* Setup MPI_COMM_WORLD */
     OBJ_CONSTRUCT(&ompi_mpi_comm_world, ompi_communicator_t);
-    assert(ompi_mpi_comm_world.comm.c_f_to_c_index == 1);
+    assert(ompi_mpi_comm_world.comm.c_f_to_c_index == OMPI_MPI_COMM_WORLD);
 
     ret = ompi_group_from_pset (ompi_mpi_instance_default, "mpi://world", &group);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
@@ -238,7 +238,7 @@ int ompi_comm_init_mpi3 (void)
     }
     /* Setup MPI_COMM_SELF */
     OBJ_CONSTRUCT(&ompi_mpi_comm_self, ompi_communicator_t);
-    assert(ompi_mpi_comm_self.comm.c_f_to_c_index == 2);
+    assert(ompi_mpi_comm_self.comm.c_f_to_c_index == OMPI_MPI_COMM_SELF);
 
     ret = ompi_group_from_pset (ompi_mpi_instance_default, "mpi://self", &group);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
