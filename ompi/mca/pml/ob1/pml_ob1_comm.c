@@ -133,7 +133,7 @@ mca_pml_ob1_comm_proc_t *mca_pml_ob1_peer_create (ompi_communicator_t *comm, mca
     /* make sure proc structure is filled in before adding it to the array */
     opal_atomic_wmb ();
 
-    if (!OPAL_ATOMIC_COMPARE_EXCHANGE_STRONG_PTR((atomic_intptr_t *) pml_comm->procs + rank, &old_proc,
+    if (!OPAL_ATOMIC_COMPARE_EXCHANGE_STRONG_PTR((opal_atomic_intptr_t *) pml_comm->procs + rank, &old_proc,
 						(uintptr_t) proc)) {
 	/* proc was created by a competing thread. go ahead and throw this one away. */
 	OBJ_RELEASE(proc);
