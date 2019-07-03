@@ -26,7 +26,7 @@
 #include <string.h>
 
 #include "opal/util/output.h"
-#include "opal/threads/tsd.h"
+#include "opal/mca/threads/tsd.h"
 #include "opal/mca/event/event.h"
 #include "opal/mca/pmix/pmix.h"
 #include "opal/runtime/opal_progress.h"

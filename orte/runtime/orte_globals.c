@@ -40,7 +40,7 @@
 #include "opal/class/opal_pointer_array.h"
 #include "opal/class/opal_value_array.h"
 #include "opal/dss/dss.h"
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 
 #include "orte/mca/errmgr/errmgr.h"
 #include "orte/mca/rml/rml.h"

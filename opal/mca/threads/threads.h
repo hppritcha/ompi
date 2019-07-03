@@ -14,6 +14,7 @@
  * Copyright (c) 2015-2017 Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2017      Intel, Inc. All rights reserved.
+ * Copyright (c) 2019      Sandia National Laboratories.  All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -21,13 +22,10 @@
  * $HEADER$
  */
 
-#ifndef OPAL_THREAD_H
-#define OPAL_THREAD_H 1
+#ifndef OPAL_MCA_THREAD_H
+#define OPAL_MCA_THREAD_H 1
 
 #include "opal_config.h"
-
-#include <pthread.h>
-#include <signal.h>
 
 #include "opal/class/opal_object.h"
 #if OPAL_ENABLE_DEBUG
@@ -43,14 +41,11 @@ typedef void *(*opal_thread_fn_t) (opal_object_t *);
 
 #define OPAL_THREAD_CANCELLED   ((void*)1);
 
-struct opal_thread_t {
-    opal_object_t super;
-    opal_thread_fn_t t_run;
-    void* t_arg;
-    pthread_t t_handle;
-};
+#include MCA_threads_base_include_HEADER
 
 typedef struct opal_thread_t opal_thread_t;
+
+OBJ_CLASS_DECLARATION(opal_thread_t);
 
 #if OPAL_ENABLE_DEBUG
 OPAL_DECLSPEC extern bool opal_debug_threads;
@@ -135,7 +130,8 @@ OPAL_DECLSPEC bool opal_thread_self_compare(opal_thread_t*);
 OPAL_DECLSPEC opal_thread_t *opal_thread_get_self(void);
 OPAL_DECLSPEC void opal_thread_kill(opal_thread_t *, int sig);
 OPAL_DECLSPEC void opal_thread_set_main(void);
+OPAL_DECLSPEC void opal_event_use_threads(void);
 
 END_C_DECLS
 
-#endif /* OPAL_THREAD_H */
+#endif /* OPAL_MCA_THREAD_H */

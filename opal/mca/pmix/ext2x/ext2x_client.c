@@ -30,7 +30,7 @@
 #endif
 
 #include "opal/hash_string.h"
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 #include "opal/util/argv.h"
 #include "opal/util/opal_environ.h"
 #include "opal/util/proc.h"

@@ -45,8 +45,8 @@
 #include "opal/mca/compress/compress.h"
 #include "opal/mca/compress/base/base.h"
 
-#include "opal/threads/mutex.h"
-#include "opal/threads/condition.h"
+#include "opal/mca/threads/mutex.h"
+#include "opal/mca/threads/condition.h"
 
 #include "orte/util/name_fns.h"
 #include "orte/util/proc_info.h"

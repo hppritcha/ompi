@@ -1,31 +1,6 @@
-/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
-/*
- * Copyright (c) 2014-2016 The University of Tennessee and The University
- *                         of Tennessee Research Foundation.  All rights
- *                         reserved.
- * Copyright (c) 2016      Los Alamos National Security, LLC. All rights
- *                         reserved.
- * Copyright (c) 2016      Mellanox Technologies. All rights reserved.
- * Copyright (c) 2016      Research Organization for Information Science
- *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2017      IBM Corporation. All rights reserved.
- * $COPYRIGHT$
- *
- * Additional copyrights may follow
- *
- * $HEADER$
- */
 
-#if !defined(OPAL_THREADS_WAIT_SYNC_H)
-#define OPAL_THREADS_WAIT_SYNC_H
-
-#include "opal/sys/atomic.h"
-#include "opal/threads/condition.h"
-#include <pthread.h>
-
-BEGIN_C_DECLS
-
-extern int opal_max_thread_in_progress;
+#ifndef  OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H
+#define  OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H 1
 
 typedef struct ompi_wait_sync_t {
     opal_atomic_int32_t count;
@@ -36,9 +11,6 @@ typedef struct ompi_wait_sync_t {
     struct ompi_wait_sync_t *prev;
     volatile bool signaling;
 } ompi_wait_sync_t;
-
-#define REQUEST_PENDING        (void*)0L
-#define REQUEST_COMPLETED      (void*)1L
 
 #define SYNC_WAIT(sync)                 (opal_using_threads() ? ompi_sync_wait_mt (sync) : sync_wait_st (sync))
 
@@ -102,27 +74,4 @@ static inline int sync_wait_st (ompi_wait_sync_t *sync)
         }                                                       \
     } while(0)
 
-/**
- * Update the status of the synchronization primitive. If an error is
- * reported the synchronization is completed and the signal
- * triggered. The status of the synchronization will be reported to
- * the waiting threads.
- */
-static inline void wait_sync_update(ompi_wait_sync_t *sync, int updates, int status)
-{
-    if( OPAL_LIKELY(OPAL_SUCCESS == status) ) {
-        if( 0 != (OPAL_THREAD_ADD_FETCH32(&sync->count, -updates)) ) {
-            return;
-        }
-    } else {
-        /* this is an error path so just use the atomic */
-        sync->status = OPAL_ERROR;
-        opal_atomic_wmb ();
-        opal_atomic_swap_32 (&sync->count, 0);
-    }
-    WAIT_SYNC_SIGNAL(sync);
-}
-
-END_C_DECLS
-
-#endif /* defined(OPAL_THREADS_WAIT_SYNC_H) */
+#endif /* OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H */

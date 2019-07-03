@@ -35,8 +35,8 @@
 #include "opal/util/opal_environ.h"
 #include "opal/util/basename.h"
 
-#include "opal/threads/mutex.h"
-#include "opal/threads/condition.h"
+#include "opal/mca/threads/mutex.h"
+#include "opal/mca/threads/condition.h"
 
 #include "orte/util/name_fns.h"
 #include "orte/util/proc_info.h"

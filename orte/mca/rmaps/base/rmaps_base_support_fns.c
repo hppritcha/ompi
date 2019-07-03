@@ -36,7 +36,7 @@
 #include "orte/mca/mca.h"
 #include "opal/mca/base/base.h"
 #include "opal/mca/hwloc/base/base.h"
-#include "opal/threads/tsd.h"
+#include "opal/mca/threads/tsd.h"
 
 #include "orte/types.h"
 #include "orte/util/show_help.h"

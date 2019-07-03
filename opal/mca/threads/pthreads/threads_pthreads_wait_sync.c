@@ -6,13 +6,15 @@
  * Copyright (c) 2016      Los Alamos National Security, LLC. All rights
  *                         reserved.
  * Copyright (c) 2017      IBM Corporation. All rights reserved.
+ * Copyright (c) 2019      Sandia National Laboratories.  All rights reserved.
+ *
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
  *
  * $HEADER$
  */
-#include "wait_sync.h"
+#include "opal/mca/threads/wait_sync.h"
 
 static opal_mutex_t wait_sync_lock = OPAL_MUTEX_STATIC_INIT;
 static ompi_wait_sync_t* wait_sync_list = NULL;

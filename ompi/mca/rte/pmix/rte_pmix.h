@@ -35,7 +35,7 @@
 
 struct opal_proc_t;
 
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 #include "opal/util/proc.h"
 #include "opal/mca/hwloc/hwloc-internal.h"
 #include "opal/mca/pmix/pmix.h"

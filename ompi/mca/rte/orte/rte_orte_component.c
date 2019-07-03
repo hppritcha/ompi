@@ -21,7 +21,7 @@
 #include "ompi_config.h"
 #include "ompi/constants.h"
 
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 #include "opal/class/opal_list.h"
 
 #include "orte/mca/rml/rml.h"

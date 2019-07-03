@@ -29,7 +29,7 @@
 
 #include "opal/util/printf.h"
 #include "opal/util/string_copy.h"
-#include "opal/threads/tsd.h"
+#include "opal/mca/threads/tsd.h"
 
 #include "orte/mca/errmgr/errmgr.h"
 

@@ -54,7 +54,7 @@
 #include "opal/util/os_dirpath.h"
 #include "opal/util/show_help.h"
 #include "opal/util/printf.h"
-#include "opal/threads/tsd.h"
+#include "opal/mca/threads/tsd.h"
 #include "opal/mca/pmix/pmix.h"
 
 #include "opal/mca/hwloc/hwloc-internal.h"

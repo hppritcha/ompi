@@ -26,7 +26,7 @@
 
 struct opal_proc_t;
 
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 
 #include "orte/types.h"
 #include "orte/mca/errmgr/errmgr.h"

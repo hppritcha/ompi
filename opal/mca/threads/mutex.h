@@ -15,6 +15,7 @@
  *                         reserved.
  * Copyright (c) 2007      Voltaire. All rights reserved.
  * Copyright (c) 2010      Oracle and/or its affiliates.  All rights reserved.
+ * Copyright (c) 2019      Sandia National Laboratories.  All rights reserved.
  *
  * $COPYRIGHT$
  *
@@ -23,17 +24,15 @@
  * $HEADER$
  */
 
-#ifndef  OPAL_MUTEX_H
-#define  OPAL_MUTEX_H 1
+#ifndef  OPAL_MCA_THREADS_MUTEX_H
+#define  OPAL_MCA_THREADS_MUTEX_H 1
 
 #include "opal_config.h"
-
-#include "opal/threads/thread_usage.h"
 
 BEGIN_C_DECLS
 
 /**
- * @file:
+* @file:
  *
  * Mutual exclusion functions.
  *
@@ -43,8 +42,15 @@ BEGIN_C_DECLS
 /**
  * Opaque mutex object
  */
+
 typedef struct opal_mutex_t opal_mutex_t;
 typedef struct opal_mutex_t opal_recursive_mutex_t;
+
+#include MCA_threads_mutex_base_include_HEADER
+
+OBJ_CLASS_DECLARATION(opal_mutex_t);
+OBJ_CLASS_DECLARATION(opal_recursive_mutex_t);
+
 
 /**
  * Try to acquire a mutex.
@@ -95,11 +101,6 @@ static inline void opal_mutex_atomic_lock(opal_mutex_t *mutex);
  */
 static inline void opal_mutex_atomic_unlock(opal_mutex_t *mutex);
 
-END_C_DECLS
-
-#include "mutex_unix.h"
-
-BEGIN_C_DECLS
 
 /**
  * Lock a mutex if opal_using_threads() says that multiple threads may
@@ -189,4 +190,4 @@ BEGIN_C_DECLS
 
 END_C_DECLS
 
-#endif                          /* OPAL_MUTEX_H */
+#endif                          /* OPAL_MCA_THREADS_MUTEX_H */

@@ -53,8 +53,8 @@
 #include "opal/util/output.h"
 #include "opal/class/opal_list.h"
 #include "opal/mca/event/event.h"
-#include "opal/threads/mutex.h"
-#include "opal/threads/condition.h"
+#include "opal/mca/threads/mutex.h"
+#include "opal/mca/threads/condition.h"
 #include "opal/sys/atomic.h"
 
 #include "orte/constants.h"

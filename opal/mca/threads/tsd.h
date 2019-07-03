@@ -4,6 +4,8 @@
  * Copyright (c) 2008      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2015-2017 Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2019      Sandia National Laboratories. All rights reserved.
+ *
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -12,8 +14,8 @@
  */
 
 
-#ifndef OPAL_THREADS_TSD_H
-#define OPAL_THREADS_TSD_H
+#ifndef OPAL_MCA_THREADS_TSD_H
+#define OPAL_MCA_THREADS_TSD_H
 
 #include "opal_config.h"
 
@@ -106,26 +108,7 @@ OPAL_DECLSPEC int opal_tsd_getspecific(opal_tsd_key_t key, void **valuep);
 
 #else
 
-typedef pthread_key_t opal_tsd_key_t;
-
-static inline int
-opal_tsd_key_delete(opal_tsd_key_t key)
-{
-    return pthread_key_delete(key);
-}
-
-static inline int
-opal_tsd_setspecific(opal_tsd_key_t key, void *value)
-{
-    return pthread_setspecific(key, value);
-}
-
-static inline int
-opal_tsd_getspecific(opal_tsd_key_t key, void **valuep)
-{
-    *valuep = pthread_getspecific(key);
-    return OPAL_SUCCESS;
-}
+#include MCA_threads_tsd_base_include_HEADER
 
 #endif
 
@@ -175,4 +158,4 @@ OPAL_DECLSPEC int opal_tsd_keys_destruct(void);
 
 END_C_DECLS
 
-#endif /* OPAL_MTHREADS_TSD_H */
+#endif /* OPAL_MCA_THREADS_TSD_H */

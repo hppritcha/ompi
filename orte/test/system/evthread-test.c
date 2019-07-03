@@ -11,7 +11,7 @@
 #endif
 #include <errno.h>
 
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/threads.h"
 #include "opal/runtime/opal.h"
 #include "opal/mca/event/event.h"
 

@@ -46,8 +46,8 @@
 #include "opal/util/string_copy.h"
 #include "opal/mca/hwloc/base/base.h"
 #include "opal/mca/pmix/base/base.h"
-#include "opal/threads/threads.h"
-#include "opal/threads/tsd.h"
+#include "opal/mca/threads/threads.h"
+#include "opal/mca/threads/tsd.h"
 #include "opal/class/opal_list.h"
 #include "opal/dss/dss.h"
 

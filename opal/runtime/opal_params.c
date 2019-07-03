@@ -39,8 +39,8 @@
 #include "opal/runtime/opal.h"
 #include "opal/datatype/opal_datatype.h"
 #include "opal/mca/base/mca_base_var.h"
-#include "opal/threads/mutex.h"
-#include "opal/threads/threads.h"
+#include "opal/mca/threads/mutex.h"
+#include "opal/mca/threads/threads.h"
 #include "opal/mca/shmem/base/base.h"
 #include "opal/mca/base/mca_base_var.h"
 #include "opal/runtime/opal_params.h"
@@ -59,6 +59,10 @@ char *opal_set_max_sys_limits = NULL;
 char *opal_timing_sync_file = NULL;
 char *opal_timing_output = NULL;
 bool opal_timing_overhead = true;
+#endif
+
+#if OPAL_ENABLE_DEBUG
+bool opal_debug_threads;
 #endif
 
 bool opal_built_with_cuda_support = OPAL_INT_TO_BOOL(OPAL_CUDA_SUPPORT);

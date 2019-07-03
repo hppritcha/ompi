@@ -15,6 +15,7 @@
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2015-2018 Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2019      Sandia National Laboratories. All rights reserved.
  * $COPYRIGHT$
  * 
  * Additional copyrights may follow
@@ -22,8 +23,8 @@
  * $HEADER$
  */
 
-#if !defined(OPAL_THREAD_USAGE_H)
-#define OPAL_THREAD_USAGE_H
+#if !defined(OPAL_MCA_THREAD_USAGE_H)
+#define OPAL_MCA_THREAD_USAGE_H
 
 #include "opal_config.h"
 
@@ -263,4 +264,4 @@ OPAL_THREAD_DEFINE_ATOMIC_SWAP(int64_t, int64_t, 64)
 #define OPAL_HAVE_THREAD_LOCAL 0
 #endif /* !defined(OPAL_HAVE_THREAD_LOCAL) */
 
-#endif /* !defined(OPAL_THREAD_USAGE_H) */
+#endif /* !defined(OPAL_MCA_THREAD_USAGE_H) */
