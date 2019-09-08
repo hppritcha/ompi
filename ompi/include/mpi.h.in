@@ -99,6 +99,9 @@
 /* Maximum length of processor names (default is 256) */
 #undef OPAL_MAX_PROCESSOR_NAME
 
+/* Maximum length of processor names (default is 256) */
+#undef OPAL_MAX_PSET_NAME_LEN
+
 /* The number or Fortran INTEGER in MPI Status */
 #undef OMPI_FORTRAN_STATUS_SIZE
 
@@ -533,6 +536,7 @@ typedef MPI_Win_errhandler_function MPI_Win_errhandler_fn
 #define MPI_DISTRIBUTE_CYCLIC    1                     /* cyclic distribution */
 #define MPI_DISTRIBUTE_NONE      2                     /* not distributed */
 #define MPI_DISTRIBUTE_DFLT_DARG (-1)                  /* default distribution arg */
+#define MPI_MAX_PSET_NAME_LEN    OPAL_MAX_PSET_NAME_LEN /* max pset name len */
 
 /*
  * Since these values are arbitrary to Open MPI, we might as well make
