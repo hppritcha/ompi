@@ -24,7 +24,7 @@ subroutine PMPI_Intercomm_create_from_groups_f08(local_group, local_leader, remo
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
    integer :: c_ierror
 
-   call ompi_create_intercomm_from_groups_f(local_group%MPI_VAL, local_leader, &
+   call ompi_intercomm_create_from_groups_f(local_group%MPI_VAL, local_leader, &
                                             remote_group%MPI_VAL,  &
                                             remote_leader, stringtag, info%MPI_VAL, &
                                             errhandler%MPI_VAL, &
