@@ -79,7 +79,7 @@ void ompi_session_get_nth_psetlen_f(MPI_Fint *session, MPI_Fint *n, MPI_Fint *ps
 
     c_session = PMPI_Session_f2c(*session);
 
-    c_ierr = PMPI_Session_get_nth_psetlen(c_session, OMPI_SINGLE_NAME_CONVERT(n), OMPI_SINGLE_NAME_CONVERT(pset_len));
+    c_ierr = PMPI_Session_get_nth_psetlen(c_session, OMPI_SINGLE_NAME_CONVERT(*n), OMPI_SINGLE_NAME_CONVERT(pset_len));
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
     if (MPI_SUCCESS == c_ierr) {
