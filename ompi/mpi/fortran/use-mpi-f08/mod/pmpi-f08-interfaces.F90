@@ -25,7 +25,6 @@
 
 module pmpi_f08_interfaces
 
-
 #include "mpi-f08-rename.h"
 
 module pmpi_f08_interfaces
