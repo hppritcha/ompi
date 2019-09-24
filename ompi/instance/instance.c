@@ -635,6 +635,7 @@ int ompi_mpi_instance_init (int ts_level,  opal_info_t *info, ompi_errhandler_t 
     }
 
     *instance = new_instance;
+    opal_mutex_unlock (&instance_lock);
 
     return OMPI_SUCCESS;
 }
