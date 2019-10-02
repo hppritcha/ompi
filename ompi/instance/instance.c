@@ -476,11 +476,6 @@ static int ompi_mpi_instance_init_common (void)
         return ompi_instance_print_error ("ompi_win_init() failed", ret);
     }
 
-    /* initialize attribute meta-data structure for comm/win/dtype */
-    if (OMPI_SUCCESS != (ret = ompi_attr_init ())) {
-        return ompi_instance_print_error ("ompi_attr_init() failed", ret);
-    }
-
     /* Setup the dynamic process management (DPM) subsystem */
     if (OMPI_SUCCESS != (ret = ompi_dpm_init ())) {
         return ompi_instance_print_error ("ompi_dpm_init() failed", ret);
