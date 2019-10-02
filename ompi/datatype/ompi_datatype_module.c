@@ -39,6 +39,7 @@
 #include "ompi/datatype/ompi_datatype.h"
 #include "ompi/datatype/ompi_datatype_internal.h"
 #include "ompi/instance/instance.h"
+#include "ompi/attribute/attribute.h"
 
 #include "mpi.h"
 
@@ -475,6 +476,7 @@ opal_pointer_array_t ompi_datatype_f_to_c_table = {{0}};
 int32_t ompi_datatype_init( void )
 {
     int32_t i;
+    int ret = OMPI_SUCCESS;
 
     opal_datatype_init();
 
@@ -668,6 +670,13 @@ int32_t ompi_datatype_init( void )
         }
     }
     ompi_datatype_default_convertors_init();
+
+    /* get a reference to the attributes subsys */
+    ret = ompi_attr_get_ref();
+    if (OMPI_SUCCESS != ret) {
+        return ret;
+    }
+
     ompi_mpi_instance_append_finalize (ompi_datatype_finalize);
     return OMPI_SUCCESS;
 }
@@ -675,6 +684,8 @@ int32_t ompi_datatype_init( void )
 
 static int ompi_datatype_finalize (void)
 {
+    int ret = OMPI_SUCCESS;
+
     /* As the synonyms are just copies of the internal data we should not free them.
      * Anyway they are over the limit of OMPI_DATATYPE_MPI_MAX_PREDEFINED so they will never get freed.
      */
@@ -696,7 +707,10 @@ static int ompi_datatype_finalize (void)
     /* don't call opal_datatype_finalize () as it no longer exists. the function will be called
      * opal_finalize_util (). */
 
-    return OMPI_SUCCESS;
+    /* release a reference to the attributes subsys */
+    ret = ompi_attr_put_ref();
+
+    return ret;
 }
 
 
