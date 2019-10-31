@@ -52,7 +52,8 @@ struct opal_pthread_mutex_t {
 typedef struct opal_pthread_mutex_t opal_pthread_mutex_t;
 typedef struct opal_pthread_mutex_t opal_pthread_recursive_mutex_t;
 
-static void mca_threads_pthreads_mutex_constructor(opal_mutex_t *p_mutex) {
+static void mca_threads_pthreads_mutex_constructor(opal_mutex_t *p_mutex)
+{
     pthread_mutex_init(&p_mutex->m_lock_pthread, NULL);
 #if OPAL_ENABLE_DEBUG
     p_mutex->m_lock_debug = 0;
@@ -62,12 +63,14 @@ static void mca_threads_pthreads_mutex_constructor(opal_mutex_t *p_mutex) {
     opal_atomic_lock_init(&p_mutex->m_lock_atomic, 0);
 }
 
-static void mca_threads_pthreads_mutex_desctructor(opal_mutex_t *p_mutex) {
+static void mca_threads_pthreads_mutex_desctructor(opal_mutex_t *p_mutex)
+{
     pthread_mutex_destroy(&p_mutex->m_lock_pthread);
 }
 
 static void mca_threads_pthreads_recursive_mutex_constructor
-        (opal_recursive_mutex_t *p_mutex) {
+        (opal_recursive_mutex_t *p_mutex)
+{
     pthread_mutexattr_t mutex_attr;
     pthread_mutexattr_init(&mutex_attr);
     pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_RECURSIVE);
@@ -82,7 +85,8 @@ static void mca_threads_pthreads_recursive_mutex_constructor
 }
 
 static void mca_threads_pthreads_recursive_mutex_desctructor
-        (opal_recursive_mutex_t *p_mutex) {
+        (opal_recursive_mutex_t *p_mutex)
+{
     pthread_mutex_destroy(&p_mutex->m_lock_pthread);
 }
 

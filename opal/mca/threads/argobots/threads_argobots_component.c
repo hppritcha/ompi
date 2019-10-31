@@ -33,7 +33,7 @@ static int opal_threads_argobots_open(void);
 
 const opal_threads_base_component_1_0_0_t mca_threads_argobots_component = {
     /* First, the mca_component_t struct containing meta information
-       about the component itself */
+     * about the component itself */
     .threadsc_version = {
         OPAL_THREADS_BASE_VERSION_1_0_0,
 
@@ -52,6 +52,6 @@ const opal_threads_base_component_1_0_0_t mca_threads_argobots_component = {
 
 int opal_threads_argobots_open(void)
 {
-    ensure_init_argobots();
+    opal_threads_argobots_ensure_init();
     return OPAL_SUCCESS;
 }

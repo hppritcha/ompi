@@ -23,9 +23,8 @@
  * $HEADER$
  */
 
-
-#ifndef  OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_WAIT_SYNC_H
-#define  OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_WAIT_SYNC_H 1
+#ifndef OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_WAIT_SYNC_H
+#define OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_WAIT_SYNC_H
 
 #include "opal/mca/threads/argobots/threads_argobots.h"
 #include <abt.h>
@@ -40,7 +39,8 @@ typedef struct ompi_wait_sync_t {
     volatile bool signaling;
 } ompi_wait_sync_t;
 
-#define SYNC_WAIT(sync)                 (opal_using_threads() ? ompi_sync_wait_mt (sync) : sync_wait_st (sync))
+#define SYNC_WAIT(sync) \
+    (opal_using_threads() ? ompi_sync_wait_mt (sync) : sync_wait_st (sync))
 
 /* The loop in release handles a race condition between the signaling
  * thread and the destruction of the condition variable. The signaling
@@ -52,7 +52,7 @@ typedef struct ompi_wait_sync_t {
  * the critical path. */
 #define WAIT_SYNC_RELEASE(sync)                       \
     if (opal_using_threads()) {                       \
-        ensure_init_argobots();                       \
+        opal_threads_argobots_ensure_init();          \
         while ((sync)->signaling) {                   \
             ABT_thread_yield();                       \
             continue;                                 \
@@ -63,7 +63,7 @@ typedef struct ompi_wait_sync_t {
 
 #define WAIT_SYNC_RELEASE_NOWAIT(sync)                \
     if (opal_using_threads()) {                       \
-        ensure_init_argobots();                       \
+        opal_threads_argobots_ensure_init();          \
         ABT_cond_free(&(sync)->condition);            \
         ABT_mutex_free(&(sync)->lock);                \
     }
@@ -71,26 +71,26 @@ typedef struct ompi_wait_sync_t {
 
 #define WAIT_SYNC_SIGNAL(sync)                        \
     if (opal_using_threads()) {                       \
-        ensure_init_argobots();                       \
+        opal_threads_argobots_ensure_init();          \
         ABT_mutex_lock(sync->lock);                   \
         ABT_cond_signal(sync->condition);             \
         ABT_mutex_unlock(sync->lock);                 \
         sync->signaling = false;                      \
     }
 
-#define WAIT_SYNC_SIGNALLED(sync){                    \
+#define WAIT_SYNC_SIGNALLED(sync)                     \
+    {                                                 \
         (sync)->signaling = false;                    \
-}
+    }
 
 OPAL_DECLSPEC int ompi_sync_wait_mt(ompi_wait_sync_t *sync);
-static inline int sync_wait_st (ompi_wait_sync_t *sync)
+static inline int sync_wait_st(ompi_wait_sync_t *sync)
 {
-    ensure_init_argobots();
+    opal_threads_argobots_ensure_init();
     while (sync->count > 0) {
         opal_progress();
         ABT_thread_yield();
     }
-
     return sync->status;
 }
 
@@ -103,10 +103,10 @@ static inline int sync_wait_st (ompi_wait_sync_t *sync)
         (sync)->status = 0;                                     \
         (sync)->signaling = (0 != (c));                         \
         if (opal_using_threads()) {                             \
-            ensure_init_argobots();                             \
+            opal_threads_argobots_ensure_init();                \
             ABT_cond_create (&(sync)->condition);               \
             ABT_mutex_create (&(sync)->lock);                   \
         }                                                       \
-    } while(0)
+    } while (0)
 
 #endif /* OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_WAIT_SYNC_H */

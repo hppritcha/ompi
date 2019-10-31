@@ -14,6 +14,8 @@
  *                         reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2019      Sandia National Laboratories.  All rights reserved.
+ *
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -33,38 +35,10 @@ bool opal_uses_threads = false;
 
 static void opal_mutex_construct(opal_mutex_t *m)
 {
-#if OPAL_ENABLE_DEBUG
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-
-    /* set type to ERRORCHECK so that we catch recursive locks */
-#if OPAL_HAVE_PTHREAD_MUTEX_ERRORCHECK_NP
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK_NP);
-#elif OPAL_HAVE_PTHREAD_MUTEX_ERRORCHECK
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
-#endif /* OPAL_HAVE_PTHREAD_MUTEX_ERRORCHECK_NP */
-
-    pthread_mutex_init(&m->m_lock_pthread, &attr);
-    pthread_mutexattr_destroy(&attr);
-
-    m->m_lock_debug = 0;
-    m->m_lock_file = NULL;
-    m->m_lock_line = 0;
-#else
-
-    /* Without debugging, choose the fastest available mutexes */
-    pthread_mutex_init(&m->m_lock_pthread, NULL);
-
-#endif /* OPAL_ENABLE_DEBUG */
-
-#if OPAL_HAVE_ATOMIC_SPINLOCKS
-    opal_atomic_lock_init( &m->m_lock_atomic, OPAL_ATOMIC_LOCK_UNLOCKED );
-#endif
 }
 
 static void opal_mutex_destruct(opal_mutex_t *m)
 {
-    pthread_mutex_destroy(&m->m_lock_pthread);
 }
 
 OBJ_CLASS_INSTANCE(opal_mutex_t,
@@ -74,23 +48,6 @@ OBJ_CLASS_INSTANCE(opal_mutex_t,
 
 static void opal_recursive_mutex_construct(opal_recursive_mutex_t *m)
 {
-    pthread_mutexattr_t attr;
-    pthread_mutexattr_init(&attr);
-
-#if OPAL_ENABLE_DEBUG
-    m->m_lock_debug = 0;
-    m->m_lock_file = NULL;
-    m->m_lock_line = 0;
-#endif
-
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-
-    pthread_mutex_init(&m->m_lock_pthread, &attr);
-    pthread_mutexattr_destroy(&attr);
-
-#if OPAL_HAVE_ATOMIC_SPINLOCKS
-    opal_atomic_lock_init( &m->m_lock_atomic, OPAL_ATOMIC_LOCK_UNLOCKED );
-#endif
 }
 
 OBJ_CLASS_INSTANCE(opal_recursive_mutex_t,

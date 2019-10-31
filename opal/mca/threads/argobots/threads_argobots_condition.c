@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -22,13 +23,11 @@
 
 #include "opal/mca/threads/condition.h"
 
-
 static void opal_condition_construct(opal_condition_t *c)
 {
     c->c_waiting = 0;
     c->c_signaled = 0;
 }
-
 
 static void opal_condition_destruct(opal_condition_t *c)
 {

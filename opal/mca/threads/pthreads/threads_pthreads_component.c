@@ -31,7 +31,7 @@ static int opal_threads_pthreads_open(void);
 
 const opal_threads_base_component_1_0_0_t mca_threads_pthreads_component = {
     /* First, the mca_component_t struct containing meta information
-       about the component itself */
+     * about the component itself */
     .threadsc_version = {
         OPAL_THREADS_BASE_VERSION_1_0_0,
 

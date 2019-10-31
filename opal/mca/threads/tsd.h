@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2007-2013 Los Alamos National Security, LLC.  All rights
  *                         reserved.
@@ -44,7 +45,7 @@ typedef void (*opal_tsd_destructor_t)(void *value);
 /**
  * Typedef for thread-specific data key
  */
-typedef void* opal_tsd_key_t;
+typedef void *opal_tsd_key_t;
 
 
 /**

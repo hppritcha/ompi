@@ -24,8 +24,8 @@
  */
 
 
-#ifndef  OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H
-#define  OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H 1
+#ifndef OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H
+#define OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H
 
 typedef struct ompi_wait_sync_t {
     opal_atomic_int32_t count;
@@ -37,7 +37,8 @@ typedef struct ompi_wait_sync_t {
     volatile bool signaling;
 } ompi_wait_sync_t;
 
-#define SYNC_WAIT(sync)                 (opal_using_threads() ? ompi_sync_wait_mt (sync) : sync_wait_st (sync))
+#define SYNC_WAIT(sync) \
+    (opal_using_threads() ? ompi_sync_wait_mt(sync) : sync_wait_st(sync))
 
 /* The loop in release handles a race condition between the signaling
  * thread and the destruction of the condition variable. The signaling
@@ -71,20 +72,19 @@ typedef struct ompi_wait_sync_t {
         sync->signaling = false;                      \
     }
 
-#define WAIT_SYNC_SIGNALLED(sync){                    \
+#define WAIT_SYNC_SIGNALLED(sync)                     \
+    {                                                 \
         (sync)->signaling = false;                    \
-}
+    }
 
 OPAL_DECLSPEC int ompi_sync_wait_mt(ompi_wait_sync_t *sync);
-static inline int sync_wait_st (ompi_wait_sync_t *sync)
+static inline int sync_wait_st(ompi_wait_sync_t *sync)
 {
     while (sync->count > 0) {
         opal_progress();
     }
-
     return sync->status;
 }
-
 
 #define WAIT_SYNC_INIT(sync,c)                                  \
     do {                                                        \
@@ -94,9 +94,9 @@ static inline int sync_wait_st (ompi_wait_sync_t *sync)
         (sync)->status = 0;                                     \
         (sync)->signaling = (0 != (c));                         \
         if (opal_using_threads()) {                             \
-            pthread_cond_init (&(sync)->condition, NULL);       \
-            pthread_mutex_init (&(sync)->lock, NULL);           \
+            pthread_cond_init(&(sync)->condition, NULL);        \
+            pthread_mutex_init(&(sync)->lock, NULL);            \
         }                                                       \
-    } while(0)
+    } while (0)
 
 #endif /* OPAL_MCA_THREADS_PTHREADS_THREADS_PTHREADS_WAIT_SYNC_H */

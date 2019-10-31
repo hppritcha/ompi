@@ -24,15 +24,15 @@
  * $HEADER$
  */
 
-#ifndef  OPAL_MCA_THREADS_MUTEX_H
-#define  OPAL_MCA_THREADS_MUTEX_H 1
+#ifndef OPAL_MCA_THREADS_MUTEX_H
+#define OPAL_MCA_THREADS_MUTEX_H
 
 #include "opal_config.h"
 
 BEGIN_C_DECLS
 
 /**
-* @file:
+ * @file:
  *
  * Mutual exclusion functions.
  *
@@ -115,11 +115,11 @@ static inline void opal_mutex_atomic_unlock(opal_mutex_t *mutex);
  * If there is no possibility that multiple threads are running in the
  * process, return immediately.
  */
-#define OPAL_THREAD_LOCK(mutex)                 \
-    do {                                        \
-        if (OPAL_UNLIKELY(opal_using_threads())) {      \
-            opal_mutex_lock(mutex);             \
-        }                                       \
+#define OPAL_THREAD_LOCK(mutex)                     \
+    do {                                            \
+        if (OPAL_UNLIKELY(opal_using_threads())) {  \
+            opal_mutex_lock(mutex);                 \
+        }                                           \
     } while (0)
 
 
@@ -138,7 +138,7 @@ static inline void opal_mutex_atomic_unlock(opal_mutex_t *mutex);
  *
  * Returns 0 if mutex was locked, non-zero otherwise.
  */
-#define OPAL_THREAD_TRYLOCK(mutex)                      \
+#define OPAL_THREAD_TRYLOCK(mutex) \
     (OPAL_UNLIKELY(opal_using_threads()) ? opal_mutex_trylock(mutex) : 0)
 
 /**
@@ -154,11 +154,11 @@ static inline void opal_mutex_atomic_unlock(opal_mutex_t *mutex);
  * If there is no possibility that multiple threads are running in the
  * process, return immediately without modifying the mutex.
  */
-#define OPAL_THREAD_UNLOCK(mutex)               \
-    do {                                        \
-        if (OPAL_UNLIKELY(opal_using_threads())) {      \
-            opal_mutex_unlock(mutex);           \
-        }                                       \
+#define OPAL_THREAD_UNLOCK(mutex)                  \
+    do {                                           \
+        if (OPAL_UNLIKELY(opal_using_threads())) { \
+            opal_mutex_unlock(mutex);              \
+        }                                          \
     } while (0)
 
 
@@ -177,17 +177,17 @@ static inline void opal_mutex_atomic_unlock(opal_mutex_t *mutex);
  * If there is no possibility that multiple threads are running in the
  * process, invoke the action without acquiring the lock.
  */
-#define OPAL_THREAD_SCOPED_LOCK(mutex, action)  \
-    do {                                        \
-        if(OPAL_UNLIKELY(opal_using_threads())) {       \
-            opal_mutex_lock(mutex);             \
-            action;                             \
-            opal_mutex_unlock(mutex);           \
-        } else {                                \
-            action;                             \
-        }                                       \
+#define OPAL_THREAD_SCOPED_LOCK(mutex, action)     \
+    do {                                           \
+        if (OPAL_UNLIKELY(opal_using_threads())) { \
+            opal_mutex_lock(mutex);                \
+            action;                                \
+            opal_mutex_unlock(mutex);              \
+        } else {                                   \
+            action;                                \
+        }                                          \
     } while (0)
 
 END_C_DECLS
 
-#endif                          /* OPAL_MCA_THREADS_MUTEX_H */
+#endif /* OPAL_MCA_THREADS_MUTEX_H */

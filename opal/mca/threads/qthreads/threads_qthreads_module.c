@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
@@ -58,21 +59,21 @@ bool opal_thread_self_compare(opal_thread_t *t)
     return OPAL_ERROR;
 }
 
-int sync_wait_mt(void *p) 
+int sync_wait_mt(void *p)
 {
     return OPAL_ERROR;
 }
 
-int opal_thread_join(opal_thread_t *t, void **thr_return) 
+int opal_thread_join(opal_thread_t *t, void **thr_return)
 {
     return OPAL_ERROR;
 }
 
-void opal_thread_set_main() 
+void opal_thread_set_main(void)
 {
 }
 
-int opal_thread_start(opal_thread_t *t) 
+int opal_thread_start(opal_thread_t *t)
 {
     return OPAL_ERR_NOT_IMPLEMENTED;
 }
@@ -86,19 +87,5 @@ int opal_tsd_key_create(opal_tsd_key_t *key, opal_tsd_destructor_t destructor)
 
 int opal_tsd_keys_destruct(void)
 {
-    int i;
-    void * ptr;
-    for (i=0; i<opal_tsd_key_values_count; i++) {
-        if(OPAL_SUCCESS == opal_tsd_getspecific(opal_tsd_key_values[i].key, &ptr)) {
-            if (NULL != opal_tsd_key_values[i].destructor) {
-                opal_tsd_key_values[i].destructor(ptr);
-                opal_tsd_setspecific(opal_tsd_key_values[i].key, NULL);
-            }
-        }
-    }
-    if (0 < opal_tsd_key_values_count) {
-        free(opal_tsd_key_values);
-        opal_tsd_key_values_count = 0;
-    }
-    return OPAL_SUCCESS;
+    return OPAL_ERR_NOT_IMPLEMENTED;
 }

@@ -37,8 +37,9 @@
  */
 bool opal_uses_threads = false;
 
-static void mca_threads_argobots_mutex_constructor(opal_mutex_t *p_mutex) {
-    ensure_init_argobots();
+static void mca_threads_argobots_mutex_constructor(opal_mutex_t *p_mutex)
+{
+    opal_threads_argobots_ensure_init();
     p_mutex->m_lock_argobots = OPAL_ABT_MUTEX_NULL;
     p_mutex->m_recursive = 0;
 #if OPAL_ENABLE_DEBUG
@@ -49,15 +50,18 @@ static void mca_threads_argobots_mutex_constructor(opal_mutex_t *p_mutex) {
     opal_atomic_lock_init(&p_mutex->m_lock_atomic, 0);
 }
 
-static void mca_threads_argobots_mutex_desctructor(opal_mutex_t *p_mutex) {
-    ensure_init_argobots();
-    if (OPAL_ABT_MUTX_NULL != p_mutex->m_lock_argobots)
+static void mca_threads_argobots_mutex_desctructor(opal_mutex_t *p_mutex)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_MUTEX_NULL != p_mutex->m_lock_argobots) {
         ABT_mutex_free(&p_mutex->m_lock_argobots);
+    }
 }
 
 static void mca_threads_argobots_recursive_mutex_constructor
-        (opal_recursive_mutex_t *p_mutex) {
-    ensure_init_argobots();
+        (opal_recursive_mutex_t *p_mutex)
+{
+    opal_threads_argobots_ensure_init();
     p_mutex->m_lock_argobots = OPAL_ABT_MUTEX_NULL;
     p_mutex->m_recursive = 1;
 #if OPAL_ENABLE_DEBUG
@@ -69,10 +73,12 @@ static void mca_threads_argobots_recursive_mutex_constructor
 }
 
 static void mca_threads_argobots_recursive_mutex_desctructor
-        (opal_recursive_mutex_t *p_mutex) {
-    ensure_init_argobots();
-    if (OPAL_ABT_MUTEX_NULL != p_mutex->m_lock_argobots)
+        (opal_recursive_mutex_t *p_mutex)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_MUTEX_NULL != p_mutex->m_lock_argobots) {
         ABT_mutex_free(&p_mutex->m_lock_argobots);
+    }
 }
 
 OBJ_CLASS_INSTANCE(opal_mutex_t,

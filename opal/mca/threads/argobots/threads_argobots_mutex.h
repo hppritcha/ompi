@@ -15,7 +15,7 @@
  * Copyright (c) 2015-2016 Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2019      Sandia National Laboratories.  All rights reserved.
- * 
+ *
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -23,19 +23,8 @@
  * $HEADER$
  */
 
-#ifndef  OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H
-#define  OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H 1
-
-/**
- * @file:
- *
- * Mutual exclusion functions: Unix implementation.
- *
- * Functions for locking of critical sections.
- *
- * On unix, use Argobots or our own atomic operations as
- * available.
- */
+#ifndef OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H
+#define OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H
 
 #include "opal/mca/threads/argobots/threads_argobots.h"
 #include "opal_config.h"
@@ -109,7 +98,8 @@ OPAL_DECLSPEC OBJ_CLASS_DECLARATION(opal_recursive_mutex_t);
  *
  ************************************************************************/
 
-static inline void opal_mutex_create(struct opal_mutex_t *m) {
+static inline void opal_mutex_create(struct opal_mutex_t *m)
+{
     while (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots) {
         ABT_mutex abt_mutex;
         if (m->m_recursive) {
@@ -134,9 +124,10 @@ static inline void opal_mutex_create(struct opal_mutex_t *m) {
 
 static inline int opal_mutex_trylock(opal_mutex_t *m)
 {
-    ensure_init_argobots();
-    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots)
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots) {
         opal_mutex_create(m);
+    }
 #if OPAL_ENABLE_DEBUG
     int ret = ABT_mutex_trylock(m->m_lock_argobots);
     if (ret != 0) {
@@ -152,9 +143,10 @@ static inline int opal_mutex_trylock(opal_mutex_t *m)
 
 static inline void opal_mutex_lock(opal_mutex_t *m)
 {
-    ensure_init_argobots();
-    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots)
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots) {
         opal_mutex_create(m);
+    }
 #if OPAL_ENABLE_DEBUG
     int ret = ABT_mutex_lock(m->m_lock_argobots);
     if (ret != 0) {
@@ -169,9 +161,10 @@ static inline void opal_mutex_lock(opal_mutex_t *m)
 
 static inline void opal_mutex_unlock(opal_mutex_t *m)
 {
-    ensure_init_argobots();
-    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots)
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_MUTEX_NULL == m->m_lock_argobots) {
         opal_mutex_create(m);
+    }
 #if OPAL_ENABLE_DEBUG
     int ret = ABT_mutex_unlock(m->m_lock_argobots);
     if (ret != 0) {
@@ -240,8 +233,9 @@ static inline void opal_mutex_atomic_unlock(opal_mutex_t *m)
 typedef ABT_cond opal_cond_t;
 #define OPAL_CONDITION_STATIC_INIT OPAL_ABT_COND_NULL
 
-static inline void opal_cond_create(opal_cond_t *cond) {
-    ensure_init_argobots();
+static inline void opal_cond_create(opal_cond_t *cond)
+{
+    opal_threads_argobots_ensure_init();
     while (OPAL_ABT_COND_NULL == *cond) {
         ABT_cond new_cond;
         ABT_cond_create(&new_cond);
@@ -256,39 +250,48 @@ static inline void opal_cond_create(opal_cond_t *cond) {
     }
 }
 
-static inline int opal_cond_init(opal_cond_t *cond) {
+static inline int opal_cond_init(opal_cond_t *cond)
+{
     *cond = OPAL_ABT_COND_NULL;
     return 0;
 }
 
-static inline int opal_cond_wait(opal_cond_t *cond, opal_mutex_t *lock) {
-    ensure_init_argobots();
-    if (OPAL_ABT_COND_NULL == *cond)
+static inline int opal_cond_wait(opal_cond_t *cond, opal_mutex_t *lock)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_COND_NULL == *cond) {
         opal_cond_create(cond);
+    }
     return ABT_cond_wait(*cond, lock->m_lock_argobots);
 }
 
-static inline int opal_cond_broadcast(opal_cond_t *cond) {
-    ensure_init_argobots();
-    if (OPAL_ABT_COND_NULL == *cond)
+static inline int opal_cond_broadcast(opal_cond_t *cond)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_COND_NULL == *cond) {
         opal_cond_create(cond);
+    }
     return ABT_cond_broadcast(*cond);
 }
 
-static inline int opal_cond_signal(opal_cond_t *cond) {
-    ensure_init_argobots();
-    if (OPAL_ABT_COND_NULL == *cond)
+static inline int opal_cond_signal(opal_cond_t *cond)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_COND_NULL == *cond) {
         opal_cond_create(cond);
+    }
     return ABT_cond_signal(*cond);
 }
 
-static inline int opal_cond_destroy(opal_cond_t *cond) {
-    ensure_init_argobots();
-    if (OPAL_ABT_COND_NULL != *cond)
+static inline int opal_cond_destroy(opal_cond_t *cond)
+{
+    opal_threads_argobots_ensure_init();
+    if (OPAL_ABT_COND_NULL != * cond) {
         ABT_cond_free(cond);
+    }
     return 0;
 }
 
 END_C_DECLS
 
-#endif           /* OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H */
+#endif /* OPAL_MCA_THREADS_ARGOBOTS_THREADS_ARGOBOTS_MUTEX_H */
