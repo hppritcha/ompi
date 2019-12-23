@@ -25,8 +25,8 @@
 
 AC_DEFUN([OPAL_CONFIG_QTHREADS],[
 
-    AC_CHECK_HEADERS([mach/mach_time.h],
-                     [AC_CHECK_FUNC([mach_absolute_time],
+    AC_CHECK_HEADERS([qthread/qthread.h],
+                     [AC_CHECK_LIB([qthread],[qthread_initialize],
                                     [threads_qthreads_happy="yes"],
                                     [threads_qthreads_happy="no"])],
                      [threads_qthreads_happy="no"])
@@ -49,7 +49,7 @@ AC_DEFUN([MCA_opal_threads_qthreads_POST_CONFIG],[
     AS_IF([test "$1" = "1"], 
           [opal_thread_type_found="qthreads"
            AC_DEFINE_UNQUOTED([MCA_threads_base_include_HEADER],
-                              ["opal/mca/threads/qthreads/threads_qthreads.h"],
+                              ["opal/mca/threads/qthreads/threads_qthreads_threads.h"],
                               [Header to include for threads implementation])
            AC_DEFINE_UNQUOTED([MCA_threads_mutex_base_include_HEADER],
                               ["opal/mca/threads/qthreads/threads_qthreads_mutex.h"],
@@ -61,7 +61,6 @@ AC_DEFUN([MCA_opal_threads_qthreads_POST_CONFIG],[
                               ["opal/mca/threads/qthreads/threads_qthreads_wait_sync.h"],
                               [Header to include for wait_sync implementation])
          ])
-
 ])dnl
 
 

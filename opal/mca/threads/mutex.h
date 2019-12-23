@@ -46,7 +46,7 @@ BEGIN_C_DECLS
 typedef struct opal_mutex_t opal_mutex_t;
 typedef struct opal_mutex_t opal_recursive_mutex_t;
 
-#include MCA_threads_mutex_base_include_HEADER
+#include "opal/mca/threads/qthreads/threads_qthreads_mutex.h"
 
 OBJ_CLASS_DECLARATION(opal_mutex_t);
 OBJ_CLASS_DECLARATION(opal_recursive_mutex_t);

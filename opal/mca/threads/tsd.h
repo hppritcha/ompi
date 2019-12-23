@@ -109,7 +109,7 @@ OPAL_DECLSPEC int opal_tsd_getspecific(opal_tsd_key_t key, void **valuep);
 
 #else
 
-#include MCA_threads_tsd_base_include_HEADER
+#include "opal/mca/threads/qthreads/threads_qthreads_tsd.h"
 
 #endif
 

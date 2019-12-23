@@ -21,6 +21,7 @@
 
 #include <unistd.h>
 
+#include "opal/mca/threads/qthreads/threads_qthreads.h"
 #include "opal/constants.h"
 #include "opal/util/sys_limits.h"
 #include "opal/util/output.h"
