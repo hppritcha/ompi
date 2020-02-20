@@ -809,7 +809,7 @@ int ompi_instance_get_num_psets (ompi_instance_t *instance, int *npset_names)
     return OMPI_SUCCESS;
 }
 
-int ompi_instance_get_psetlen (ompi_instance_t *instance, int n, int *pset_name_len)
+int ompi_instance_get_nth_pset (ompi_instance_t *instance, int n, int *len, char *pset_name)
 {
     if (NULL == ompi_mpi_instance_pmix_psets && n >= ompi_instance_builtin_count) {
         ompi_instance_refresh_pmix_psets (OPAL_PMIX_QUERY_PSET_NAMES);
@@ -819,29 +819,19 @@ int ompi_instance_get_psetlen (ompi_instance_t *instance, int n, int *pset_name_
         return OMPI_ERR_BAD_PARAM;
     }
 
-    if (n < ompi_instance_builtin_count) {
-        *pset_name_len = strlen (ompi_instance_builtin_psets[n]);
-    } else {
-        *pset_name_len = strlen (ompi_mpi_instance_pmix_psets[n - ompi_instance_builtin_count]);
-    }
-
-    return OMPI_SUCCESS;
-}
-
-int ompi_instance_get_nth_pset (ompi_instance_t *instance, int n, int len, char *pset_name)
-{
-    if (NULL == ompi_mpi_instance_pmix_psets && n >= ompi_instance_builtin_count) {
-        ompi_instance_refresh_pmix_psets (OPAL_PMIX_QUERY_PSET_NAMES);
-    }
-
-    if ((size_t) n >= (ompi_instance_builtin_count + ompi_mpi_instance_num_pmix_psets) || n < 0) {
-        return OMPI_ERR_BAD_PARAM;
+    if (0 == *len) {
+        if (n < ompi_instance_builtin_count) {
+            *len = strlen(ompi_instance_builtin_psets[n]) + 1;
+        } else {
+            *len = strlen (ompi_mpi_instance_pmix_psets[n - ompi_instance_builtin_count]) + 1;
+        }
+        return OMPI_SUCCESS;
     }
 
     if (n < ompi_instance_builtin_count) {
-        strncpy (pset_name, ompi_instance_builtin_psets[n], len + 1);
+        strncpy (pset_name, ompi_instance_builtin_psets[n], *len);
     } else {
-        strncpy (pset_name, ompi_mpi_instance_pmix_psets[n - ompi_instance_builtin_count], len + 1);
+        strncpy (pset_name, ompi_mpi_instance_pmix_psets[n - ompi_instance_builtin_count], *len);
     }
 
     return OMPI_SUCCESS;
