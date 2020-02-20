@@ -372,7 +372,6 @@ mpi_api_files = \
         sendrecv_replace_f08.F90 \
 	session_get_info_f08.F90 \
 	session_get_nth_pset_f08.F90 \
-	session_get_nth_psetlen_f08.F90 \
 	session_get_num_psets_f08.F90 \
 	session_get_pset_info_f08.F90 \
 	session_init_f08.F90 \

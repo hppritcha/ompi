@@ -3062,7 +3062,7 @@ subroutine MPI_Session_get_nth_pset(session, n, pset_len, pset_name, ierror)
    implicit none
    integer, INTENT(IN) :: session
    INTEGER, OPTIONAL, INTENT(IN) :: n
-   INTEGER, OPTIONAL, INTENT(IN) :: pset_len
+   INTEGER, OPTIONAL, INTENT(INOUT) :: pset_len
    CHARACTER(LEN=*), INTENT(OUT) :: pset_name
    INTEGER, INTENT(OUT) :: ierror
 end subroutine MPI_Session_get_nth_pset
@@ -3077,6 +3077,17 @@ subroutine MPI_Session_get_nth_psetlen(session, n, pset_len, ierror)
    INTEGER, INTENT(OUT) :: ierror
 end subroutine MPI_Session_get_nth_psetlen
 end interface 
+
+interface PMPI_Session_get_nth_pset
+subroutine PMPI_Session_get_nth_pset(session, n, pset_len, pset_name, ierror)
+   implicit none
+   integer, INTENT(IN) :: session
+   INTEGER, INTENT(IN) :: n
+   INTEGER, INTENT(INOUT) :: pset_len
+   CHARACTER(LEN=*), INTENT(OUT) :: pset_name
+   INTEGER, INTENT(OUT) :: ierror
+end subroutine PMPI_Session_get_nth_pset
+end interface PMPI_Session_get_nth_pset
 
 interface MPI_Session_get_pset_info
 subroutine MPI_Session_get_pset_info(session, pset_name, info, ierror)

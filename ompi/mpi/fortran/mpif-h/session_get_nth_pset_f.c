@@ -46,7 +46,7 @@ OMPI_GENERATE_F77_BINDINGS (PMPI_SESSION_GET_NTH_PSET,
                             pmpi_session_get_nth_pset_,
                             pmpi_session_get_nth_pset__,
                             pmpi_session_get_nth_pset_f,
-                            (MPI_Fint *session, MPI_Fint *npset_names, MPI_Fint *ierr),
+                            (MPI_Fint *session, MPI_Fint *info, MPI_Fint *npset_names, MPI_Fint *ierr),
                             (session, npset_names, ierr) )
 #endif
 #endif
@@ -66,14 +66,14 @@ OMPI_GENERATE_F77_BINDINGS (MPI_SESSION_GET_NTH_PSET,
                             mpi_session_get_nth_pset_,
                             mpi_session_get_nth_pset__,
                             ompi_session_get_nth_pset_f,
-                            (MPI_Fint *session, MPI_Fint *npset_names, MPI_Fint *ierr),
+                            (MPI_Fint *session, MPI_Fint *info, MPI_Fint *npset_names, MPI_Fint *ierr),
                             (session, npset_names, ierr) )
 #else
 #define ompi_session_get_nth_pset_f pompi_session_get_nth_pset_f
 #endif
 #endif
 
-void ompi_session_get_nth_pset_f(MPI_Fint *session, MPI_Fint *n, MPI_Fint *pset_len, char *pset_name, MPI_Fint *ierr)
+void ompi_session_get_nth_pset_f(MPI_Fint *session, MPI_Fint *info, MPI_Fint *n, MPI_Fint *pset_len, char *pset_name, MPI_Fint *ierr)
 {
     int c_ierr;
     MPI_Session c_session;
@@ -81,12 +81,23 @@ void ompi_session_get_nth_pset_f(MPI_Fint *session, MPI_Fint *n, MPI_Fint *pset_
 
     c_session = PMPI_Session_f2c(*session);
 
-    c_ierr = PMPI_Session_get_nth_pset(c_session, *n,
-                                       MPI_MAX_OBJECT_NAME,
-                                       c_name);
+    if (0 == *pset_len) {
+        c_ierr = PMPI_Session_get_nth_pset(c_session, MPI_INFO_NULL, *n,
+                                           OMPI_SINGLE_NAME_CONVERT(pset_len),
+                                           c_name);
+        if (MPI_SUCCESS == c_ierr) {
+            OMPI_SINGLE_INT_2_FINT(pset_len);
+        }
+
+    } else {
+        c_ierr = PMPI_Session_get_nth_pset(c_session, MPI_INFO_NULL, *n,
+                                           OMPI_SINGLE_NAME_CONVERT(pset_len),
+                                           c_name);
+        if (MPI_SUCCESS == c_ierr) {
+            ompi_fortran_string_c2f(c_name, pset_name, *pset_len);
+        }
+    }
+
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
-    if (MPI_SUCCESS == c_ierr) {
-        ompi_fortran_string_c2f(c_name, pset_name, *pset_len);
-    }
 }
