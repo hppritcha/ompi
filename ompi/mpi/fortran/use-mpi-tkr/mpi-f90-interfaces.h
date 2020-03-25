@@ -1115,7 +1115,7 @@ end interface
 
 interface MPI_Intercomm_create_from_groups
 
-subroutine MPI_Intercomm_create_from_groups(local_group, local_leader, remote_group, remote_leader,
+subroutine MPI_Intercomm_create_from_groups(local_group, local_leader, remote_group, remote_leader, &
                                           stringtag, info, errhandler, newintercomm, ierror)
    implicit none
    integer, intent(in) :: local_group, remote_group
@@ -1125,7 +1125,7 @@ subroutine MPI_Intercomm_create_from_groups(local_group, local_leader, remote_gr
    integer, intent(in) :: errhandler
    integer, intent(out) :: newintercomm
    integer, intent(out) :: ierror
-end subroutine MPI_Intercomm_create_from_groups_f08
+end subroutine MPI_Intercomm_create_from_groups
 
 end interface
 
@@ -1300,11 +1300,11 @@ end subroutine MPI_Request_get_status
 
 end interface
 
-nterface MPI_Session_get_info
+interface MPI_Session_get_info
 subroutine MPI_Session_get_info(session, info, ierror)
    implicit none
    integer, intent(in) :: session
-   integer, intent(out) :: info_used
+   integer, intent(out) :: info
    integer, intent(out) :: ierror
 end subroutine MPI_Session_get_info
 end interface
