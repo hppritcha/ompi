@@ -1309,28 +1309,30 @@ subroutine MPI_Session_get_info(session, info, ierror)
 end subroutine MPI_Session_get_info
 end interface
 
-interface MPI_Session_get_nth_pset
-subroutine MPI_Session_get_nth_pset(session, n, pset_len, pset_name, ierror)
+interface 
+subroutine MPI_Session_get_nth_pset(session, info, n, pset_len, pset_name, ierror)
    implicit none
    integer, intent(in) :: session
-   integer, OPTIONAL, intent(in) :: n
-   integer, OPTIONAL, intent(inout) :: pset_len
+   integer, intent(in) :: info
+   integer, intent(in) :: n
+   integer, intent(inout) :: pset_len
    character(len=*), intent(out) :: pset_name
    integer, intent(out) :: ierror
 end subroutine MPI_Session_get_nth_pset
 end interface
 
 
-interface MPI_Session_get_num_psets
-subroutine MPI_Session_get_num_psets(session, npset_names, ierror)
+interface
+subroutine MPI_Session_get_num_psets(session, info, npset_names, ierror)
    implicit none
    integer, intent(in) :: session
+   integer, intent(in) :: info
    integer, intent(out) :: npset_names
    integer, intent(out) :: ierror
 end subroutine MPI_Session_get_num_psets
-end interface  MPI_Session_get_num_psets
+end interface
 
-interface MPI_Session_get_pset_info
+interface
 subroutine MPI_Session_get_pset_info(session, pset_name, info, ierror)
    implicit none
    integer, intent(in) :: session
@@ -1346,9 +1348,9 @@ interface  MPI_Session_init
 subroutine MPI_Session_init(info,errhandler,session,ierror)
    implicit none
    integer, intent(in) :: info
-   integer, intent(OUT) :: errhandler
-   integer, intent(OUT) :: session
-   integer, intent(OUT) :: ierror
+   integer, intent(in) :: errhandler
+   integer, intent(out) :: session
+   integer, intent(out) :: ierror
 end subroutine MPI_Session_init
 
 end interface  MPI_Session_init
@@ -1358,7 +1360,7 @@ interface  MPI_Session_finalize
 subroutine MPI_Session_finalize(session,ierror)
    implicit none
    integer, intent(inout) :: session
-   integer, intent(OUT) :: ierror
+   integer, intent(out) :: ierror
 end subroutine MPI_Session_finalize
 
 end interface  MPI_Session_finalize
