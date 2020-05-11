@@ -340,36 +340,37 @@ static int ompi_mpi_instance_init_common (void)
         }
     }
 
+    OMPI_TIMING_NEXT("initialization");
+
     /* Setup RTE */
     if (OMPI_SUCCESS != (ret = ompi_rte_init (NULL, NULL))) {
         return ompi_instance_print_error ("ompi_mpi_init: ompi_rte_init failed", ret);
     }
 
+    OMPI_TIMING_NEXT("rte_init");
+    OMPI_TIMING_IMPORT_OPAL("orte_ess_base_app_setup");
+    OMPI_TIMING_IMPORT_OPAL("rte_init");
+
     ompi_rte_initialized = true;
 
     /* Register the default errhandler callback  */
-    errtrk.status = OPAL_ERROR;
-    errtrk.active = true;
     /* we want to go first */
-    OBJ_CONSTRUCT(&info, opal_list_t);
-    kv = OBJ_NEW(opal_value_t);
-    kv->key = strdup(OPAL_PMIX_EVENT_HDLR_PREPEND);
-    opal_list_append(&info, &kv->super);
+    PMIX_INFO_LOAD(&info[0], PMIX_EVENT_HDLR_PREPEND, NULL, PMIX_BOOL);
     /* give it a name so we can distinguish it */
-    kv = OBJ_NEW(opal_value_t);
-    kv->key = strdup(OPAL_PMIX_EVENT_HDLR_NAME);
-    kv->type = OPAL_STRING;
-    kv->data.string = strdup("MPI-Default");
-    opal_list_append(&info, &kv->super);
-    opal_pmix.register_evhandler(NULL, &info, ompi_errhandler_callback,
-                                 ompi_errhandler_registration_callback,
-                                 (void*)&errtrk);
-    OMPI_LAZY_WAIT_FOR_COMPLETION(errtrk.active);
-
-    OPAL_LIST_DESTRUCT(&info);
-    if (OPAL_SUCCESS != errtrk.status) {
-        return ompi_instance_print_error ("Error handler registration", errtrk.status);
+    PMIX_INFO_LOAD(&info[1], PMIX_EVENT_HDLR_NAME, "MPI-Default", PMIX_STRING);
+    OPAL_PMIX_CONSTRUCT_LOCK(&mylock);
+    PMIx_Register_event_handler(NULL, 0, info, 2, ompi_errhandler_callback, evhandler_reg_callbk, (void*)&mylock);
+    OPAL_PMIX_WAIT_THREAD(&mylock);
+    rc = mylock.status;
+    OPAL_PMIX_DESTRUCT_LOCK(&mylock);
+    PMIX_INFO_DESTRUCT(&info[0]);
+    PMIX_INFO_DESTRUCT(&info[1]);
+    if (PMIX_SUCCESS != rc) {
+        error = "Error handler registration";
+        ret = opal_pmix_convert_status(rc);
+        goto error;
     }
+
 
     /* declare our presence for interlib coordination, and
      * register for callbacks when other libs declare. XXXXXX -- TODO -- figure out how
@@ -415,11 +416,21 @@ static int ompi_mpi_instance_init_common (void)
         return ompi_instance_print_error ("mca_pml_base_select() failed", ret);
     }
 
+    OMPI_TIMING_IMPORT_OPAL("orte_init");
+    OMPI_TIMING_NEXT("rte_init-commit");
+
     /* exchange connection info - this function may also act as a barrier
      * if data exchange is required. The modex occurs solely across procs
      * in our job. If a barrier is required, the "modex" function will
      * perform it internally */
-    opal_pmix.commit ();
+    rc = PMIx_Commit();
+    if (PMIX_SUCCESS != rc) {
+        ret = opal_pmix_convert_status(rc);
+        error = "PMIx_Commit()";
+        goto error;
+    }
+
+   OMPI_TIMING_NEXT("commit");
 
     /* select buffered send allocator component to be used */
     if (OMPI_SUCCESS != (ret = mca_pml_base_bsend_init ())) {
@@ -432,7 +443,6 @@ static int ompi_mpi_instance_init_common (void)
 
     if (OMPI_SUCCESS != (ret = ompi_osc_base_find_available (OPAL_ENABLE_PROGRESS_THREADS, ompi_mpi_thread_multiple))) {
         return ompi_instance_print_error ("ompi_osc_base_find_available() failed", ret);
-    }
 
     /* io and topo components are not selected here -- see comment
        above about the io and topo frameworks being loaded lazily */
