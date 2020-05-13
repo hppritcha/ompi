@@ -1202,6 +1202,12 @@ AS_IF([test "$OMPI_TRY_FORTRAN_BINDINGS" = "$OMPI_FORTRAN_NO_BINDINGS"],[F77=no 
 
 LT_INIT([dlopen win32-dll])
 
+# Debian / Ubuntu libtools set this flag to 'no', causing linking errors since
+# libtools only check the first-level library dependencies.  We enable this
+# flag to avoid explicitly redefining all dependencies in each Makefile.am.
+link_all_deplibs=yes
+link_all_deplibs_CXX=yes
+
 # What's the suffix of shared libraries?  Inspired by generated
 # Libtool code (even though we don't support several of these
 # platforms, there didn't seem to be any harm in leaving in some of
