@@ -63,7 +63,6 @@
 #include "opal/mca/mpool/base/base.h"
 #include "opal/mca/btl/base/base.h"
 #include "opal/mca/pmix/base/base.h"
-#include "opal/util/timings.h"
 #include "opal/util/opal_environ.h"
 
 #include "ompi/constants.h"
@@ -385,11 +384,13 @@ int ompi_mpi_init(int argc, char **argv, int requested, int *provided,
 
     ompi_mpi_thread_level(requested, provided);
 
+    fprintf(stderr, "calling ompi_mpi_instance_init\n");
     ret = ompi_mpi_instance_init (*provided, &ompi_mpi_info_null.info.super, MPI_ERRORS_ARE_FATAL, &ompi_mpi_instance_default);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
         error = "ompi_mpi_init: ompi_mpi_instance_init failed";
         goto error;
     }
+    fprintf(stderr, "called ompi_mpi_instance_init\n");
 
     ompi_hook_base_mpi_init_top_post_opal(argc, argv, requested, provided);
 
@@ -431,6 +432,7 @@ int ompi_mpi_init(int argc, char **argv, int requested, int *provided,
     }
 #endif
 
+    fprintf(stderr, "singleton = %d %d\n", ompi_singleton,opal_pmix_base_async_modex);
     if (!ompi_singleton) {
         if (opal_pmix_base_async_modex) {
             /* if we are doing an async modex, but we are collecting all
