@@ -36,6 +36,7 @@
 #include "opal/util/show_help.h"
 
 #include "opal/mca/pmix/base/base.h"
+#include "pmix.h"
 
 
 int opal_pmix_base_exchange(pmix_info_t *indat,

@@ -34,6 +34,7 @@
 
 #include "opal/dss/dss.h"
 #include "opal/mca/pmix/base/base.h"
+#include "opal/mca/pmix/pmix-internal.h"
 #include "opal/util/printf.h"
 
 #include "ompi/proc/proc.h"
@@ -261,12 +262,12 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
                                         const void *arg0, const void *arg1, bool send_first, int mode,
                                         ompi_request_t **req)
 {
-    opal_list_t info, results;
-    opal_value_t *value;
+    pmix_info_t *results, info;
     opal_process_name_t *name_array;
     char *tag;
     size_t proc_count, cid_base;
     int rc, leader_rank;
+    size_t nresults;
 
     rc = ompi_group_to_proc_name_array (newcomm->c_local_group, &name_array, &proc_count);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
@@ -286,8 +287,12 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     case OMPI_COMM_CID_INTRA:
         tag = ompi_comm_extended_cid_get_unique_tag (&comm->c_contextidb, -1, 0);
         break;
+    default:
+        return OMPI_ERROR;
+        break;
     }
 
+#if 0
     OBJ_CONSTRUCT(&info, opal_list_t);
     OBJ_CONSTRUCT(&results, opal_list_t);
 
@@ -295,16 +300,24 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     value->key = strdup (OPAL_PMIX_GROUP_ASSIGN_CONTEXT_ID);
     value->data.flag = true;
     opal_list_append (&info, &value->super);
+#endif
 
-    rc = opal_pmix.group_construct (tag, name_array, proc_count, &info, &results);
+    PMIX_INFO_LOAD(&info, PMIX_GROUP_ASSIGN_CONTEXT_ID, NULL, PMIX_BOOL);
+    rc = PMIx_Group_construct(tag, name_array, proc_count, &info, 1, &results, &nresults);
     free (name_array);
-    OPAL_LIST_DESTRUCT(&info);
     if (OPAL_SUCCESS != rc) {
         return OMPI_ERROR;
     }
+    /*
+     * TODO: may get more key/val back from group construct, check key
+     */
+    if (NULL != results) {
+        PMIX_VALUE_GET_NUMBER(rc, &results[0].value, cid_base, size_t);
+    }
 
-    opal_pmix.group_destruct (tag, NULL);
+    rc = PMIx_Group_destruct(tag, NULL, 0);
 
+#if 0
     if (0 == opal_list_get_size (&results)) {
         return OMPI_ERROR;
     }
@@ -316,6 +329,7 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     }
 
     OPAL_LIST_DESTRUCT(&results);
+#endif
 
     ompi_comm_extended_cid_block_initialize (new_block, cid_base, 0, 0);
 
