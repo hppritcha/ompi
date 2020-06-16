@@ -438,9 +438,9 @@ static void ompi_comm_construct(ompi_communicator_t* comm)
     /*
      * magic numerology - see TOPDIR/ompi/include/mpif-values.pl
      */
-    idx = (comm == ompi_mpi_comm_world_addr) ? OMPI_MPI_COMM_WORLD :
-              (comm == ompi_mpi_comm_self_addr) ? OMPI_MPI_COMM_SELF :
-                  (comm == ompi_mpi_comm_null_addr) ? OMPI_MPI_COMM_NULL : -1;
+    idx = (comm == (ompi_communicator_t*)ompi_mpi_comm_world_addr) ? OMPI_MPI_COMM_WORLD :
+              (comm == (ompi_communicator_t*)ompi_mpi_comm_self_addr) ? OMPI_MPI_COMM_SELF :
+                  (comm == (ompi_communicator_t*)ompi_mpi_comm_null_addr) ? OMPI_MPI_COMM_NULL : -1;
     if (-1 == idx) {
         comm->c_f_to_c_index = opal_pointer_array_add(&ompi_comm_f_to_c_table,
                                                       comm);

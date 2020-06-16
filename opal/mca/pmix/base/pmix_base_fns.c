@@ -36,6 +36,7 @@
 #include "opal_stdint.h"
 
 #include "opal/mca/pmix/base/base.h"
+#include "pmix.h"
 
 int opal_pmix_base_exchange(pmix_info_t *indat, pmix_pdata_t *outdat, int timeout)
 {
