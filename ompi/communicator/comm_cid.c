@@ -48,7 +48,26 @@
 #include "ompi/mca/coll/base/base.h"
 #include "ompi/request/request.h"
 #include "ompi/runtime/mpiruntime.h"
+#include "ompi/runtime/ompi_rte.h"
+#if 0
+#include "pmix.h"
+#endif
 
+/* TODO: need to refactor OMPI to get rid of opal_pmix_t */
+
+static pmix_rank_t mix_rank_t pmix4x_convert_opalrank(opal_vpid_t vpid)
+{
+    switch(vpid) {
+    case OPAL_VPID_WILDCARD:
+        return PMIX_RANK_WILDCARD;
+    case OPAL_VPID_INVALID:
+        return PMIX_RANK_UNDEF;
+    default:
+        return (pmix_rank_t)vpid;
+    }
+}
+
+extern char* pmix4x_convert_jobid(opal_jobid_t jobid);
 
 /* for use when we don't have a PMIx that supports CID generation */
 opal_atomic_int64_t ompi_comm_next_base_cid = 1;
@@ -264,7 +283,8 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
 {
     pmix_info_t *results, info;
     opal_process_name_t *name_array;
-    char *tag;
+    pmix_proc_t *pprocs = NULL;
+    char *tag,*nsptr=NULL;
     size_t proc_count, cid_base;
     int rc, leader_rank;
     size_t nresults;
@@ -303,8 +323,19 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
 #endif
 
     PMIX_INFO_LOAD(&info, PMIX_GROUP_ASSIGN_CONTEXT_ID, NULL, PMIX_BOOL);
-    rc = PMIx_Group_construct(tag, name_array, proc_count, &info, 1, &results, &nresults);
+    PMIX_PROC_CREATE(pprocs, proc_count);
+    for (size_t i = 0 ; i < proc_count ; ++i) {
+        if (NULL == (nsptr = pmix4x_convert_jobid(procs[i].jobid))) {
+            OPAL_PMIX_RELEASE_THREAD(&opal_pmix_base.lock);
+            return OPAL_ERR_NOT_FOUND;
+        }
+        (void)strncpy(pprocs[i].nspace, nsptr, PMIX_MAX_NSLEN);
+        pprocs[i].rank = pmix4x_convert_opalrank(procs[i].vpid);
+    }
+
+    rc = PMIx_Group_construct(tag, pprocs, proc_count, &info, 1, &results, &nresults);
     free (name_array);
+    PMIX_PROC_FREE(pprocs, proc_count);
     if (OPAL_SUCCESS != rc) {
         return OMPI_ERROR;
     }
