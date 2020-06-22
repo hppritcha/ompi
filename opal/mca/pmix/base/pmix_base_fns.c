@@ -8,6 +8,8 @@
  * Copyright (c) 2016      Mellanox Technologies, Inc.
  *                         All rights reserved.
  * Copyright (c) 2016      Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2020      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -939,6 +941,82 @@ int opal_pmix_register_cleanup(char *path, bool directory, bool ignore, bool job
 #else
     return OPAL_SUCCESS;
 #endif
+}
+
+pmix_status_t opal_pmix_group_construct (const char *tag,
+                                         const opal_process_name_t *procs,
+                                         size_t nprocs,
+                                         opal_list_t *info,
+                                         opal_list_t *info_out)
+{
+    size_t i;
+    pmix_info_t *pinfo = NULL, *results = NULL;
+    pmix_proc_t *pprocs = NULL;
+    size_t sz = 0, nresults;
+    pmix_status_t rc;
+    opal_value_t *value;
+
+    PMIX_PROC_CREATE(pprocs, nprocs);
+    for (i = 0 ; i < nprocs ; ++i) {
+        OPAL_PMIX_CONVERT_NAME(&pprocs[i],&procs[i]);
+    }
+
+    if (NULL != info) {
+        i = 0;
+        sz = opal_list_get_size(info);
+        PMIX_INFO_CREATE(pinfo, sz);
+        OPAL_LIST_FOREACH(value, info, opal_value_t) {
+            (void)strncpy(pinfo[i].key, value->key, PMIX_MAX_KEYLEN);
+            opal_pmix_value_load(&pinfo[i].value, value);
+            ++i;
+        }
+    }
+
+    fprintf(stderr, "calling PMIx_Group_construct from pmi4x\n");
+    rc = PMIx_Group_construct(tag, pprocs, nprocs, pinfo, sz, &results, &nresults);
+    PMIX_INFO_FREE(pinfo, sz);
+
+    if (PMIX_SUCCESS == rc) {
+        if (info_out) {
+            for (i = 0 ; i < nresults ; ++i) {
+                opal_value_t *value = OBJ_NEW(opal_value_t);
+                value->key = strdup (results[i].key);
+                opal_pmix_value_unload(value, &results[i].value);
+                opal_list_append (info_out, &value->super);
+            }
+        }
+        if (NULL != results) {
+             PMIX_INFO_FREE(results, nresults);
+        }
+    }
+
+    return rc;
+}
+
+pmix_status_t opal_pmix_group_destruct (const char *tag,
+                                        opal_list_t *info)
+{
+    int n;
+    pmix_info_t *pinfo = NULL;
+    pmix_status_t rc;
+    size_t sz = 0;
+    opal_value_t *value;
+
+    if (NULL != info) {
+        sz = opal_list_get_size(info);
+        PMIX_INFO_CREATE(pinfo, sz);
+        n = 0;
+        OPAL_LIST_FOREACH(value, info, opal_value_t) {
+            (void)strncpy(pinfo[n].key, value->key, PMIX_MAX_KEYLEN);
+            opal_pmix_value_load(&pinfo[n].value, value);
+            ++n;
+        }
+    }
+
+    rc = PMIx_Group_destruct (tag, pinfo, sz);
+    PMIX_INFO_FREE(pinfo, sz);
+
+    return rc;
 }
 
 

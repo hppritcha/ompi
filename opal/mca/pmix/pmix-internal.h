@@ -705,6 +705,15 @@ OPAL_DECLSPEC int opal_pmix_register_cleanup(char *path,
                                              bool ignore,
                                              bool jobscope);
 
+OPAL_DECLSPEC pmix_status_t opal_pmix_group_construct (const char *tag,
+                                                const opal_process_name_t *procs,
+                                                size_t nprocs,
+                                                opal_list_t *info,
+                                                opal_list_t *info_out);
+
+OPAL_DECLSPEC pmix_status_t opal_pmix_group_destruct (const char *tag,
+                                                      opal_list_t *info);
+
 /* protect against early versions of PMIx */
 #if PMIX_VERSION_MAJOR == 3
 #if   PMIX_VERSION_MINOR == 0

@@ -23,6 +23,8 @@
  * Copyright (c) 2016      IBM Corporation.  All rights reserved.
  * Copyright (c) 2017      Mellanox Technologies. All rights reserved.
  * Copyright (c) 2018      Amazon.com, Inc. or its affiliates.  All Rights reserved.
+ * Copyright (c) 2020      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -54,20 +56,6 @@
 #endif
 
 /* TODO: need to refactor OMPI to get rid of opal_pmix_t */
-
-static pmix_rank_t mix_rank_t pmix4x_convert_opalrank(opal_vpid_t vpid)
-{
-    switch(vpid) {
-    case OPAL_VPID_WILDCARD:
-        return PMIX_RANK_WILDCARD;
-    case OPAL_VPID_INVALID:
-        return PMIX_RANK_UNDEF;
-    default:
-        return (pmix_rank_t)vpid;
-    }
-}
-
-extern char* pmix4x_convert_jobid(opal_jobid_t jobid);
 
 /* for use when we don't have a PMIx that supports CID generation */
 opal_atomic_int64_t ompi_comm_next_base_cid = 1;
@@ -281,14 +269,14 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
                                         const void *arg0, const void *arg1, bool send_first, int mode,
                                         ompi_request_t **req)
 {
-    pmix_info_t *results, info;
+    opal_list_t info, results;
+    opal_value_t *value;
     opal_process_name_t *name_array;
-    pmix_proc_t *pprocs = NULL;
-    char *tag,*nsptr=NULL;
+    char *tag;
     size_t proc_count, cid_base;
     int rc, leader_rank;
-    size_t nresults;
 
+    fprintf(stderr, "HEY inside ompi_comm_ext_cid_new_block\n");
     rc = ompi_group_to_proc_name_array (newcomm->c_local_group, &name_array, &proc_count);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;
@@ -307,60 +295,36 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     case OMPI_COMM_CID_INTRA:
         tag = ompi_comm_extended_cid_get_unique_tag (&comm->c_contextidb, -1, 0);
         break;
-    default:
-        return OMPI_ERROR;
-        break;
     }
 
-#if 0
     OBJ_CONSTRUCT(&info, opal_list_t);
     OBJ_CONSTRUCT(&results, opal_list_t);
 
-    value = OBJ_NEW(opal_value_t);
-    value->key = strdup (OPAL_PMIX_GROUP_ASSIGN_CONTEXT_ID);
+   value = OBJ_NEW(opal_value_t);
+    value->key = strdup (PMIX_GROUP_ASSIGN_CONTEXT_ID);
     value->data.flag = true;
     opal_list_append (&info, &value->super);
-#endif
 
-    PMIX_INFO_LOAD(&info, PMIX_GROUP_ASSIGN_CONTEXT_ID, NULL, PMIX_BOOL);
-    PMIX_PROC_CREATE(pprocs, proc_count);
-    for (size_t i = 0 ; i < proc_count ; ++i) {
-        if (NULL == (nsptr = pmix4x_convert_jobid(procs[i].jobid))) {
-            OPAL_PMIX_RELEASE_THREAD(&opal_pmix_base.lock);
-            return OPAL_ERR_NOT_FOUND;
-        }
-        (void)strncpy(pprocs[i].nspace, nsptr, PMIX_MAX_NSLEN);
-        pprocs[i].rank = pmix4x_convert_opalrank(procs[i].vpid);
-    }
-
-    rc = PMIx_Group_construct(tag, pprocs, proc_count, &info, 1, &results, &nresults);
+    rc = opal_pmix_group_construct (tag, name_array, proc_count, &info, &results);
     free (name_array);
-    PMIX_PROC_FREE(pprocs, proc_count);
+    OPAL_LIST_DESTRUCT(&info);
     if (OPAL_SUCCESS != rc) {
         return OMPI_ERROR;
     }
-    /*
-     * TODO: may get more key/val back from group construct, check key
-     */
-    if (NULL != results) {
-        PMIX_VALUE_GET_NUMBER(rc, &results[0].value, cid_base, size_t);
-    }
 
-    rc = PMIx_Group_destruct(tag, NULL, 0);
+    opal_pmix_group_destruct (tag, NULL);
 
-#if 0
     if (0 == opal_list_get_size (&results)) {
         return OMPI_ERROR;
     }
 
     OPAL_LIST_FOREACH(value, &results, opal_value_t) {
-        if (0 == strcmp (value->key, OPAL_PMIX_GROUP_CONTEXT_ID)) {
+        if (0 == strcmp (value->key, PMIX_GROUP_CONTEXT_ID)) {
             cid_base = value->data.size;
         }
     }
 
     OPAL_LIST_DESTRUCT(&results);
-#endif
 
     ompi_comm_extended_cid_block_initialize (new_block, cid_base, 0, 0);
 
