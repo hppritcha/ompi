@@ -15,7 +15,7 @@
  *                         reserved.
  * Copyright (c) 2017      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2020 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -701,6 +701,12 @@ int ompi_attr_create_keyval_fint(ompi_attribute_type_t type,
                                  void *bindings_extra_state)
 {
     ompi_attribute_fortran_ptr_t es_tmp;
+    int rc;
+
+    rc = ompi_mpi_instance_retain ();
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
 
     es_tmp.f_integer = extra_state;
 #if SIZEOF_INT == OMPI_SIZEOF_FORTRAN_INTEGER
@@ -720,6 +726,12 @@ int ompi_attr_create_keyval_aint(ompi_attribute_type_t type,
                                  void *bindings_extra_state)
 {
     ompi_attribute_fortran_ptr_t es_tmp;
+    int rc;
+
+    rc = ompi_mpi_instance_retain ();
+    if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+        return rc;
+    }
 
     es_tmp.f_address = extra_state;
     return ompi_attr_create_keyval_impl(type, copy_attr_fn, delete_attr_fn,
