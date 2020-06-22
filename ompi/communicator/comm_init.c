@@ -51,7 +51,6 @@
 #include "ompi/dpm/dpm.h"
 #include "ompi/memchecker.h"
 #include "ompi/instance/instance.h"
-#include "ompi/mpi/fortran/use-mpi-f08/constants.h"
 
 /*
 ** Table for Fortran <-> C communicator handle conversion
@@ -123,25 +122,26 @@ int ompi_comm_init(void)
      */
 
     if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
-                                                      OMPI_MPI_COMM_NULL,
+                                                      0,
                                                       (void *)-1L)) {
         return OMPI_ERROR;
     }
 
     if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
-                                                      OMPI_MPI_COMM_WORLD,
+                                                      1,
                                                       (void *)-1L)) {
         return OMPI_ERROR;
     }
 
     if (OPAL_SUCCESS != opal_pointer_array_set_item(&ompi_comm_f_to_c_table,
-                                                      OMPI_MPI_COMM_SELF,
+                                                      2,
                                                       (void *)-1L)) {
         return OMPI_ERROR;
     }
 
     /* Setup MPI_COMM_NULL */
     OBJ_CONSTRUCT(&ompi_mpi_comm_null, ompi_communicator_t);
+    assert(ompi_mpi_comm_null.comm.c_f_to_c_index == 2);
     ompi_mpi_comm_null.comm.c_local_group  = &ompi_mpi_group_null.group;
     ompi_mpi_comm_null.comm.c_remote_group = &ompi_mpi_group_null.group;
     OBJ_RETAIN(&ompi_mpi_group_null.group);
@@ -188,7 +188,7 @@ int ompi_comm_init_mpi3 (void)
 
     /* Setup MPI_COMM_WORLD */
     OBJ_CONSTRUCT(&ompi_mpi_comm_world, ompi_communicator_t);
-    assert(ompi_mpi_comm_world.comm.c_f_to_c_index == OMPI_MPI_COMM_WORLD);
+    assert(ompi_mpi_comm_world.comm.c_f_to_c_index == 0);
 
     ret = ompi_group_from_pset (ompi_mpi_instance_default, "mpi://world", &group);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
@@ -242,7 +242,7 @@ int ompi_comm_init_mpi3 (void)
     }
     /* Setup MPI_COMM_SELF */
     OBJ_CONSTRUCT(&ompi_mpi_comm_self, ompi_communicator_t);
-    assert(ompi_mpi_comm_self.comm.c_f_to_c_index == OMPI_MPI_COMM_SELF);
+    assert(ompi_mpi_comm_self.comm.c_f_to_c_index == 1);
 
     ret = ompi_group_from_pset (ompi_mpi_instance_default, "mpi://self", &group);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ret)) {
@@ -438,9 +438,9 @@ static void ompi_comm_construct(ompi_communicator_t* comm)
     /*
      * magic numerology - see TOPDIR/ompi/include/mpif-values.pl
      */
-    idx = (comm == (ompi_communicator_t*)ompi_mpi_comm_world_addr) ? OMPI_MPI_COMM_WORLD :
-              (comm == (ompi_communicator_t*)ompi_mpi_comm_self_addr) ? OMPI_MPI_COMM_SELF :
-                  (comm == (ompi_communicator_t*)ompi_mpi_comm_null_addr) ? OMPI_MPI_COMM_NULL : -1;
+    idx = (comm == (ompi_communicator_t*)ompi_mpi_comm_world_addr) ? 0 :
+              (comm == (ompi_communicator_t*)ompi_mpi_comm_self_addr) ? 1 :
+                  (comm == (ompi_communicator_t*)ompi_mpi_comm_null_addr) ? 2 : -1;
     if (-1 == idx) {
         comm->c_f_to_c_index = opal_pointer_array_add(&ompi_comm_f_to_c_table,
                                                       comm);
