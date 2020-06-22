@@ -15,6 +15,8 @@
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2016-2017 Los Alamos National Security, LLC. All rights
  *                         reserved.
+ * Copyright (c) 2020      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -42,6 +44,8 @@ static const char FUNC_NAME[] = "MPI_File_get_errhandler";
 
 int MPI_File_get_errhandler( MPI_File file, MPI_Errhandler *errhandler)
 {
+  int ret = MPI_SUCCESS;
+
     OPAL_CR_NOOP_PROGRESS();
 
   /* Error checking */
@@ -69,7 +73,10 @@ int MPI_File_get_errhandler( MPI_File file, MPI_Errhandler *errhandler)
   OBJ_RETAIN(file->error_handler);
   OPAL_THREAD_UNLOCK(&file->f_lock);
 
+   /* make sure the infrastructure is initialized */
+  ret = ompi_mpi_instance_retain ();
+
   /* All done */
 
-  return MPI_SUCCESS;
+  return ret;
 }
