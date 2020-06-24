@@ -972,7 +972,6 @@ pmix_status_t opal_pmix_group_construct (const char *tag,
         }
     }
 
-    fprintf(stderr, "calling PMIx_Group_construct from pmi4x\n");
     rc = PMIx_Group_construct(tag, pprocs, nprocs, pinfo, sz, &results, &nresults);
     PMIX_INFO_FREE(pinfo, sz);
 

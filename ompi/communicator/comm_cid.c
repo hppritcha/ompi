@@ -276,7 +276,6 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
     size_t proc_count, cid_base;
     int rc, leader_rank;
 
-    fprintf(stderr, "HEY inside ompi_comm_ext_cid_new_block\n");
     rc = ompi_group_to_proc_name_array (newcomm->c_local_group, &name_array, &proc_count);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;

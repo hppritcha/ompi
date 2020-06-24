@@ -364,13 +364,11 @@ static int ompi_mpi_instance_init_common (void)
     }
 
     OMPI_TIMING_NEXT("initialization");
-    fprintf(stderr, "calling ompi_rte_init\n");
 
     /* Setup RTE */
     if (OMPI_SUCCESS != (ret = ompi_rte_init (NULL, NULL))) {
         return ompi_instance_print_error ("ompi_mpi_init: ompi_rte_init failed", ret);
     }
-    fprintf(stderr, "called ompi_rte_init\n");
 
     OMPI_TIMING_NEXT("rte_init");
     OMPI_TIMING_IMPORT_OPAL("orte_ess_base_app_setup");
@@ -447,13 +445,11 @@ static int ompi_mpi_instance_init_common (void)
      * if data exchange is required. The modex occurs solely across procs
      * in our job. If a barrier is required, the "modex" function will
      * perform it internally */
-    fprintf(stderr, "[%d] about to call PMIx commit\n",getpid());
     rc = PMIx_Commit();
     if (PMIX_SUCCESS != rc) {
         ret = opal_pmix_convert_status(rc);
         return ret;  /* TODO: need to fix this */
     }
-    fprintf(stderr, "[%d] called PMIx commit\n", getpid());
 
    OMPI_TIMING_NEXT("commit");
 #if (OPAL_ENABLE_TIMING)
@@ -605,7 +601,6 @@ static int ompi_mpi_instance_init_common (void)
 
     ompi_mpi_instance_append_finalize (ompi_mpi_instance_cleanup_pml);
 
-    fprintf(stderr, "[%d] about to call add_procs\n", getpid());
     ret = MCA_PML_CALL(add_procs(procs, nprocs));
     free(procs);
     /* If we got "unreachable", then print a specific error message.
@@ -618,7 +613,6 @@ static int ompi_mpi_instance_init_common (void)
     } else if (OMPI_SUCCESS != ret) {
         return ompi_instance_print_error ("PML add procs failed", ret);
     }
-    fprintf(stderr, "[%d] called add_procs\n", getpid());
 
     /* Determine the overall threadlevel support of all processes
        in MPI_COMM_WORLD. This has to be done before calling
@@ -737,9 +731,7 @@ int ompi_mpi_instance_init (int ts_level,  opal_info_t *info, ompi_errhandler_t 
 
     opal_mutex_lock (&instance_lock);
     if (0 == opal_atomic_fetch_add_32 (&ompi_instance_count, 1)) {
-        fprintf(stderr, "calling ompi_mpi_instance init common\n");
         ret = ompi_mpi_instance_init_common ();
-        fprintf(stderr, "called ompi_mpi_instance init common ret = %d\n", ret);
         if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
             opal_mutex_unlock (&instance_lock);
             return ret;
@@ -899,7 +891,6 @@ static void ompi_instance_get_num_psets_complete (pmix_status_t status,
     opal_pmix_lock_t *lock = (opal_pmix_lock_t *) cbdata;
 
     for (n=0; n < ninfo; n++) {
-        fprintf(stderr, "KEY: %s\n", info[n].key);
         if (0 == strcmp(info[n].key,PMIX_QUERY_NUM_PSETS)) {
             PMIX_VALUE_UNLOAD(rc,
                               &info[n].value,
@@ -953,7 +944,6 @@ static void ompi_instance_refresh_pmix_psets (const char *key)
     if (PMIX_SUCCESS != (rc = PMIx_Query_info_nb(&query, 1, 
                                                  ompi_instance_get_num_psets_complete,
                                                  (void*)&lock))) {
-       fprintf(stderr, "PMIx_Query_info failed: %d\n", rc);
        opal_mutex_unlock (&instance_lock);
     }
 
@@ -1128,13 +1118,12 @@ static int ompi_instance_group_pmix_pset (ompi_instance_t *instance, const char 
 
     for (size_t i = 0 ; i < ompi_process_info.num_procs ; ++i) {
         opal_process_name_t name = {.vpid = i, .jobid = OMPI_PROC_MY_NAME->jobid};
-        int ret;
 
         OPAL_PMIX_CONVERT_NAME(&p, &name);
         rc = PMIx_Get(&p, PMIX_PSET_NAME, NULL, 0, &pval);
         if (OPAL_UNLIKELY(PMIX_SUCCESS != rc)) {
             OBJ_RELEASE(group);
-            return ret;
+            return opal_pmix_convert_status(rc);
         }
 
         PMIX_VALUE_UNLOAD(rc,
