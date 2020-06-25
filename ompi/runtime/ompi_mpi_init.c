@@ -288,30 +288,6 @@ void ompi_mpi_thread_level(int requested, int *provided)
                                 MPI_THREAD_MULTIPLE);
 }
 
-static int ompi_register_mca_variables(void)
-{
-    int ret;
-
-    /* Register MPI variables */
-    if (OMPI_SUCCESS != (ret = ompi_mpi_register_params())) {
-        return ret;
-    }
-
-    /* check to see if we want timing information */
-    /* TODO: enable OMPI init and OMPI finalize timings if
-     * this variable was set to 1!
-     */
-    ompi_enable_timing = false;
-    (void) mca_base_var_register("ompi", "ompi", NULL, "timing",
-                                 "Request that critical timing loops be measured",
-                                 MCA_BASE_VAR_TYPE_BOOL, NULL, 0, 0,
-                                 OPAL_INFO_LVL_9,
-                                 MCA_BASE_VAR_SCOPE_READONLY,
-                                 &ompi_enable_timing);
-
-    return OMPI_SUCCESS;
-}
-
 static void fence_release(pmix_status_t status, void *cbdata)
 {
     volatile bool *active = (volatile bool*)cbdata;
@@ -341,7 +317,6 @@ int ompi_mpi_init(int argc, char **argv, int requested, int *provided,
     pmix_info_t info[2];
     pmix_status_t rc;
     OMPI_TIMING_INIT(64);
-    opal_pmix_lock_t mylock;
 
     ompi_hook_base_mpi_init_top(argc, argv, requested, provided);
 
