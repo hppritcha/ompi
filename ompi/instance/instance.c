@@ -1225,7 +1225,7 @@ int ompi_instance_get_pset_info (ompi_instance_t *instance, const char *pset_nam
 {
     ompi_info_t *info = ompi_info_allocate ();
     char tmp[16];
-    size_t size;
+    size_t size = 0UL;
     int ret;
 
     *info_used = (opal_info_t *) MPI_INFO_NULL;
