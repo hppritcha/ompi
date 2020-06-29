@@ -1,6 +1,6 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
- * Copyright (c) 2018      Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2020 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -393,6 +393,10 @@ static int ompi_mpi_instance_init_common (void)
         return ret;
     }
 
+    /* initialize info */
+    if (OMPI_SUCCESS != (ret = ompi_mpiinfo_init_mpi3())) {
+        return ompi_instance_print_error ("ompi_info_init_mpi3() failed", ret);
+    }
 
     /* declare our presence for interlib coordination, and
      * register for callbacks when other libs declare. XXXXXX -- TODO -- figure out how
