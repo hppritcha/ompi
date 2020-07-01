@@ -342,6 +342,9 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
     }
     ompi_status_public_t *status = NULL;
 
+    comm =  ompi_comm_lookup_cid(cid);
+    comm->c_index_vec[src] = buffer[3];
+
     ofi_req->comm->c_index_vec[src] = buffer[3];
     //printf("Rank %d: send_recv_excid_callback received message from rank %d\n", ofi_req->comm->c_my_rank, buffer[3]);
 
@@ -509,7 +512,7 @@ ompi_mtl_ofi_send_recv_excid(struct mca_mtl_base_module_t *mtl,
     }
 
     ofi_req.completion_count=1;
-    while (0 < ofi_req.completion_count) {
+    while (0 < ofi_req.completion_count || comm->c_index_vec[dest] < 0) {
         ompi_mtl_ofi_progress();
     }
 
