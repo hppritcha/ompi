@@ -190,6 +190,10 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
     }
     newcomm->c_my_rank = newcomm->c_local_group->grp_my_rank;
     newcomm->c_assertions = 0;
+    newcomm->c_index_vec = malloc(local_size * sizeof(int));
+    for (int i = 0; i < local_size; i++) {
+        newcomm->c_index_vec[i] = -1;
+    }
 
     /* Set remote group and duplicate the local comm, if applicable */
     if ( NULL != remote_group ) {
