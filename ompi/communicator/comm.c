@@ -636,6 +636,8 @@ int ompi_comm_split( ompi_communicator_t* comm, int color, int key,
         goto exit;
     }
 
+    newcomp->c_index_vec[newcomp->c_my_rank] = newcomp->c_index;
+
     /* Set name for debugging purposes */
     snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s SPLIT FROM %s",
 	     ompi_comm_print_cid (newcomp), ompi_comm_print_cid (comm));

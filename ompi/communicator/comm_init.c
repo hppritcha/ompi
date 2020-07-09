@@ -258,7 +258,8 @@ int ompi_comm_init_mpi3 (void)
     ompi_mpi_comm_self.comm.c_contextid = ompi_mpi_comm_self.comm.c_contextidb.block_cid;
     ompi_mpi_comm_self.comm.c_index    = 1;
     ompi_mpi_comm_self.comm.c_my_rank      = group->grp_my_rank;
-    ompi_mpi_comm_self.comm.c_index_vec    = malloc(group->grp_proc_count * sizeof(int));
+    ompi_mpi_comm_self.comm.c_index_vec    = malloc(1 * sizeof(int));
+    ompi_mpi_comm_self.comm.c_index_vec[0] = 1;
     ompi_mpi_comm_self.comm.c_local_group  = group;
     ompi_mpi_comm_self.comm.c_remote_group = group;
     OBJ_RETAIN(ompi_mpi_comm_self.comm.c_remote_group);
