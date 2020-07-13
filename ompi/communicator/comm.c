@@ -190,10 +190,6 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
     }
     newcomm->c_my_rank = newcomm->c_local_group->grp_my_rank;
     newcomm->c_assertions = 0;
-    newcomm->c_index_vec = malloc(local_size * sizeof(int));
-    for (int i = 0; i < local_size; i++) {
-        newcomm->c_index_vec[i] = -1;
-    }
 
     /* Set remote group and duplicate the local comm, if applicable */
     if ( NULL != remote_group ) {
@@ -211,6 +207,10 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
         }
 
         newcomm->c_flags |= OMPI_COMM_INTER;
+        newcomm->c_index_vec = malloc(local_size * sizeof(int));
+        for (int i = 0; i < remote_size; i++) {
+            newcomm->c_index_vec[i] = -2;
+        }
 
         if (dup_comm) {
             old_localcomm = OMPI_COMM_IS_INTRA(oldcomm) ? oldcomm : oldcomm->c_local_comm;
@@ -226,6 +226,10 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
     } else {
         newcomm->c_remote_group = newcomm->c_local_group;
         OBJ_RETAIN(newcomm->c_remote_group);
+        newcomm->c_index_vec = malloc(local_size * sizeof(int));
+        for (int i = 0; i < local_size; i++) {
+            newcomm->c_index_vec[i] = -2;
+        }
     }
 
     /* Check how many different jobids are represented in this communicator.
@@ -636,7 +640,9 @@ int ompi_comm_split( ompi_communicator_t* comm, int color, int key,
         goto exit;
     }
 
-    newcomp->c_index_vec[newcomp->c_my_rank] = newcomp->c_index;
+    if (!inter) {
+        newcomp->c_index_vec[newcomp->c_my_rank] = newcomp->c_index;
+    }
 
     /* Set name for debugging purposes */
     snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI COMM %s SPLIT FROM %s",

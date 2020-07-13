@@ -321,8 +321,7 @@ __opal_attribute_always_inline__ static inline int
 ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
                                  ompi_mtl_ofi_request_t *ofi_req)
 {
-    //fprintf(stderr, "Rank %d entering send_recv_excid_callback\n", ofi_req->comm->c_my_rank);
-    //fflush(stderr);
+    
     ofi_req->completion_count--;
     int ompi_ret, ctxt_id = 0;
     ssize_t ret;
@@ -335,8 +334,7 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
     for (int i = 0; i < 8; i++) {
         excid.cid_sub.u8[i] = buffer->hdr_cid.cid_sub.u8[i];
     }
-    //fprintf(stderr, "excid base: %d, excid u64: %d\n", excid.cid_base, excid.cid_sub.u64);
-    //fflush(stderr);
+
     comm = ompi_comm_lookup_cid(excid);
     if (comm == NULL) {
         //fprintf(stderr, "Rank %d: comm == NULL\n", ofi_req->comm->c_my_rank);
@@ -348,15 +346,16 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
         //fflush(stderr);
     }
     int src = buffer->hdr_src;
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, src);
+    fprintf(stderr, "Rank %ld entering send_recv_excid_callback\n", ompi_proc->super.proc_name);
+    fflush(stderr);
 
     comm->c_index_vec[src] = buffer->hdr_src_c_index;
-    //printf("Rank %d: send_recv_excid_callback received message from rank %d\n", ofi_req->comm->c_my_rank, buffer[3]);
+    fprintf(stderr, "Rank %d: send_recv_excid_callback received c_index %d from rank %d (my c_index = %d)\n", comm->c_my_rank, buffer->hdr_src_c_index, src, comm->c_index);
+    fflush(stderr);
 
-    //assert(ofi_req->super.ompi_req);
-    //status = &ofi_req->super.ompi_req->req_status;
-
-    //fprintf(stderr, "Rank %d leaving send_recv_excid_callback\n", ofi_req->comm->c_my_rank);
-    //fflush(stderr);
+    fprintf(stderr, "Rank %d leaving send_recv_excid_callback\n", ofi_req->comm->c_my_rank);
+    fflush(stderr);
     return OMPI_SUCCESS;
 }
 
@@ -447,13 +446,14 @@ ompi_mtl_ofi_send_recv_excid(struct mca_mtl_base_module_t *mtl,
                              int src,
                              bool ofi_cq_data)
 {
-    //printf("Rank %d entering send_recv_excid\n", comm->c_my_rank);
-    //fflush(stdout);
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, src);
+    fprintf(stderr, "Rank %ld entering send_recv_excid\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     int ompi_ret = OMPI_SUCCESS, ctxt_id = 0;
     ssize_t ret;
     uint64_t match_bits, mask_bits;
     fi_addr_t remote_addr = ompi_mtl_ofi.any_addr;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t ofi_req;
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
@@ -502,7 +502,7 @@ ompi_mtl_ofi_send_recv_excid(struct mca_mtl_base_module_t *mtl,
         return ompi_mtl_ofi_get_error(ret);
     }
 
-    while (0 < ofi_req.completion_count) {
+    while (0 < ofi_req.completion_count && comm->c_index_vec[src] < 0) {
         ompi_mtl_ofi_progress();
     }
 
@@ -516,14 +516,15 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
                   bool ofi_cq_data,
                   bool is_send)
 {
-    //fprintf(stderr, "Rank %d entering send_excid\n", comm->c_my_rank);
-    //fflush(stderr);
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, dest);
+    fprintf(stderr, "Rank %ld entering send_excid\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t ofi_req;
     int ompi_ret, ctxt_id = 0;
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
     bool free_after;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ack_req = NULL; /* For synchronous send */
     fi_addr_t src_addr = 0;
@@ -616,9 +617,9 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
         }
     }
 
-    if (is_send) {
-        //fprintf(stderr, "Rank %d entering send_recv_excid to rank %d\n", comm->c_my_rank, dest);
-        //fflush(stderr);
+    if (is_send && comm->c_index_vec[dest] < 0) {
+        fprintf(stderr, "Rank %d entering send_recv_excid to rank %d\n", comm->c_my_rank, dest);
+        fflush(stderr);
         ompi_ret = ompi_mtl_ofi_send_recv_excid(mtl, comm, dest, ofi_cq_data);
     }
 
@@ -639,8 +640,9 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
                           mca_pml_base_send_mode_t mode,
                           bool ofi_cq_data)
 {
-    //printf("Rank %d entering send_generic\n", comm->c_my_rank);
-    //fflush(stdout);
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, dest);
+    fprintf(stderr, "Rank %ld entering send_generic\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t ofi_req;
     int ompi_ret, ctxt_id = 0;
@@ -648,7 +650,7 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     bool free_after;
     size_t length;
     uint64_t match_bits;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ack_req = NULL; /* For synchronous send */
     fi_addr_t src_addr = 0;
@@ -656,17 +658,20 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     //fprintf(stderr, "Rank %d: ", comm->c_my_rank);
     //fflush(stderr);
     for (int i = 0; i < comm->c_local_group->grp_proc_count; i++) {
-        //fprintf(stderr, ",  comm->c_index_vec[%d] = %d", i, comm->c_index_vec[i]);
-        //fflush(stderr);
+        fprintf(stderr, ",  comm->c_index_vec[%d] = %d", i, comm->c_index_vec[i]);
+        fflush(stderr);
     }
-    //fprintf(stderr, "\n");
-    //fflush(stderr);
+    fprintf(stderr, "\n");
+    fflush(stderr);
     if (comm->c_remote_group != NULL) {
         //fprintf(stderr, "(send from rank %d to rank %d) c_local_group size: %d, c_remote_group size: %d\n", comm->c_my_rank, dest, comm->c_local_group->grp_proc_count, comm->c_remote_group->grp_proc_count);
         //fflush(stderr);
     }
-    if (comm->c_index_vec[dest] < 0) {
-         ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+    if (comm->c_index_vec[dest] < -1) {
+        comm->c_index_vec[dest] = -1;
+        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+    } else if (comm->c_index_vec[dest] < 0) {
+        ompi_ret = ompi_mtl_ofi_send_recv_excid(mtl, comm, dest, ofi_cq_data);
     }
     //(stderr, "(send from rank %d to rank %d completed) comm->c_index_vec[%d] = %d\n", comm->c_my_rank, dest, dest, comm->c_index_vec[dest]);
     //fflush(stderr);
@@ -804,6 +809,9 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
                    mca_mtl_request_t *mtl_request,
                    bool ofi_cq_data)
 {
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, dest);
+    fprintf(stderr, "Rank %ld entering isend_generic\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t *ofi_req = (ompi_mtl_ofi_request_t *) mtl_request;
     int ompi_ret, ctxt_id = 0;
@@ -811,15 +819,32 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     size_t length;
     bool free_after;
     uint64_t match_bits;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ack_req = NULL; /* For synchronous send */
     fi_addr_t sep_peer_fiaddr = 0;
 
+    if (OMPI_COMM_IS_INTRA(comm)) {
+        for (int i = 0; i < comm->c_local_group->grp_proc_count; i++) {
+            fprintf(stderr, ",  comm->c_index_vec[%d] = %d", i, comm->c_index_vec[i]);
+            fflush(stderr);
+        }
+    } else {
+        for (int i = 0; i < comm->c_remote_group->grp_proc_count; i++) {
+            fprintf(stderr, ",  comm->c_index_vec[%d] = %d", i, comm->c_index_vec[i]);
+            fflush(stderr);
+        }
+    }
+    fprintf(stderr, "\n");
+    fflush(stderr);
+
     //fprintf(stderr, "(send from rank %d to rank %d) comm->c_index_vec[%d] = %d\n", comm->c_my_rank, dest, dest, comm->c_index_vec[dest]);
     //fflush(stderr);
-    if (comm->c_index_vec[dest] < 0) {
-         ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+    if (comm->c_index_vec[dest] < -1) {
+        comm->c_index_vec[dest] = -1;
+        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+    } else if (comm->c_index_vec[dest] < 0) {
+        ompi_ret = ompi_mtl_ofi_send_recv_excid(mtl, comm, dest, ofi_cq_data);
     }
 
     ctxt_id = comm->c_contextid.cid_sub.u64 % ompi_mtl_ofi.total_ctxts_used;
@@ -1013,10 +1038,11 @@ __opal_attribute_always_inline__ static inline int
 ompi_mtl_ofi_recv_excid_callback(struct fi_cq_tagged_entry *wc,
                            ompi_mtl_ofi_request_t *ofi_req)
 {
-    //fprintf(stderr, "Rank %d entering recv_excid_callback\n", ofi_req->comm->c_my_rank);
-    //fflush(stderr);
+    
     int ompi_ret, ctxt_id = 0;
     ssize_t ret;
+    ompi_communicator_t *comm;
+    ompi_comm_extended_cid_t excid;
     ompi_proc_t *ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     mca_mtl_ofi_cid_hdr_t *buffer = (mca_mtl_ofi_cid_hdr_t *)wc->buf;
@@ -1024,10 +1050,26 @@ ompi_mtl_ofi_recv_excid_callback(struct fi_cq_tagged_entry *wc,
     ompi_status_public_t *status = NULL;
     struct fi_msg_tagged tagged_msg;
 
-    ofi_req->comm->c_index_vec[src] = buffer->hdr_src_c_index;
+    excid.cid_base = buffer->hdr_cid.cid_base;
+    excid.cid_sub.u64 = buffer->hdr_cid.cid_sub.u64;
+    for (int i = 0; i < 8; i++) {
+        excid.cid_sub.u8[i] = buffer->hdr_cid.cid_sub.u8[i];
+    }
+    comm = ompi_comm_lookup_cid(excid);
+    if (comm == NULL) {
+        //fprintf(stderr, "Rank %d: comm == NULL\n", ofi_req->comm->c_my_rank);
+        //fflush(stderr);
+        comm = ompi_comm_lookup(buffer->hdr_src_c_index);
+        assert(comm != NULL);
+    }
+    ompi_proc = ompi_comm_peer_lookup(comm, src);
+    fprintf(stderr, "Rank %ld entering recv_excid_callback\n", ompi_proc->super.proc_name);
+    fflush(stderr);
+
+    comm->c_index_vec[src] = buffer->hdr_src_c_index;
     free(ofi_req);
-    //printf("Rank %d: recv_excid_callback received message from rank %d\n", ofi_req->comm->c_my_rank, src);
-    //fflush(stdout);
+    fprintf(stderr, "Rank %d: recv_excid_callback received c_index %d from rank %d (my c_index = %d)\n", comm->c_my_rank, buffer->hdr_src_c_index, src, comm->c_index);
+    fflush(stderr);
     return OMPI_SUCCESS;
 }
 
@@ -1065,13 +1107,14 @@ ompi_mtl_ofi_irecv_excid(struct mca_mtl_base_module_t *mtl,
                                int src,
                                bool ofi_cq_data)
 {
-    //fprintf(stderr, "Rank %d entering recv_excid\n", comm->c_my_rank);
-    //fflush(stderr);
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, src);
+    fprintf(stderr, "Rank %ld entering irecv_excid\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     int ompi_ret = OMPI_SUCCESS, ctxt_id = 0;
     ssize_t ret;
     uint64_t match_bits, mask_bits;
     fi_addr_t remote_addr = ompi_mtl_ofi.any_addr;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ofi_req;
     ofi_req = (ompi_mtl_ofi_request_t *)malloc(sizeof(ompi_mtl_ofi_request_t));
@@ -1137,12 +1180,14 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
                    mca_mtl_request_t *mtl_request,
                    bool ofi_cq_data)
 {
-    //printf("Rank %d entering irecv_generic\n", comm->c_my_rank);
+    ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, src);
+    fprintf(stderr, "Rank %ld entering irecv_generic\n", ompi_proc->super.proc_name);
+    fflush(stderr);
     int ompi_ret = OMPI_SUCCESS, ctxt_id = 0;
     ssize_t ret;
     uint64_t match_bits, mask_bits;
     fi_addr_t remote_addr = ompi_mtl_ofi.any_addr;
-    ompi_proc_t *ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ofi_req = (ompi_mtl_ofi_request_t*) mtl_request;
     void *start;
@@ -1153,7 +1198,9 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
 
     if (comm->c_index_vec[src] < 0) {
          ompi_ret = ompi_mtl_ofi_irecv_excid(mtl, comm, src, ofi_cq_data);
-         ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+         if (comm->c_index_vec[src] < -1) {
+            ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+         }
     }
     ctxt_id = comm->c_contextid.cid_sub.u64 % ompi_mtl_ofi.total_ctxts_used;
     set_thread_context(ctxt_id);
