@@ -207,7 +207,7 @@ int ompi_comm_set_nb (ompi_communicator_t **ncomm, ompi_communicator_t *oldcomm,
         }
 
         newcomm->c_flags |= OMPI_COMM_INTER;
-        newcomm->c_index_vec = malloc(local_size * sizeof(int));
+        newcomm->c_index_vec = malloc(remote_size * sizeof(int));
         for (int i = 0; i < remote_size; i++) {
             newcomm->c_index_vec[i] = -2;
         }
@@ -385,6 +385,10 @@ int ompi_comm_create_w_info (ompi_communicator_t *comm, ompi_group_t *group, opa
     rc = ompi_comm_nextcid (newcomp, comm, NULL, NULL, NULL, false, mode);
     if ( OMPI_SUCCESS != rc ) {
         goto exit;
+    }
+
+    if (OMPI_COMM_IS_INTRA(comm)) {
+        newcomp->c_index_vec[newcomp->c_my_rank] = newcomp->c_index;
     }
 
     /* Copy info if there is one. */
