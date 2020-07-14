@@ -768,11 +768,8 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
         //fprintf(stderr, "(send from rank %d to rank %d) c_local_group size: %d, c_remote_group size: %d\n", comm->c_my_rank, dest, comm->c_local_group->grp_proc_count, comm->c_remote_group->grp_proc_count);
         //fflush(stderr);
     }
-    if (comm->c_index_vec[dest] < -1) {
-        comm->c_index_vec[dest] = -1;
+    if (comm->c_index_vec[dest] < 0) {
         ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
-    } else if (comm->c_index_vec[dest] < 0) {
-        ompi_ret = ompi_mtl_ofi_send_recv_excid(mtl, comm, dest, ofi_cq_data);
     }
     //(stderr, "(send from rank %d to rank %d completed) comm->c_index_vec[%d] = %d\n", comm->c_my_rank, dest, dest, comm->c_index_vec[dest]);
     //fflush(stderr);
@@ -922,8 +919,6 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
                    bool ofi_cq_data)
 {
     ompi_proc_t *ompi_proc = ompi_comm_peer_lookup(comm, dest);
-    fprintf(stderr, "Rank %ld entering isend_generic\n", ompi_proc->super.proc_name);
-    fflush(stderr);
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t *ofi_req = (ompi_mtl_ofi_request_t *) mtl_request;
     int ompi_ret, ctxt_id = 0;
@@ -941,8 +936,6 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     if (comm->c_index_vec[dest] < -1) {
         comm->c_index_vec[dest] = -1;
         ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
-    } else if (comm->c_index_vec[dest] < 0) {
-        ompi_ret = ompi_mtl_ofi_send_recv_excid(mtl, comm, dest, ofi_cq_data);
     }
 
     ctxt_id = comm->c_contextid.cid_sub.u64 % ompi_mtl_ofi.total_ctxts_used;
@@ -1303,10 +1296,8 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
     ompi_mtl_ofi_set_mr_null(ofi_req);
 
     if (comm->c_index_vec[src] < 0) {
-         ompi_ret = ompi_mtl_ofi_irecv_excid(mtl, comm, src, ofi_cq_data);
-         if (comm->c_index_vec[src] < -1) {
-            ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
-         }
+        ompi_ret = ompi_mtl_ofi_irecv_excid(mtl, comm, src, ofi_cq_data);
+        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
     }
 
     ctxt_id = comm->c_contextid.cid_sub.u64 % ompi_mtl_ofi.total_ctxts_used;
