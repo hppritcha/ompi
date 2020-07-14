@@ -525,6 +525,13 @@ int ompi_mpi_init(int argc, char **argv, int requested, int *provided,
         goto error;
     }
 
+    /* Check whether we have been spawned or not.  We introduce that
+       at the very end, since we need collectives, datatypes, ptls
+       etc. up and running here.... */
+    if (OMPI_SUCCESS != (ret = ompi_dpm_dyn_init())) {
+        return ret;
+    }
+
     /* Fall through */
  error:
     if (ret != OMPI_SUCCESS) {
