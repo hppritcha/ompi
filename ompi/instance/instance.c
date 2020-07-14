@@ -671,13 +671,6 @@ static int ompi_mpi_instance_init_common (void)
     opal_progress_set_event_flag(OPAL_EVLOOP_NONBLOCK);
 #endif
 
-    /* Check whether we have been spawned or not.  We introduce that
-       at the very end, since we need collectives, datatypes, ptls
-       etc. up and running here.... */
-    if (OMPI_SUCCESS != (ret = ompi_dpm_dyn_init())) {
-        return ompi_instance_print_error ("ompi_dpm_dyn_init() failed", ret);
-    }
-
     /* Undo OPAL calling opal_progress_event_users_increment() during
        opal_init, to get better latency when not using TCP.  Do
        this *after* dyn_init, as dyn init uses lots of RTE
@@ -844,6 +837,8 @@ static int ompi_mpi_instance_finalize_common (void)
             return ret;
         }
     }
+
+    ompi_proc_finalize();
 
     OBJ_DESTRUCT(&ompi_mpi_instance_null);
 
