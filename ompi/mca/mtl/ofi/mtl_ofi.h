@@ -331,11 +331,6 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
         fflush(stderr);
     }
     
-    if (wc == NULL) {
-        fprintf(stderr, "wc == NULL\n");
-        fflush(stderr);
-        return OMPI_SUCCESS;
-    }
     ofi_req->completion_count--;
     int ompi_ret, ctxt_id = 0;
     ssize_t ret;
@@ -370,6 +365,7 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
 
     //fprintf(stderr, "Rank %d leaving send_recv_excid_callback\n", ofi_req->comm->c_my_rank);
     //fflush(stderr);
+    free(ofi_req);
     return OMPI_SUCCESS;
 }
 
@@ -475,7 +471,7 @@ ompi_mtl_ofi_send_recv_excid(struct mca_mtl_base_module_t *mtl,
     fi_addr_t remote_addr = ompi_mtl_ofi.any_addr;
     ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
-    ompi_mtl_ofi_request_t ofi_req;
+    ompi_mtl_ofi_request_t *ofi_req = malloc(sizeof(ompi_mtl_ofi_request_t));
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
     size_t length = sizeof(mca_mtl_ofi_cid_hdr_t);
     bool free_after;
@@ -495,34 +491,34 @@ ompi_mtl_ofi_send_recv_excid(struct mca_mtl_base_module_t *mtl,
         return ompi_ret;
     }
 
-    ofi_req.type = OMPI_MTL_OFI_RECV;
-    ofi_req.event_callback = ompi_mtl_ofi_send_recv_excid_callback;
-    ofi_req.error_callback = ompi_mtl_ofi_send_error_callback;
-    ofi_req.comm = comm;
-    ofi_req.buffer = (free_after) ? start : NULL;
-    ofi_req.length = length;
-    ofi_req.convertor = NULL;
-    ofi_req.req_started = false;
-    ofi_req.status.MPI_ERROR = OMPI_SUCCESS;
-    ofi_req.remote_addr = remote_addr;
-    ofi_req.match_bits = NULL;
-    ofi_req.completion_count=1;
+    ofi_req->type = OMPI_MTL_OFI_RECV;
+    ofi_req->event_callback = ompi_mtl_ofi_send_recv_excid_callback;
+    ofi_req->error_callback = ompi_mtl_ofi_send_error_callback;
+    ofi_req->comm = comm;
+    ofi_req->buffer = (free_after) ? start : NULL;
+    ofi_req->length = length;
+    ofi_req->convertor = NULL;
+    ofi_req->req_started = false;
+    ofi_req->status.MPI_ERROR = OMPI_SUCCESS;
+    ofi_req->remote_addr = remote_addr;
+    ofi_req->match_bits = NULL;
+    ofi_req->completion_count=1;
 
     MTL_OFI_RETRY_UNTIL_DONE(fi_recv(ompi_mtl_ofi.ofi_ctxt[ctxt_id].rx_ep,
                                       start,
                                       length,
                                       NULL,
                                       remote_addr,
-                                      (void *)&ofi_req.ctx), ret);
+                                      (void *)&ofi_req->ctx), ret);
     if (OPAL_UNLIKELY(0 > ret)) {
-        if (NULL != ofi_req.buffer) {
-            free(ofi_req.buffer);
+        if (NULL != ofi_req->buffer) {
+            free(ofi_req->buffer);
         }
         MTL_OFI_LOG_FI_ERR(ret, "fi_trecv failed");
         return ompi_mtl_ofi_get_error(ret);
     }
 
-    while (0 < ofi_req.completion_count && comm->c_index_vec[src] < 0) {
+    while (0 < ofi_req->completion_count && comm->c_index_vec[src] < 0) {
         ompi_mtl_ofi_progress();
     }
 
@@ -544,7 +540,7 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
     fprintf(stderr, "Rank %d (%ld) sending excid to rank %d (%ld)\n", comm->c_my_rank, ompi_proc1->super.proc_name, dest, ompi_proc->super.proc_name);
     fflush(stderr);
     ssize_t ret = OMPI_SUCCESS;
-    ompi_mtl_ofi_request_t ofi_req;
+    ompi_mtl_ofi_request_t *ofi_req = malloc(sizeof(ompi_mtl_ofi_request_t));
     int ompi_ret, ctxt_id = 0;
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
     bool free_after;
@@ -560,8 +556,8 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
     /**
      * Create a send request, start it and wait until it completes.
      */
-    ofi_req.event_callback = ompi_mtl_ofi_send_callback;
-    ofi_req.error_callback = ompi_mtl_ofi_send_error_callback;
+    ofi_req->event_callback = ompi_mtl_ofi_send_callback;
+    ofi_req->error_callback = ompi_mtl_ofi_send_error_callback;
 
     ompi_proc = ompi_comm_peer_lookup(comm, dest);
     endpoint = ompi_mtl_ofi_get_endpoint(mtl, ompi_proc);
@@ -580,11 +576,10 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
     }
     size_t length = sizeof(mca_mtl_ofi_cid_hdr_t);
 
-    ofi_req.buffer = (free_after) ? start : NULL;
-    ofi_req.length = length;
-    ofi_req.status.MPI_ERROR = OMPI_SUCCESS;
-    ofi_req.completion_count = 0;
-
+    ofi_req->buffer = (free_after) ? start : NULL;
+    ofi_req->length = length;
+    ofi_req->status.MPI_ERROR = OMPI_SUCCESS;
+    ofi_req->completion_count = 0;
     if (OPAL_UNLIKELY(length > endpoint->mtl_ofi_module->max_msg_size)) {
         opal_show_help("help-mtl-ofi.txt",
             "message too big", false,
@@ -592,7 +587,7 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
         return OMPI_ERROR;
     }
 
-    if (OPAL_UNLIKELY(ofi_req.status.MPI_ERROR != OMPI_SUCCESS))
+    if (OPAL_UNLIKELY(ofi_req->status.MPI_ERROR != OMPI_SUCCESS))
         goto free_request_buffer;
 
     if (ompi_mtl_ofi.max_inject_size >= length) {
@@ -617,11 +612,11 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
                 free(ack_req);
             }
 
-            ofi_req.status.MPI_ERROR = ompi_mtl_ofi_get_error(ret);
+            ofi_req->status.MPI_ERROR = ompi_mtl_ofi_get_error(ret);
             goto free_request_buffer;
         }
     } else {
-        ofi_req.completion_count = 1;
+        ofi_req->completion_count = 1;
         if (ofi_cq_data) {
             MTL_OFI_RETRY_UNTIL_DONE(fi_senddata(ompi_mtl_ofi.ofi_ctxt[ctxt_id].tx_ep,
                                           start,
@@ -629,20 +624,20 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
                                           NULL,
                                           comm->c_my_rank,
                                           sep_peer_fiaddr,
-                                          (void *) &ofi_req.ctx), ret);
+                                          (void *) &ofi_req->ctx), ret);
         } else {
             MTL_OFI_RETRY_UNTIL_DONE(fi_send(ompi_mtl_ofi.ofi_ctxt[ctxt_id].tx_ep,
                                           start,
                                           length,
                                           NULL,
                                           sep_peer_fiaddr,
-                                          (void *) &ofi_req.ctx), ret);
+                                          (void *) &ofi_req->ctx), ret);
         }
         if (OPAL_UNLIKELY(0 > ret)) {
             MTL_OFI_LOG_FI_ERR(ret,
                                ofi_cq_data ? "fi_tsenddata failed"
                                : "fi_tsend failed");
-            ofi_req.status.MPI_ERROR = ompi_mtl_ofi_get_error(ret);
+            ofi_req->status.MPI_ERROR = ompi_mtl_ofi_get_error(ret);
             goto free_request_buffer;
         }
     }
@@ -654,11 +649,11 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
     }
 
 free_request_buffer:
-    if (OPAL_UNLIKELY(NULL != ofi_req.buffer)) {
-        free(ofi_req.buffer);
+    if (OPAL_UNLIKELY(NULL != ofi_req->buffer)) {
+        free(ofi_req->buffer);
     }
 
-    return ofi_req.status.MPI_ERROR;
+    return ofi_req->status.MPI_ERROR;
 }
 
 __opal_attribute_always_inline__ static inline int
@@ -1068,8 +1063,7 @@ ompi_mtl_ofi_recv_callback(struct fi_cq_tagged_entry *wc,
 __opal_attribute_always_inline__ static inline int
 ompi_mtl_ofi_recv_excid_callback(struct fi_cq_tagged_entry *wc,
                            ompi_mtl_ofi_request_t *ofi_req)
-{
-    
+{ 
     int ompi_ret, ctxt_id = 0;
     ssize_t ret;
     ompi_communicator_t *comm;
@@ -1159,8 +1153,7 @@ ompi_mtl_ofi_irecv_excid(struct mca_mtl_base_module_t *mtl,
     fi_addr_t remote_addr = ompi_mtl_ofi.any_addr;
     ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
-    ompi_mtl_ofi_request_t *ofi_req;
-    ofi_req = (ompi_mtl_ofi_request_t *)malloc(sizeof(ompi_mtl_ofi_request_t));
+    ompi_mtl_ofi_request_t *ofi_req = malloc(sizeof(ompi_mtl_ofi_request_t));
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
     size_t length = sizeof(mca_mtl_ofi_cid_hdr_t);
     bool free_after;
