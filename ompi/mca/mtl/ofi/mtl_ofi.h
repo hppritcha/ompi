@@ -464,7 +464,10 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
         //fprintf(stderr, "Rank %d: comm == NULL\n", ofi_req->comm->c_my_rank);
         //fflush(stderr);
         comm = ompi_comm_lookup(buffer->hdr_src_c_index);
-        assert(comm != NULL);
+    }
+
+    if (comm == NULL) {
+        return OMPI_SUCCESS;
     }
 
     comm->c_index_vec[src] = buffer->hdr_src_c_index;
@@ -805,7 +808,7 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     bool free_after;
     size_t length;
     uint64_t match_bits;
-    //ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ack_req = NULL; /* For synchronous send */
     fi_addr_t src_addr = 0;
@@ -991,7 +994,7 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     size_t length;
     bool free_after;
     uint64_t match_bits;
-    //ompi_proc = NULL;
+    ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
     ompi_mtl_ofi_request_t *ack_req = NULL; /* For synchronous send */
     fi_addr_t sep_peer_fiaddr = 0;
