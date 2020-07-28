@@ -380,8 +380,6 @@ static int ompi_comm_nextcid_ext_nb (ompi_communicator_t *newcomm, ompi_communic
     opal_hash_table_set_value_ptr (&ompi_comm_hash, &newcomm->c_contextid,
                                    sizeof (newcomm->c_contextid), (void *) newcomm);
     *req = &ompi_request_empty;
-    fprintf(stderr, "New comm added to ompi_comm_hash\ncid_base: %lu, cid_sub.u64: %lu\n", newcomm->c_contextid.cid_base, newcomm->c_contextid.cid_sub.u64);
-    fflush(stderr);
     /* nothing more to do here */
     return OMPI_SUCCESS;
 }
@@ -392,7 +390,7 @@ int ompi_comm_nextcid_nb (ompi_communicator_t *newcomm, ompi_communicator_t *com
 {
     ompi_comm_cid_context_t *context;
     ompi_comm_request_t *request;
-
+    fprintf(stderr, "supports_extended_cid() returns: %d\n", mca_pml_base_supports_extended_cid());
     if (mca_pml_base_supports_extended_cid() && OMPI_COMM_CID_INTER != mode &&
         OMPI_COMM_CID_INTRA_BRIDGE != mode && OMPI_COMM_CID_INTRA_PMIX != mode) {
         return ompi_comm_nextcid_ext_nb (newcomm, comm, bridgecomm, arg0, arg1, send_first, mode, req);
