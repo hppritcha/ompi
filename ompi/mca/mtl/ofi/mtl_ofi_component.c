@@ -1091,6 +1091,7 @@ select_prov:
      * Set the ANY_SRC address.
      */
     ompi_mtl_ofi.any_addr = FI_ADDR_UNSPEC;
+    ompi_mtl_ofi.is_initialized = false;
 
     return &ompi_mtl_ofi.base;
 
