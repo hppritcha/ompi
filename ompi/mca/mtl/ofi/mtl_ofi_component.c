@@ -1060,6 +1060,7 @@ select_prov:
      * Set the ANY_SRC address.
      */
     ompi_mtl_ofi.any_addr = FI_ADDR_UNSPEC;
+    ompi_mtl_ofi.is_initialized = false;
 
 #if OPAL_CUDA_SUPPORT
     mca_common_cuda_stage_one_init();
