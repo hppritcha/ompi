@@ -96,6 +96,7 @@ typedef struct mca_mtl_ofi_module_t {
     struct ompi_mtl_ofi_symtable sym_table;
 
     bool is_initialized;
+    bool has_posted_initial_buffer;
 
 } mca_mtl_ofi_module_t;
 
