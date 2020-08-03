@@ -22,6 +22,8 @@ Copyright (c) 2017-2018 Los Alamos National Security, LLC.  All rights
 Copyright (c) 2017      Research Organization for Information Science
                         and Technology (RIST). All rights reserved.
 Copyright (c) 2020      Google, LLC. All rights reserved.
+Copyright (c) 2019-2020 Triad National Security, LLC. All rights
+                        reserved.
 
 $COPYRIGHT$
 
@@ -724,6 +726,23 @@ Network Support
       shell$ mpirun --mca pml cm --mca mtl [MTL] ...
       or
       shell$ mpirun --mca pml ucx ...
+
+  As alluded to above, there is actually a fourth MPI point-to-point
+  transport, but it is deprecated and will likely be removed in a
+  future Open MPI release:
+
+  - "yalla" uses the Mellanox MXM transport library.  MXM is the
+     deprecated Mellanox Messaging Accelerator library, utilizing a
+     full range of IB transports to provide the following messaging
+     services to the upper level MPI/OpenSHMEM libraries.  MXM is only
+     included in this release of Open MPI for backwards compatibility;
+     the "ucx" PML should be used insead.
+
+  There is a known issue when using UCX with very old Mellanox Infiniband
+  HCAs, in particular HCAs preceding the introduction of the ConnectX
+  product line, which can result in Open MPI crashing in MPI_Finalize.
+  This issue will be address by UCX release 1.10 and newer.
+
 
 - The main OpenSHMEM network model is "ucx"; it interfaces directly
   with UCX.
