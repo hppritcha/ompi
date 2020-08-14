@@ -676,7 +676,7 @@ ompi_mtl_ofi_component_init(bool enable_progress_threads,
        interface and local communication and remote communication. */
     hints->mode               = FI_CONTEXT;
     hints->ep_attr->type      = FI_EP_RDM;
-    hints->caps               = FI_TAGGED | FI_LOCAL_COMM | FI_REMOTE_COMM;
+    hints->caps               = FI_MSG | FI_TAGGED | FI_LOCAL_COMM | FI_REMOTE_COMM;
     hints->tx_attr->msg_order = FI_ORDER_SAS;
     hints->rx_attr->msg_order = FI_ORDER_SAS;
     hints->rx_attr->op_flags = FI_COMPLETION;
