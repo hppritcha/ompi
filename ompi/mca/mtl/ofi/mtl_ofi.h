@@ -335,7 +335,7 @@ ompi_mtl_ofi_send_recv_excid_callback(struct fi_cq_tagged_entry *wc,
     int ompi_ret, ctxt_id = 0;
     ssize_t ret;
     ompi_communicator_t *comm;
-    mca_mtl_ofi_cid_hdr_t *buffer = (mca_mtl_ofi_cid_hdr_t *)wc->buf;
+    mca_mtl_ofi_cid_hdr_t *buffer = (mca_mtl_ofi_cid_hdr_t *)ofi_req->buffer;
     size_t length = sizeof(mca_mtl_ofi_cid_hdr_t);
     ompi_comm_extended_cid_t excid;
     excid.cid_base = buffer->hdr_cid.cid_base;
@@ -448,7 +448,7 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
 {
     ofi_req->completion_count--;
     int ret;
-    mca_mtl_ofi_cid_hdr_t *buffer = (mca_mtl_ofi_cid_hdr_t *)wc->buf;
+    mca_mtl_ofi_cid_hdr_t *buffer = (mca_mtl_ofi_cid_hdr_t *)ofi_req->buffer;
     size_t length = sizeof(mca_mtl_ofi_cid_hdr_t);
     ompi_comm_extended_cid_t excid;
     ompi_communicator_t *comm;
@@ -499,7 +499,7 @@ ompi_mtl_ofi_post_recv_excid_buffer(bool blocking, struct ompi_communicator_t *c
     ofi_req->type = OMPI_MTL_OFI_RECV;
     ofi_req->event_callback = ompi_mtl_ofi_post_recv_excid_buffer_callback;
     ofi_req->error_callback = ompi_mtl_ofi_recv_excid_error_callback;
-    ofi_req->buffer = NULL;
+    ofi_req->buffer = start;
     ofi_req->length = length;
     ofi_req->convertor = NULL;
     ofi_req->req_started = false;
@@ -507,6 +507,7 @@ ompi_mtl_ofi_post_recv_excid_buffer(bool blocking, struct ompi_communicator_t *c
     ofi_req->remote_addr = NULL;
     ofi_req->match_bits = NULL;
     ofi_req->completion_count = 1;
+    ofi_req->comm = comm;
 
     MTL_OFI_RETRY_UNTIL_DONE(fi_recv(ompi_mtl_ofi.ofi_ctxt[0].rx_ep,
                                       start,
