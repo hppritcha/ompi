@@ -952,6 +952,10 @@ select_prov:
         goto error;
     }
 
+    if (!strcmp(prov->fabric_attr->prov_name,"gni")) {
+         prov->domain_attr->mr_mode = FI_MR_BASIC;
+    }
+
     /**
      * Create the access domain, which is the physical or virtual network or
      * hardware port/collection of ports.  Returns a domain object that can be
