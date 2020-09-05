@@ -475,8 +475,6 @@ ompi_mtl_ofi_recv_excid_error_callback(struct fi_cq_err_entry *error,
     status = &ofi_req->super.ompi_req->req_status;
     status->MPI_TAG = MTL_OFI_GET_TAG(ofi_req->match_bits);
     status->MPI_SOURCE = mtl_ofi_get_source((struct fi_cq_tagged_entry *) error);
-    //fprintf(stderr, "Error in recv excid buffer\n");
-    //fflush(stderr);
 
     switch (error->err) {
         case FI_ETRUNC:
@@ -504,6 +502,7 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
     ompi_comm_extended_cid_t excid;
     ompi_communicator_t *comm;
     int src = buffer->hdr_src;
+    int ret;
     excid.cid_base = buffer->hdr_cid.cid_base;
     excid.cid_sub.u64 = buffer->hdr_cid.cid_sub.u64;
     for (int i = 0; i < 8; i++) {
@@ -512,8 +511,6 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
 
     comm = ompi_comm_lookup_cid(excid);
     if (comm == NULL) {
-        //fprintf(stderr, "Rank %d: comm == NULL\n", ofi_req->comm->c_my_rank);
-        //fflush(stderr);
         comm = ompi_comm_lookup(buffer->hdr_src_c_index);
     }
 
@@ -528,9 +525,6 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
         comm->c_index_vec[src] = buffer->hdr_src_c_index;
     }
 
-    //fprintf(stderr, "Rank %d received c_index=%d from rank %d\n", comm->c_my_rank, buffer->hdr_src_c_index, src);
-    //fflush(stderr);
-    //free(ofi_req);
     ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
     return OMPI_SUCCESS;
 }
@@ -538,8 +532,6 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
 __opal_attribute_always_inline__ static inline int
 ompi_mtl_ofi_post_recv_excid_buffer(bool blocking, struct ompi_communicator_t *comm, int src)
 {
-    //fprintf(stderr, "Rank %d entering post_recv_excid_buffer\n", comm->c_my_rank);
-    //fflush(stderr);
     int ctxt_id = 0;
     ssize_t ret;
     ompi_mtl_ofi_request_t *ofi_req = malloc(sizeof(ompi_mtl_ofi_request_t));
@@ -641,7 +633,7 @@ ompi_mtl_ofi_send_excid(struct mca_mtl_base_module_t *mtl,
 {
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t *ofi_req = malloc(sizeof(ompi_mtl_ofi_request_t));
-    int ompi_ret, ctxt_id = 0;
+    int ctxt_id = 0;
     mca_mtl_ofi_cid_hdr_t *start = malloc(sizeof(mca_mtl_ofi_cid_hdr_t));
     ompi_proc_t *ompi_proc = NULL;
     mca_mtl_ofi_endpoint_t *endpoint = NULL;
@@ -759,8 +751,12 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     fi_addr_t sep_peer_fiaddr = 0;
 
     if (comm->c_index_vec[dest] < -1) {
-        comm->c_index_vec[dest] = -1;
-        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+            comm->c_index_vec[dest] = comm->c_index;
+        } else {
+            comm->c_index_vec[dest] = -1;
+            ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+        }
     }
     
     if (comm->c_index_vec[dest] < 0) {
@@ -933,8 +929,12 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     ompi_mtl_ofi_set_mr_null(ofi_req);
 
     if (comm->c_index_vec[dest] < -1) {
-        comm->c_index_vec[dest] = -1;
-        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+            comm->c_index_vec[dest] = comm->c_index;
+        } else {
+            comm->c_index_vec[dest] = -1;
+            ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
+        }
     }
     
     if (comm->c_index_vec[dest] < 0) {
@@ -1194,8 +1194,12 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
     ompi_mtl_ofi_set_mr_null(ofi_req);
 
     if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        ompi_mtl_ofi.has_posted_initial_buffer = true;
-        ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
+        } else {
+            ompi_mtl_ofi.has_posted_initial_buffer = true;
+            ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        }
     }
     if (src >= 0 && comm->c_index_vec[src] < -1) {
         comm->c_index_vec[src] = -1;
@@ -1460,8 +1464,12 @@ ompi_mtl_ofi_iprobe_generic(struct mca_mtl_base_module_t *mtl,
     int ctxt_id = 0;
 
     if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        ompi_mtl_ofi.has_posted_initial_buffer = true;
-        ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
+        } else {
+            ompi_mtl_ofi.has_posted_initial_buffer = true;
+            ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        }
     }
     if (src >= 0 && comm->c_index_vec[src] < -1) {
         comm->c_index_vec[src] = -1;
@@ -1555,8 +1563,12 @@ ompi_mtl_ofi_improbe_generic(struct mca_mtl_base_module_t *mtl,
     int ctxt_id = 0;
 
     if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        ompi_mtl_ofi.has_posted_initial_buffer = true;
-        ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
+        } else {
+            ompi_mtl_ofi.has_posted_initial_buffer = true;
+            ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
+        }
     }
     if (src >= 0 && comm->c_index_vec[src] < -1) {
         comm->c_index_vec[src] = -1;
