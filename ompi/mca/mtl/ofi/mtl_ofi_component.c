@@ -676,7 +676,7 @@ ompi_mtl_ofi_component_init(bool enable_progress_threads,
        interface and local communication and remote communication. */
     hints->mode               = FI_CONTEXT;
     hints->ep_attr->type      = FI_EP_RDM;
-    hints->caps               = FI_TAGGED | FI_LOCAL_COMM | FI_REMOTE_COMM;
+    hints->caps               = FI_MSG | FI_TAGGED | FI_LOCAL_COMM | FI_REMOTE_COMM;
     hints->tx_attr->msg_order = FI_ORDER_SAS;
     hints->rx_attr->msg_order = FI_ORDER_SAS;
     hints->rx_attr->op_flags = FI_COMPLETION;
@@ -952,6 +952,10 @@ select_prov:
         goto error;
     }
 
+    if (!strcmp(prov->fabric_attr->prov_name,"gni")) {
+         prov->domain_attr->mr_mode = FI_MR_BASIC;
+    }
+
     /**
      * Create the access domain, which is the physical or virtual network or
      * hardware port/collection of ports.  Returns a domain object that can be
@@ -1091,6 +1095,8 @@ select_prov:
      * Set the ANY_SRC address.
      */
     ompi_mtl_ofi.any_addr = FI_ADDR_UNSPEC;
+    ompi_mtl_ofi.is_initialized = false;
+    ompi_mtl_ofi.has_posted_initial_buffer = false;
 
     return &ompi_mtl_ofi.base;
 

@@ -104,6 +104,7 @@ int ompi_mpi_finalize(void)
 {
     int ret = MPI_SUCCESS;
     pmix_status_t rc;
+    volatile bool active;
 
     ompi_hook_base_mpi_finalize_top();
 
@@ -235,8 +236,7 @@ int ompi_mpi_finalize(void)
        https://svn.open-mpi.org/trac/ompi/ticket/4669#comment:4 for
        more details). */
     if (!ompi_async_mpi_finalize && !ompi_singleton) {
-#ifdef PMIx_Fence_nb
-        volatile bool active = true;
+        active = true;
         OPAL_POST_OBJECT(&active);
         /* Note that use of the non-blocking PMIx fence will
          * allow us to lazily cycle calling
@@ -252,20 +252,6 @@ int ompi_mpi_finalize(void)
             active = false;
         }
         OMPI_LAZY_WAIT_FOR_COMPLETION(active);
-#else
-        /* However, we cannot guarantee that the provided PMIx has
-         * fence_nb.  If it doesn't, then do the best we can: an MPI
-         * barrier on COMM_WORLD (which isn't the best because of the
-         * reasons cited above), followed by a blocking PMIx fence
-         * (which does not call opal_progress()). */
-        ompi_communicator_t *comm = &ompi_mpi_comm_world.comm;
-        comm->c_coll->coll_barrier(comm, comm->c_coll->coll_barrier_module);
-
-        if (PMIX_SUCCESS != (rc = PMIx_Fence(NULL, 0, NULL, 0))) {
-            ret = opal_pmix_convert_status(rc);
-            OMPI_ERROR_LOG(ret);
-        }
-#endif
     }
 
     ompi_mpi_instance_finalize (&ompi_mpi_instance_default);
