@@ -502,7 +502,6 @@ ompi_mtl_ofi_post_recv_excid_buffer_callback(struct fi_cq_tagged_entry *wc,
     ompi_comm_extended_cid_t excid;
     ompi_communicator_t *comm;
     int src = buffer->hdr_src;
-    int ret;
     excid.cid_base = buffer->hdr_cid.cid_base;
     excid.cid_sub.u64 = buffer->hdr_cid.cid_sub.u64;
     for (int i = 0; i < 8; i++) {
@@ -739,7 +738,7 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
 {
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t ofi_req;
-    int ompi_ret, ctxt_id = 0;
+    int ompi_ret, ctxt_id = 0, c_index_for_tag;
     void *start;
     bool free_after;
     size_t length;
@@ -750,19 +749,20 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     fi_addr_t src_addr = 0;
     fi_addr_t sep_peer_fiaddr = 0;
 
-    if (comm->c_index_vec[dest] < -1) {
-        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
-            comm->c_index_vec[dest] = comm->c_index;
-        } else {
+    if (OPAL_LIKELY(OMPI_COMM_IS_GLOBAL_INDEX(comm))) {
+        c_index_for_tag = comm->c_index;
+    } else {
+        if (comm->c_index_vec[dest] < -1) {
             comm->c_index_vec[dest] = -1;
             ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
         }
-    }
-    
-    if (comm->c_index_vec[dest] < 0) {
-         while (comm->c_index_vec[dest] < 0) {
-            ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(true, comm, dest);
+
+        if (comm->c_index_vec[dest] < 0) {
+             while (comm->c_index_vec[dest] < 0) {
+                ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(true, comm, dest);
+            }
         }
+        c_index_for_tag = comm->c_index_vec[dest];
     }
 
     ompi_mtl_ofi_set_mr_null(&ofi_req);
@@ -804,10 +804,10 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     }
 
     if (ofi_cq_data) {
-        match_bits = mtl_ofi_create_send_tag_CQD(comm->c_index_vec[dest], tag);
+        match_bits = mtl_ofi_create_send_tag_CQD(c_index_for_tag, tag);
         src_addr = sep_peer_fiaddr;
     } else {
-        match_bits = mtl_ofi_create_send_tag(comm->c_index_vec[dest],
+        match_bits = mtl_ofi_create_send_tag(c_index_for_tag,
                                              comm->c_my_rank, tag);
         /* src_addr is ignored when FI_DIRECTED_RECV is not supported */
     }
@@ -916,7 +916,7 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
 {
     ssize_t ret = OMPI_SUCCESS;
     ompi_mtl_ofi_request_t *ofi_req = (ompi_mtl_ofi_request_t *) mtl_request;
-    int ompi_ret, ctxt_id = 0;
+    int ompi_ret, ctxt_id = 0, c_index_for_tag;
     void *start;
     size_t length;
     bool free_after;
@@ -931,16 +931,17 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     if (comm->c_index_vec[dest] < -1) {
         if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
             comm->c_index_vec[dest] = comm->c_index;
-        } else {
+    } else {
+        if (comm->c_index_vec[dest] < -1) {
             comm->c_index_vec[dest] = -1;
             ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, dest, ofi_cq_data, true);
         }
-    }
-    
-    if (comm->c_index_vec[dest] < 0) {
-         while (comm->c_index_vec[dest] < 0) {
-            ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(true, comm, dest);
+        if (comm->c_index_vec[dest] < 0) {
+            while (comm->c_index_vec[dest] < 0) {
+                ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(true, comm, dest);
+            }
         }
+        c_index_for_tag = comm->c_index_vec[dest];
     }
 
     if (ompi_mtl_ofi.total_ctxts_used > 0) {
@@ -975,9 +976,9 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
     }
 
     if (ofi_cq_data) {
-        match_bits = mtl_ofi_create_send_tag_CQD(comm->c_index_vec[dest], tag);
+        match_bits = mtl_ofi_create_send_tag_CQD(c_index_for_tag, tag);
     } else {
-        match_bits = mtl_ofi_create_send_tag(comm->c_index_vec[dest],
+        match_bits = mtl_ofi_create_send_tag(c_index_for_tag,
                           comm->c_my_rank, tag);
         /* src_addr is ignored when FI_DIRECTED_RECV  is not supported */
     }
@@ -1193,17 +1194,16 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
 
     ompi_mtl_ofi_set_mr_null(ofi_req);
 
-    if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
-            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
-        } else {
+    if (!OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+        if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) &&
+             !ompi_mtl_ofi.has_posted_initial_buffer) {
             ompi_mtl_ofi.has_posted_initial_buffer = true;
             ompi_ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
         }
-    }
-    if (src >= 0 && comm->c_index_vec[src] < -1) {
-        comm->c_index_vec[src] = -1;
-        ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        if (src >= 0 && comm->c_index_vec[src] < -1) {
+            comm->c_index_vec[src] = -1;
+            ompi_ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        }
     }
 
     if (ompi_mtl_ofi.total_ctxts_used > 0) {
@@ -1463,17 +1463,16 @@ ompi_mtl_ofi_iprobe_generic(struct mca_mtl_base_module_t *mtl,
     uint64_t msgflags = FI_PEEK | FI_COMPLETION;
     int ctxt_id = 0;
 
-    if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
-            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
-        } else {
+    if (!OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+        if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) &&
+                             !ompi_mtl_ofi.has_posted_initial_buffer) {
             ompi_mtl_ofi.has_posted_initial_buffer = true;
             ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
         }
-    }
-    if (src >= 0 && comm->c_index_vec[src] < -1) {
-        comm->c_index_vec[src] = -1;
-        ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        if (src >= 0 && comm->c_index_vec[src] < -1) {
+            comm->c_index_vec[src] = -1;
+            ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        }
     }
 
     if (ompi_mtl_ofi.total_ctxts_used > 0) {
@@ -1562,17 +1561,15 @@ ompi_mtl_ofi_improbe_generic(struct mca_mtl_base_module_t *mtl,
     uint64_t msgflags = FI_PEEK | FI_CLAIM | FI_COMPLETION;
     int ctxt_id = 0;
 
-    if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
-        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
-            if (src != MPI_ANY_SOURCE) comm->c_index_vec[src] = comm->c_index;
-        } else {
+    if (!OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+        if ((src == MPI_ANY_SOURCE || comm->c_index_vec[src] < 0) && !ompi_mtl_ofi.has_posted_initial_buffer) {
             ompi_mtl_ofi.has_posted_initial_buffer = true;
             ret = ompi_mtl_ofi_post_recv_excid_buffer(false, comm, -1);
         }
-    }
-    if (src >= 0 && comm->c_index_vec[src] < -1) {
-        comm->c_index_vec[src] = -1;
-        ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        if (src >= 0 && comm->c_index_vec[src] < -1) {
+            comm->c_index_vec[src] = -1;
+            ret = ompi_mtl_ofi_send_excid(mtl, comm, src, ofi_cq_data, false);
+        }
     }
 
     if (ompi_mtl_ofi.total_ctxts_used > 0) {
