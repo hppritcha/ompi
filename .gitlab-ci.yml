@@ -17,3 +17,5 @@ build-script:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     paths:
       - pwd
+  variables:
+    JLSE_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1 -q iris"
