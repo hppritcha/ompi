@@ -11,6 +11,7 @@ build-script:
     - ./configure --prefix=$PWD/install_test
     - make install
     - make check
+    - export PATH=$PWD/install_test/bin:$PATH
     - cd examples 
     - make
   artifacts:
