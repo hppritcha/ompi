@@ -3,7 +3,7 @@ stages:
 
 build-script:
   stage: build
-  tags: [jlselogin3]
+  tags: [jlselogin3_shell]
   script:
     - module load intel
     - git submodule update --init
