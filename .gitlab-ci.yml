@@ -1,7 +1,7 @@
 stages:
   - build
 
-.build-script:
+build-script:
   stage: build
   tags: [jlse]
   script:
