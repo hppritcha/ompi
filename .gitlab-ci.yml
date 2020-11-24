@@ -18,4 +18,5 @@ build-script:
     paths:
       - pwd
   variables:
-    JLSE_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1 -q iris"
+    JLSE_SCHEDULER_PARAMETERS: "-q iris"
+    JLSE_IRIS_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1"
