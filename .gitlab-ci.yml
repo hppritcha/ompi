@@ -3,7 +3,7 @@ stages:
 
 build-script:
   stage: build
-  tags: [jlse]
+  tags: [jlselogin3]
   script:
     - module load intel
     - ./autogen.pl
