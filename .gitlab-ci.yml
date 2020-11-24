@@ -6,6 +6,7 @@ build-script:
   tags: [jlselogin3]
   script:
     - module load intel
+    - git submodule update --init
     - ./autogen.pl
     - ./configure --prefix=$PWD/install_test
     - make install
