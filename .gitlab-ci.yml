@@ -1,6 +1,5 @@
 stages:
   - build
-  - test
 
 .build-script:
   stage: build
@@ -12,19 +11,8 @@ stages:
     - make install
     - make check
     - cd examples 
-    - make clean && make
+    - make
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     paths:
       - pwd
-
-.test-script:
-  stage: test
-  tags: [jlse]
-  script:
-    - pwd
-    - export PATH=$PwD/install_test/bin:$PATH
-    - cd examples
-    - mpirun  -np 4 ./hello_c
-
-
