@@ -24,7 +24,8 @@ build:
 
 test:
   stage: test
-  tags: [batch]
+  tags: 
+    - jlselogin3_batch-03
   dependencies:
     - build
   script:
@@ -39,9 +40,8 @@ test:
     - mpirun -np 4 ./ring_mpif08
     - mpirun -np 4 ./connectivity_c
   variables:
-    JLSE_SCHEDULER_PARAMETERS: "-qyarrow"
-    JLSE_IRIS_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1"
-    JLSE_YARROW_SCHEDULE_PARAMETERS: "-t 1:00:00 -n 1"
+    JLSE_SCHEDULER_PARAMETERS: "-qiris -t 1:00:00 -n 1"
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     
+JLSE_YARROW_SCHEDULER_PARAMETERS
