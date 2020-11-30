@@ -1,7 +1,8 @@
 stages:
   - build
+  - test
 
-build-script:
+build:
   stage: build
   tags: [jlselogin3_shell]
   script:
@@ -16,8 +17,27 @@ build-script:
     - make
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
-    paths:
-      - pwd
+    untracked: true
+
+test:
+  stage: test
+  tags: [batch]
+  dependencies:
+    - build
+  script:
+    - pwd
+    - ls
+    - export PATH=$PWD/install_test/bin:$PATH
+    - which mpirun
+    - cd examples
+    - mpirun -np 4 ./hello_c
+    - mpirun -np 4 ./ring_c
+    - mpirun -np 4 ./hello_mpif08
+    - mpirun -np 4 ./ring_mpif08
+    - mpirun -np 4 ./connectivity_c
   variables:
     JLSE_SCHEDULER_PARAMETERS: "-q iris"
     JLSE_IRIS_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1"
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    
