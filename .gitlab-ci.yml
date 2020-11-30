@@ -43,5 +43,3 @@ test:
     JLSE_SCHEDULER_PARAMETERS: "-qiris -t 1:00:00 -n 1"
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
-    
-JLSE_YARROW_SCHEDULER_PARAMETERS
