@@ -36,7 +36,7 @@ test:
     - mpirun -np 4 ./ring_mpif08
     - mpirun -np 4 ./connectivity_c
   variables:
-    JLSE_SCHEDULER_PARAMETERS: "-q iris"
+    JLSE_SCHEDULER_PARAMETERS: "-q iris -t 1:00:00 -n1"
     JLSE_IRIS_SCHEDULER_PARAMETERS: "-t 1:00:00 -n 1"
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
