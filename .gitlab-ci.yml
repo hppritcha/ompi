@@ -21,6 +21,7 @@ build:
     paths:
       - examples
       - install_test
+    expire_in: 1 week
 
 test:
   stage: test
@@ -38,8 +39,8 @@ test:
     - mpirun -np 4 hostname
     - mpirun -np 4 ./hello_c
     - mpirun -np 4 ./ring_c
-    - mpirun -np 4 ./hello_usempifh
-    - mpirun -np 4 ./ring_usempifh
+    - mpirun -np 4 ./hello_mpifh
+    - mpirun -np 4 ./ring_mpifh
     - mpirun -np 4 ./hello_usempi
     - mpirun -np 4 ./ring_usempi
     - mpirun -np 4 ./hello_usempif08
@@ -49,3 +50,4 @@ test:
     JLSE_SCHEDULER_PARAMETERS: "-qiris -t 1:00:00 -n 1"
   artifacts:
     name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    expire_in: 1 week
