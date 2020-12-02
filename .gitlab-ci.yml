@@ -38,8 +38,8 @@ test:
     - mpirun -np 4 hostname
     - mpirun -np 4 ./hello_c
     - mpirun -np 4 ./ring_c
-    - mpirun -np 4 ./hello_mpif08
-    - mpirun -np 4 ./ring_mpif08
+    - mpirun -np 4 ./hello_usempif08
+    - mpirun -np 4 ./ring_usempif08
     - mpirun -np 4 ./connectivity_c
   variables:
     JLSE_SCHEDULER_PARAMETERS: "-qiris -t 1:00:00 -n 1"
