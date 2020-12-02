@@ -27,7 +27,7 @@ build_gnu:
   stage: build
   tags: [jlselogin3_shell]
   script:
-    - module load gnu
+    - module load gcc
     - git submodule update --init
     - ./autogen.pl
     - ./configure CC=icc FC=ifort CXX=icpc --prefix=$PWD/install_test --with-libevent=internal
