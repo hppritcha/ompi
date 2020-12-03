@@ -37,7 +37,7 @@ build:gnu:
     - cd examples 
     - make
   artifacts:
-    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME_gnu"
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     untracked: true
     paths:
       - examples
@@ -50,6 +50,7 @@ test:intel:
     - jlselogin3_batch-03
   dependencies:
     - build:intel
+  needs: ["build:intel"]
   script:
     - pwd
     - ls
@@ -79,6 +80,7 @@ test:gnu:
     - jlselogin3_batch-03
   dependencies:
     - build:gnu
+  needs: ["build:gnu"]
   script:
     - pwd
     - ls
@@ -99,6 +101,6 @@ test:gnu:
   variables:
     JLSE_SCHEDULER_PARAMETERS: "-qiris -t 1:00:00 -n 1"
   artifacts:
-    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME_gnu"
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
     expire_in: 1 week
 
