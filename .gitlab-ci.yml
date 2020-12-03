@@ -22,6 +22,7 @@ build:intel:
       - examples
       - install_test
     expire_in: 1 week
+  only: [merge_requests]
 
 build:gnu:
   stage: build
@@ -43,6 +44,7 @@ build:gnu:
       - examples
       - install_test
     expire_in: 1 week
+  only: [merge_requests]
 
 test:intel:
   stage: test
