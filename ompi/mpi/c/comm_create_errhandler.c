@@ -50,10 +50,11 @@ int MPI_Comm_create_errhandler(MPI_Comm_errhandler_function *function,
     if (MPI_PARAM_CHECK) {
         OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
 
-    if (NULL == function ||
-        NULL == errhandler) {
-      return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG,
-                                    FUNC_NAME);
+        if (NULL == function ||
+            NULL == errhandler) {
+          return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG,
+                                                 FUNC_NAME);
+        }
     }
 
     OPAL_CR_ENTER_LIBRARY();

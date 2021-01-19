@@ -46,12 +46,13 @@ int MPI_File_create_errhandler (MPI_File_errhandler_function *function,
 
     /* Error checking */
 
-  if (MPI_PARAM_CHECK) {
-    OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
-    if (NULL == function ||
-        NULL == errhandler) {
-      return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG,
+    if (MPI_PARAM_CHECK) {
+        OMPI_ERR_INIT_FINALIZE(FUNC_NAME);
+        if (NULL == function ||
+            NULL == errhandler) {
+          return OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG,
                                    "MPI_File_create_errhandler");
+        }
     }
 
     OPAL_CR_ENTER_LIBRARY();

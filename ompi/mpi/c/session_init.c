@@ -13,7 +13,9 @@
 
 #include "ompi/mpi/c/bindings.h"
 #include "ompi/runtime/params.h"
+#include "ompi/info/info.h"
 #include "ompi/errhandler/errhandler.h"
+#include "ompi/instance/instance.h"
 
 #if OMPI_BUILD_MPI_PROFILING
 #if OPAL_HAVE_WEAK_SYMBOLS

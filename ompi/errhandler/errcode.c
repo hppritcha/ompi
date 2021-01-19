@@ -122,7 +122,6 @@ static ompi_mpi_errcode_t ompi_t_err_invalid_name;
 
 static void ompi_mpi_errcode_construct(ompi_mpi_errcode_t* errcode);
 static void ompi_mpi_errcode_destruct(ompi_mpi_errcode_t* errcode);
-static int ompi_mpi_errcode_finalize (void);
 
 OBJ_CLASS_INSTANCE(ompi_mpi_errcode_t,opal_object_t,ompi_mpi_errcode_construct, ompi_mpi_errcode_destruct);
 
@@ -251,7 +250,7 @@ int ompi_mpi_errcode_init (void)
  *
  * Invoked from instance teardown if ompi_mpi_errcode_init() was called; tears down the error code array.
  */
-static int ompi_mpi_errcode_finalize (void)
+int ompi_mpi_errcode_finalize (void)
 {
     int i;
     ompi_mpi_errcode_t *errc;

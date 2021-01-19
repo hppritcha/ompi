@@ -65,4 +65,5 @@ int MPI_Win_create_errhandler(MPI_Win_errhandler_function *function,
         err = MPI_ERR_INTERN;
     }
 
+    return err;
 }
