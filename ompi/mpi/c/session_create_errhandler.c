@@ -1,6 +1,6 @@
 /* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
 /*
- * Copyright (c) 2018      Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2021 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -39,8 +39,11 @@ int MPI_Session_create_errhandler (MPI_Session_errhandler_function *session_errh
     }
 
     /* Create and cache the errhandler.  Sets a refcount of 1. */
-    err = ompi_errhandler_create (OMPI_ERRHANDLER_TYPE_INSTANCE,
-                                  (ompi_errhandler_generic_handler_fn_t *) session_errhandler_fn,
-                                  OMPI_ERRHANDLER_LANG_C, errhandler);
-    OMPI_ERRHANDLER_RETURN(err, MPI_SESSION_NULL, err, FUNC_NAME);
+    *errhandler =
+        ompi_errhandler_create(OMPI_ERRHANDLER_TYPE_INSTANCE,
+                               (ompi_errhandler_generic_handler_fn_t *) session_errhandler_fn,
+                               OMPI_ERRHANDLER_LANG_C);
+    if (NULL == *errhandler) {
+        err = MPI_ERR_INTERN;
+    }
 }
