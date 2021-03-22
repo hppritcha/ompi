@@ -28,6 +28,9 @@ Additional copyrights may follow
 
 $HEADER$
 
+more news to edit
+more news to edit
+
 ===========================================================================
 
 This file contains the main features as well as overviews of specific
@@ -74,6 +77,8 @@ Master (not on release branches yet)
 * release whenever MPIR-based tools connect to Open MPI's mpirun/mpiexec
 * launcher.
 **********************************************************************
+
+add more news
 
 - Fix rank-by algorithms to properly rank by object and span
 - Do not build Open SHMEM layer when there are no SPMLs available.
