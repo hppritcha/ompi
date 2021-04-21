@@ -928,9 +928,8 @@ ompi_mtl_ofi_isend_generic(struct mca_mtl_base_module_t *mtl,
 
     ompi_mtl_ofi_set_mr_null(ofi_req);
 
-    if (comm->c_index_vec[dest] < -1) {
-        if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
-            comm->c_index_vec[dest] = comm->c_index;
+    if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+        c_index_for_tag = comm->c_index;
     } else {
         if (comm->c_index_vec[dest] < -1) {
             comm->c_index_vec[dest] = -1;
