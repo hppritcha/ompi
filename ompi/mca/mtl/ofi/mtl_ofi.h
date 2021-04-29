@@ -895,7 +895,6 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
     while (0 < ofi_req.completion_count) {
         ompi_mtl_ofi_progress();
     }
-    //printf("Rank %d leaving send_generic\n", comm->c_my_rank);
 
 free_request_buffer:
     ompi_mtl_ofi_deregister_and_free_buffer(&ofi_req);
@@ -1139,7 +1138,6 @@ ompi_mtl_ofi_recv_callback(struct fi_cq_tagged_entry *wc,
 
     ofi_req->super.completion_callback(&ofi_req->super);
 
-    //printf("Rank %d leaving recv_callback\n", ofi_req->comm->c_my_rank);
     return OMPI_SUCCESS;
 }
 
