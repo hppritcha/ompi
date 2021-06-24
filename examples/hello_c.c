@@ -22,5 +22,7 @@ int main(int argc, char *argv[])
     printf("Hello, world, I am %d of %d, (%s, %d)\n", rank, size, version, len);
     MPI_Finalize();
 
+
+
     return 0;
 }
