@@ -103,14 +103,6 @@ int mca_sharedfp_sm_file_open (struct ompi_communicator_t *comm,
     */
     filename_basename = opal_basename((char*)filename);
     /* format is "%s/%s_cid-%s-%d.sm", see below */
-    sm_filename_length = strlen(ompi_process_info.job_session_dir) + 1 + strlen(filename_basename) + strlen(ompi_comm_print_cid(comm)) + 5 + (3*sizeof(uint32_t)+1) + 4;
-    sm_filename = (char*) malloc( sizeof(char) * sm_filename_length);
-    if (NULL == sm_filename) {
-        opal_output(0, "mca_sharedfp_sm_file_open: Error, unable to malloc sm_filename\n");
-        free(sm_data);
-        free(sh);
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
 
     if ( 0 == fh->f_rank ) {
         my_pid = getpid();
