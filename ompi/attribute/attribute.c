@@ -467,16 +467,6 @@ static OBJ_CLASS_INSTANCE(ompi_attribute_keyval_t,
                           ompi_attribute_keyval_destruct);
 
 /*
- * compatibility until sessions work is finished
- */
-static inline int ompi_mpi_instance_retain(void) {
-    return OMPI_SUCCESS;
-}
-
-static inline void ompi_mpi_instance_release(void) {
-}
-
-/*
  * Static variables
  */
 

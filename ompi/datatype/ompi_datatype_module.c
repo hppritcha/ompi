@@ -679,7 +679,7 @@ int32_t ompi_datatype_init( void )
     }
 
     /* get a reference to the attributes subsys */
-    int ret = ompi_attr_get_ref();
+    ret = ompi_attr_get_ref();
     if (OMPI_SUCCESS != ret) {
         return ret;
     }

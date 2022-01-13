@@ -86,8 +86,6 @@ static void ompi_win_dump (ompi_win_t *win)
 
 static int ompi_win_finalize(void)
 {
-    int ret = OMPI_SUCCESS;
-
     size_t size = opal_pointer_array_get_size (&ompi_mpi_windows);
     /* start at 1 to skip win null */
     for (size_t i = 1 ; i < size ; ++i) {
@@ -108,9 +106,7 @@ static int ompi_win_finalize(void)
     OBJ_RELEASE(ompi_win_accumulate_order);
 
     /* release a reference to the attributes subsys */
-    ret = ompi_attr_put_ref();
-
-    return ret;
+    return ompi_attr_put_ref();
 }
 
 int ompi_win_init (void)
@@ -152,32 +148,6 @@ int ompi_win_init (void)
     ompi_mpi_instance_append_finalize (ompi_win_finalize);
 
     return OMPI_SUCCESS;
-}
-
-static void ompi_win_dump (ompi_win_t *win)
-{
-    opal_output(0, "Dumping information for window: %s\n", win->w_name);
-    opal_output(0,"  Fortran window handle: %d, window size: %d\n",
-                win->w_f_to_c_index, ompi_group_size (win->w_group));
-}
-
-int ompi_win_finalize(void)
-{
-    size_t size = opal_pointer_array_get_size (&ompi_mpi_windows);
-    /* start at 1 to skip win null */
-    for (size_t i = 1 ; i < size ; ++i) {
-        ompi_win_t *win =
-            (ompi_win_t *) opal_pointer_array_get_item (&ompi_mpi_windows, i);
-        if (NULL != win) {
-            if (ompi_debug_show_handle_leaks && !ompi_win_invalid(win)){
-                opal_output(0,"WARNING: MPI_Win still allocated in MPI_Finalize\n");
-                ompi_win_dump (win);
-            }
-            ompi_win_free (win);
-        }
-    }
-
-    return ompi_attr_put_ref();
 }
 
 static int alloc_window(struct ompi_communicator_t *comm, opal_info_t *info, int flavor, ompi_win_t **win_out)
