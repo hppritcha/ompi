@@ -60,7 +60,7 @@ int mca_pml_ob1_isend_init(const void *buf,
                                   dst, tag,
                                   comm, sendmode, true);
 
-    mca_base_event_raise (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
+    MCA_BASE_EVENT_RAISE (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
                           MCA_BASE_CB_REQUIRE_ASYNC_SIGNAL_SAFE, comm, NULL, &sendreq);
 
     /* Work around a leak in start by marking this request as complete. The
@@ -195,7 +195,7 @@ int mca_pml_ob1_isend(const void *buf,
                                   dst, tag,
                                   comm, sendmode, false);
 
-    mca_base_event_raise (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
+    MCA_BASE_EVENT_RAISE (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
                           MCA_BASE_CB_REQUIRE_ASYNC_SIGNAL_SAFE, comm, NULL, &sendreq);
 
     MCA_PML_OB1_SEND_REQUEST_START_W_SEQ(sendreq, endpoint, seqn, rc);
@@ -309,7 +309,7 @@ int mca_pml_ob1_send(const void *buf,
                                   dst, tag,
                                   comm, sendmode, false);
 
-    mca_base_event_raise (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
+    MCA_BASE_EVENT_RAISE (mca_pml_ob1_events[MCA_PML_OB1_EVENT_REQUEST_ACTIVATE].event,
                           MCA_BASE_CB_REQUIRE_ASYNC_SIGNAL_SAFE, comm, NULL, &sendreq);
 
     MCA_PML_OB1_SEND_REQUEST_START_W_SEQ(sendreq, endpoint, seqn, rc);
