@@ -580,8 +580,8 @@ ompi_mtl_ofi_post_recv_excid_buffer(bool blocking, struct ompi_communicator_t *c
     ofi_req->convertor = NULL;
     ofi_req->req_started = false;
     ofi_req->status.MPI_ERROR = OMPI_SUCCESS;
-    ofi_req->remote_addr = NULL;
-    ofi_req->match_bits = NULL;
+    ofi_req->remote_addr = 0UL;
+    ofi_req->match_bits = 0UL;
     ofi_req->completion_count = 1;
     ofi_req->comm = comm;
 
