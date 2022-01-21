@@ -527,11 +527,20 @@ int ompi_attr_delete_all(ompi_attribute_type_t type, void *object,
 /**
  * \internal
  *
- * Create all the predefined attributes
+ * Create all the predefined attribute keys
  *
  * @returns OMPI_SUCCESS
  */
-int ompi_attr_create_predefined(void);
+int ompi_attr_create_predefined_keyvals(void);
+
+/**
+ * \internal
+ *
+ * Cache predefined attribute keys mpi3 style
+ *
+ * @returns OMPI_SUCCESS
+ */
+int ompi_attr_set_predefined_keyvals_mpi3(void);
 
 /**
  * \internal

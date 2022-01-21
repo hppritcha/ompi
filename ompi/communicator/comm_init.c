@@ -280,7 +280,8 @@ int ompi_comm_init_mpi3 (void)
     /*
      * finally here we set the predefined attribute keyvals
      */
-    ompi_attr_create_predefined();
+    ompi_attr_create_predefined_keyvals();
+    ompi_attr_set_predefined_keyvals_mpi3();
 
     OBJ_RETAIN(&ompi_mpi_errors_are_fatal.eh);
     /* During dyn_init, the comm_parent error handler will be set to the same
