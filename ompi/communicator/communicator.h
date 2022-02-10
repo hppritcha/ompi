@@ -577,6 +577,8 @@ static inline bool ompi_comm_instances_same(const ompi_communicator_t *comm1, co
     return comm1->instance == comm2->instance;
 }
 
+int ompi_comm_get_remote_cid (ompi_communicator_t *comm, int dest, uint32_t *remote_cid);
+
 #if OPAL_ENABLE_FT_MPI
 /*
  * Support for MPI_ANY_SOURCE point-to-point operations

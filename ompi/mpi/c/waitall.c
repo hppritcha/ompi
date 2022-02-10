@@ -74,10 +74,13 @@ int MPI_Waitall(int count, MPI_Request requests[], MPI_Status statuses[])
                     check_req = requests[i];
                 }
                 else {
+                    if ((&ompi_mpi_comm_null.comm != requests[i]->req_mpi_object.comm) &&
+                        (&ompi_mpi_comm_null.comm  != check_req->req_mpi_object.comm)) {
                     if (!ompi_comm_instances_same(requests[i]->req_mpi_object.comm,
                                                      check_req->req_mpi_object.comm)) {
                         rc = MPI_ERR_REQUEST;
                         break;
+                    }
                     }
                 }
             }

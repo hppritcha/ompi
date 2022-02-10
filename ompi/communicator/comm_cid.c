@@ -310,15 +310,35 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
 {
     pmix_info_t pinfo, *results = NULL;
     size_t nresults;
-    opal_process_name_t *name_array;
+    opal_process_name_t *name_array, *rname_array, *tmp_name_array;
     char *tag = NULL;
-    size_t proc_count, cid_base = 0UL;
+    size_t proc_count, rproc_count, cid_base = 0UL;
     int rc, leader_rank;
-    pmix_proc_t *procs;
+    pmix_proc_t *procs, myproc;
+    pmix_value_t value;
+    char tmp[PMIX_MAX_KEYLEN];
 
     rc = ompi_group_to_proc_name_array (newcomm->c_local_group, &name_array, &proc_count);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;
+    }
+
+    if ( OMPI_COMM_IS_INTER (newcomm) ){
+        rc = ompi_group_to_proc_name_array (newcomm->c_remote_group, &rname_array, &rproc_count);
+        if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+            free (name_array);
+            return rc;
+        }
+        tmp_name_array = (opal_process_name_t *)realloc(name_array, (proc_count + rproc_count) * sizeof(opal_process_name_t));
+        if (NULL == tmp) {
+            free(name_array);
+            free(rname_array);
+            return OMPI_ERR_OUT_OF_RESOURCE ;
+        }
+        name_array = tmp_name_array;
+        memcpy(&name_array[proc_count], rname_array, sizeof(opal_process_name_t)); 
+        proc_count += rproc_count;
+        free(rname_array);
     }
 
     switch (mode) {
@@ -340,9 +360,15 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
 
     PMIX_PROC_CREATE(procs, proc_count);
     for (size_t i = 0 ; i < proc_count; ++i) {
+#if 0
+        fprintf(stderr, "name_array[%d]->jobid %d vpid %d\n", i, name_array[i].jobid, name_array[i].vpid);
+#endif
         OPAL_PMIX_CONVERT_NAME(&procs[i],&name_array[i]);
     }
 
+#if 0
+    fprintf(stderr, "Calling PMIx_Group_construct - size %ld tag %s\n", proc_count, tag);
+#endif
     rc = PMIx_Group_construct(tag, procs, proc_count, &pinfo, 1, &results, &nresults);
     PMIX_INFO_DESTRUCT(&pinfo);
 
@@ -350,10 +376,43 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
         PMIX_VALUE_GET_NUMBER(rc, &results[0].value, cid_base, size_t);
         PMIX_INFO_FREE(results, nresults);
     }
+#if 0
+    fprintf(stderr, "Called PMIx_Group_construct - size %d cid_base %ld\n", proc_count, cid_base);
+#endif
 
     PMIX_PROC_FREE(procs, proc_count);
     free (name_array);
 
+    /*
+     * put  my c_index into PMix keyvalue space
+     */
+
+    OPAL_PMIX_CONVERT_NAME(&myproc, OMPI_PROC_MY_NAME);
+    (void) snprintf(tmp, PMIX_MAX_KEYLEN, "ompi-cindex-%s-%lu-%d", myproc.nspace, cid_base, myproc.rank);
+    value.type = PMIX_UINT32;
+    value.data.uint32 = newcomm->c_index;
+#if 0
+    fprintf(stderr, "storing c_index %d into %s\n", newcomm->c_index, tmp);
+#endif
+    if (PMIX_SUCCESS != (rc = PMIx_Put(PMIX_GLOBAL, tmp, &value))) {
+#if 0
+        fprintf(stderr, "Client ns %s rank %d: PMIx_Put internal failed: %d\n", myproc.nspace,
+                myproc.rank, rc);
+#endif
+    }
+
+    /* commit the data to the server */
+    if (PMIX_SUCCESS != (rc = PMIx_Commit())) {
+#if 0
+        fprintf(stderr, "Client ns %s rank %d: PMIx_Commit failed: %d\n", myproc.nspace,
+                myproc.rank, rc);
+#endif
+    }
+#if 0
+    fprintf(stderr, "stored and committed c_index %d into %s\n", newcomm->c_index, tmp);
+#endif
+
+    /* destruct the group */
     rc = PMIx_Group_destruct (tag, NULL, 0);
 
     ompi_comm_extended_cid_block_initialize (new_block, cid_base, 0, 0);
@@ -376,6 +435,15 @@ static int ompi_comm_nextcid_ext_nb (ompi_communicator_t *newcomm, ompi_communic
         block = &comm->c_contextidb;
     }
 
+    for (unsigned int i = ompi_mpi_communicators.lowest_free ; i < mca_pml.pml_max_contextid ; ++i) {
+        bool flag = opal_pointer_array_test_and_set_item (&ompi_mpi_communicators, i, newcomm);
+        if (true == flag) {
+            newcomm->c_index = i;
+            break;
+        }
+    }
+    assert(newcomm->c_index > 2);
+
     if (NULL == arg1) {
         if (OMPI_COMM_CID_GROUP == mode || OMPI_COMM_CID_GROUP_NEW == mode ||
             !ompi_comm_extended_cid_block_available (&comm->c_contextidb)) {
@@ -383,6 +451,7 @@ static int ompi_comm_nextcid_ext_nb (ompi_communicator_t *newcomm, ompi_communic
              * or the parent (which has no more CIDs in its block) */
             rc = ompi_comm_ext_cid_new_block (newcomm, comm, block, arg0, arg1, send_first, mode, req);
             if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
+                fprintf(stderr, "Hey returning here!!!\n");
                 return rc;
             }
 
@@ -394,16 +463,9 @@ static int ompi_comm_nextcid_ext_nb (ompi_communicator_t *newcomm, ompi_communic
         is_new_block = true;
     }
 
+
     if (block != &newcomm->c_contextidb) {
         (void) ompi_comm_extended_cid_block_new (block, &newcomm->c_contextidb, is_new_block);
-    }
-
-    for (unsigned int i = ompi_mpi_communicators.lowest_free ; i < mca_pml.pml_max_contextid ; ++i) {
-        bool flag = opal_pointer_array_test_and_set_item (&ompi_mpi_communicators, i, newcomm);
-        if (true == flag) {
-            newcomm->c_index = i;
-            break;
-        }
     }
 
     newcomm->c_contextid = newcomm->c_contextidb.block_cid;
@@ -428,6 +490,7 @@ int ompi_comm_nextcid_nb (ompi_communicator_t *newcomm, ompi_communicator_t *com
 
     /* old CID algorighm */
 
+    fprintf(stderr, "using old CID algorithm lowest_free = %d\n",  ompi_mpi_communicators.lowest_free);
     /* if we got here and comm is NULL then that means the app is  invoking MPI-4 Sessions or later
        functions but the pml does not support these functions so return not supported */
     if (NULL == comm) {
@@ -852,6 +915,68 @@ int ompi_comm_activate (ompi_communicator_t **newcomm, ompi_communicator_t *comm
         ompi_request_wait_completion (req);
         rc = req->req_status.MPI_ERROR;
         ompi_comm_request_return ((ompi_comm_request_t *) req);
+    }
+
+    return rc;
+}
+
+int ompi_comm_get_remote_cid (ompi_communicator_t *comm, int dest, uint32_t *remote_cid)
+{
+    ompi_proc_t *ompi_proc;
+    pmix_proc_t  pmix_proc,myproc;
+    pmix_info_t tinfo;
+    pmix_value_t *val = NULL;
+    const uint32_t get_timeout = 600;
+    char tmp[PMIX_MAX_KEYLEN];
+    ompi_comm_extended_cid_t excid;
+    int rc = OMPI_SUCCESS;
+
+    assert(NULL != remote_cid);
+
+    if (OMPI_COMM_IS_GLOBAL_INDEX(comm)) {
+        *remote_cid = comm->c_index;
+    } else {
+        ompi_proc = ompi_comm_peer_lookup(comm, dest);
+        OPAL_PMIX_CONVERT_NAME(&pmix_proc, &ompi_proc->super.proc_name);
+
+        PMIX_INFO_CONSTRUCT(&tinfo);
+        PMIX_INFO_LOAD(&tinfo, PMIX_TIMEOUT, &get_timeout, PMIX_UINT32);
+
+        excid =  ompi_comm_get_extended_cid (comm);
+        (void) snprintf(tmp, PMIX_MAX_KEYLEN, "ompi-cindex-%s-%lu-%d", pmix_proc.nspace, excid.cid_base, pmix_proc.rank);
+
+#if 0
+        fprintf(stderr, " retrieving key %s for rank %d\n", tmp, dest);
+#endif
+        OPAL_PMIX_CONVERT_NAME(&myproc, OMPI_PROC_MY_NAME);
+        if (PMIX_SUCCESS != (rc = PMIx_Get(&pmix_proc, tmp, &tinfo, 1, &val))) {
+#if 0
+                fprintf(stderr, "Client ns %s: PMIx_Get %s failed: %d\n", myproc.nspace, tmp, rc);
+#endif
+        }            
+
+        if (NULL == val) {
+            rc = OMPI_ERR_NOT_FOUND;
+            goto done;
+        }
+
+        if (val->type != PMIX_UINT32) {
+            rc = OMPI_ERR_TYPE_MISMATCH;
+            goto done;
+        }
+
+        if (PMIX_SUCCESS == rc) {
+            PMIX_VALUE_GET_NUMBER(rc, val, *remote_cid, uint32_t);
+            rc = OMPI_SUCCESS;
+#if 0
+            fprintf(stderr, " retrieved key %s for rank %d value %d\n", tmp, dest, *remote_cid);
+#endif
+        } 
+    }
+
+done:
+    if (NULL != val) {
+        PMIX_VALUE_RELEASE(val);
     }
 
     return rc;

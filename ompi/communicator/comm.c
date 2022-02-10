@@ -1475,14 +1475,23 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         return OMPI_ERR_OUT_OF_RESOURCE;
     }
 
+#if 0
+    fprintf(stderr, "CREATING COMMUNICATOR FROM LOCAL GROUP tag = %s\n", sub_tag);
+#endif
     rc = ompi_comm_create_from_group (local_group, sub_tag, info, errhandler, &local_comm);
     free (sub_tag);
     sub_tag = NULL;
     if (OPAL_UNLIKELY(OMPI_SUCCESS != rc)) {
         return rc;
     }
+#if 0
+    fprintf(stderr, "CREATED COMMUNICATOR FROM LOCAL GROUP\n");
+#endif
 
     if (i_am_leader) {
+#if 0
+        fprintf(stderr, "CREATING BRIDGE COMMUNICATOR\n");
+#endif
         /* create a bridge communicator for the leaders (so we can use the existing collectives
          * for activation). there are probably more efficient ways to do this but for intercommunicator
          * creation is not considered a performance critical operation. */
@@ -1545,8 +1554,14 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         }
 
         rsize = remote_group->grp_proc_count;
+#if 0
+        fprintf(stderr, "CREATED BRIDGE COMMUNICATOR\n");
+#endif
     }
 
+#if 0
+    fprintf(stderr, "BROADCASTING data\n");
+#endif
     /* bcast size and list of remote processes to all processes in local_comm */
     rc = local_comm->c_coll->coll_bcast (data, 4, MPI_UINT64_T, local_leader, local_comm,
                                          local_comm->c_coll->coll_bcast_module);
@@ -1583,18 +1598,26 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         return rc;
     }
 
+#if 0
     /* will be using a communicator ID derived from the bridge communicator to save some time */
     new_block.block_cid.cid_base = data[1];
     new_block.block_cid.cid_sub.u64 = data[2];
     new_block.block_nextsub = 0;
     new_block.block_nexttag = 0;
     new_block.block_level = (int8_t) data[3];
+#endif
 
-    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, &new_block, false, OMPI_COMM_CID_GROUP_NEW);
+#if 0
+    fprintf(stderr, "CALLING NEXTCID\n");
+#endif
+    rc = ompi_comm_nextcid (newcomp, NULL, NULL, (void *) tag, NULL, false, OMPI_COMM_CID_GROUP_NEW);
     if ( OMPI_SUCCESS != rc ) {
         OBJ_RELEASE(newcomp);
         return rc;
     }
+#if 0
+    fprintf(stderr, "CALLED NEXTCID\n");
+#endif
 
     /* Set name for debugging purposes */
     snprintf(newcomp->c_name, MPI_MAX_OBJECT_NAME, "MPI INTERCOMM %s FROM GROUP", ompi_comm_print_cid (newcomp));
@@ -1617,6 +1640,9 @@ int ompi_intercomm_create_from_groups (ompi_group_t *local_group, int local_lead
         return rc;
     }
 
+#if 0
+    fprintf(stderr, "INTERCOMM CREATED\n");
+#endif
     *newintercomm = newcomp;
 
     return MPI_SUCCESS;
