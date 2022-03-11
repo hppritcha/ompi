@@ -57,6 +57,8 @@ static int validate_info(struct fi_info *info, uint64_t required_caps, char **in
 {
     int mr_mode;
 
+    BTL_VERBOSE(("starting validating for provider: %s", info->fabric_attr->prov_name));
+
     if (NULL != include_list
         && !opal_common_ofi_is_in_list(include_list, info->fabric_attr->prov_name)) {
         opal_output_verbose(1, opal_common_ofi.output,
@@ -83,6 +85,7 @@ static int validate_info(struct fi_info *info, uint64_t required_caps, char **in
         return OPAL_ERROR;
     }
 
+#if 0
     /* ofi_rxm does not fulfill FI_DELIVERY_COMPLETE requirements. Thus we
      * exclude it if it's detected.
      */
@@ -90,6 +93,7 @@ static int validate_info(struct fi_info *info, uint64_t required_caps, char **in
         BTL_VERBOSE(("ofi_rxm does not support FI_DELIVERY_COMPLETE"));
         return OPAL_ERROR;
     }
+#endif
 
     /* we need exactly all the required bits */
     if ((info->caps & required_caps) != required_caps) {
@@ -111,10 +115,12 @@ static int validate_info(struct fi_info *info, uint64_t required_caps, char **in
         return OPAL_ERROR;
     }
 
+#if 0
     if (!(info->tx_attr->op_flags | FI_DELIVERY_COMPLETE)) {
         BTL_VERBOSE(("the endpoint tx_ctx does not support FI_DELIVERY_COMPLETE"));
         return OPAL_ERROR;
     }
+#endif
 
     BTL_VERBOSE(("device: %s is good to go.", info->domain_attr->name));
     return OPAL_SUCCESS;
@@ -136,7 +142,11 @@ static int mca_btl_ofi_component_register(void)
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
 
+#if 0
     mca_btl_ofi_component.mode = MCA_BTL_OFI_MODE_ONE_SIDED;
+#else
+    mca_btl_ofi_component.mode = MCA_BTL_OFI_MODE_FULL_SUPPORT;
+#endif
     (void) mca_base_component_var_register(&mca_btl_ofi_component.super.btl_version, "mode", msg,
                                            MCA_BASE_VAR_TYPE_INT, NULL, 0, 0, OPAL_INFO_LVL_5,
                                            MCA_BASE_VAR_SCOPE_READONLY,
@@ -355,6 +365,7 @@ static mca_btl_base_module_t **mca_btl_ofi_component_init(int *num_btl_modules,
     while (info) {
         rc = validate_info(info, required_caps, include_list, exclude_list);
         if (OPAL_SUCCESS == rc) {
+            BTL_VERBOSE(("valideate_info returned success"));
             /* Device passed sanity check, let's make a module.
              *
              * The initial fi_getinfo() call will return a list of providers
@@ -425,6 +436,7 @@ static int mca_btl_ofi_init_device(struct fi_info *info)
 
     mca_btl_ofi_module_t *module;
 
+    BTL_VERBOSE(("INSIDE mca_btl_ofi_init_device"));
     module = mca_btl_ofi_module_alloc(mca_btl_ofi_component.mode);
     if (NULL == module) {
         BTL_VERBOSE(("failed allocating ofi module"));

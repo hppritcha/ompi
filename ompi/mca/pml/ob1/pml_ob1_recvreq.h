@@ -421,7 +421,9 @@ static inline void mca_pml_ob1_recv_request_schedule(
         _pckt->hdr.hdr_ack.hdr_send_size = (Sz);                        \
         _pckt->proc = (P);                                              \
         _pckt->bml_btl = NULL;                                          \
+        _pckt->hdr_size = sizeof(mca_pml_ob1_ack_hdr_t);             \
         OPAL_THREAD_LOCK(&mca_pml_ob1.lock);                            \
+        fprintf(stderr, "in MCA_PML_OB1_ADD_ACK_TO_PENDING _pckt->hdr_size = %ld Sz = %ld O %ld\n", _pckt->hdr_size, Sz, O);    \
         opal_list_append(&mca_pml_ob1.pckt_pending,                     \
                          (opal_list_item_t*)_pckt);                     \
         OPAL_THREAD_UNLOCK(&mca_pml_ob1.lock);                          \

@@ -351,12 +351,18 @@ int mca_btl_ofi_context_progress(mca_btl_ofi_context_t *context)
                     break;
 
                 case MCA_BTL_OFI_TYPE_RECV:
+#if 0
+                    BTL_VERBOSE(("Got a MCA_BTL_OFI_TYPE_RECV"));
+#endif
                     mca_btl_ofi_recv_frag((mca_btl_ofi_module_t *) comp->btl,
                                           (mca_btl_ofi_endpoint_t *) comp->endpoint, context,
                                           frag_comp->frag);
                     break;
 
                 case MCA_BTL_OFI_TYPE_SEND:
+#if 0
+                    BTL_VERBOSE(("Got a MCA_BTL_OFI_TYPE_SEND"));
+#endif
                     MCA_BTL_OFI_NUM_SEND_DEC((mca_btl_ofi_module_t *) comp->btl);
                     mca_btl_ofi_frag_complete(frag_comp->frag, OPAL_SUCCESS);
                     break;

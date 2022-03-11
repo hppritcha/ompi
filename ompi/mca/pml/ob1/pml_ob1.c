@@ -703,6 +703,9 @@ int mca_pml_ob1_send_control_btl (mca_bml_base_btl_t *bml_btl, int order, mca_pm
     mca_btl_base_descriptor_t *des;
     int rc;
 
+#if 0
+    fprintf(stderr, "thinking about non-blocking send of a message with hdr_size = %ld btl_sendi = %p\n", hdr_size, bml_btl->btl->btl_sendi);
+#endif
     if (NULL != bml_btl->btl->btl_sendi) {
         rc = mca_bml_base_sendi (bml_btl, NULL, hdr, hdr_size, 0, order, des_flags, hdr->hdr_common.hdr_type, &des);
         if (OPAL_LIKELY(OPAL_SUCCESS == rc)) {
@@ -791,6 +794,7 @@ int mca_pml_ob1_send_cid (ompi_proc_t *proc, ompi_communicator_t *comm)
     mca_pml_ob1_cid_hdr_prepare (&cid, comm);
     ob1_hdr_hton ((mca_pml_ob1_hdr_t *) &cid, cid.hdr_common.hdr_type, proc);
 
+    fprintf(stderr, "hey we are somehow in the send_cid code !!!!!!\n");
     return mca_pml_ob1_send_control_any (proc, MCA_BTL_NO_ORDER, (mca_pml_ob1_hdr_t *) &cid, sizeof (cid), true);
 }
 

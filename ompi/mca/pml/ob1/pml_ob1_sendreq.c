@@ -373,9 +373,9 @@ mca_pml_ob1_send_ctl_completion( mca_btl_base_module_t* btl,
                                  int status )
 {
     mca_bml_base_btl_t* bml_btl = (mca_bml_base_btl_t*) des->des_context;
+    mca_pml_ob1_send_request_t* sendreq = (mca_pml_ob1_send_request_t*)des->des_cbdata;
 
     if( OPAL_UNLIKELY(OMPI_SUCCESS != status) ) {
-        mca_pml_ob1_send_request_t* sendreq = (mca_pml_ob1_send_request_t*)des->des_cbdata;
         opal_output_verbose(mca_pml_ob1_output, 1, "pml:ob1: %s: operation failed with code %d", __func__, status);
         sendreq->req_send.req_base.req_ompi.req_status.MPI_ERROR =
 #if OPAL_ENABLE_FT_MPI
@@ -390,6 +390,12 @@ mca_pml_ob1_send_ctl_completion( mca_btl_base_module_t* btl,
          */
     }
     else {
+#if 0
+        if (NULL != sendreq->rdma_frag) {
+            MCA_PML_OB1_RDMA_FRAG_RETURN(sendreq->rdma_frag);
+            sendreq->rdma_frag = NULL;
+        }
+#endif
         /* check for pending requests */
         MCA_PML_OB1_PROGRESS_PENDING(bml_btl);
     }
@@ -1407,6 +1413,7 @@ void mca_pml_ob1_send_request_put (mca_pml_ob1_send_request_t *sendreq,
 
     sendreq->req_recv.pval = hdr->hdr_recv_req.pval;
 
+    fprintf(stderr, "INSIDE mca_pml_ob1_send_request_put\n");
     if (NULL == sendreq->rdma_frag) {
         MCA_PML_OB1_RDMA_FRAG_ALLOC(frag);
 

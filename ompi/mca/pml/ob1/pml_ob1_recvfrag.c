@@ -738,7 +738,12 @@ void mca_pml_ob1_recv_frag_callback_ack (mca_btl_base_module_t *btl,
     }
 #endif /* OPAL_CUDA_SUPPORT */
 
+    fprintf(stderr,"scheduling fallback sendreq %p \n", sendreq->rdma_frag);
     if (send_request_pml_complete_check(sendreq) == false)
+        if (NULL != sendreq->rdma_frag) {
+            MCA_PML_OB1_RDMA_FRAG_RETURN(sendreq->rdma_frag);
+            sendreq->rdma_frag = NULL;
+        }
         mca_pml_ob1_send_request_schedule(sendreq);
 }
 

@@ -82,6 +82,9 @@ int mca_btl_ofi_get(mca_btl_base_module_t *btl, mca_btl_base_endpoint_t *endpoin
                  remote_address, 
                  remote_handle->rkey,
                  &comp->comp_ctx); /* completion context */
+    if (rc != FI_SUCCESS) {
+        BTL_VERBOSE(("Invoked fi_read inside mca_btl_ofi_get size = %ld %s", size, fi_strerror(-rc)));
+    }
 
     if (-FI_EAGAIN == rc) {
         opal_free_list_return(comp->base.my_list, (opal_free_list_item_t *) comp);
@@ -125,6 +128,7 @@ int mca_btl_ofi_put(mca_btl_base_module_t *btl, mca_btl_base_endpoint_t *endpoin
     rc = fi_write(ofi_context->tx_ctx, local_address, size, /* payload */
                   local_handle->desc, btl_endpoint->peer_addr, remote_address, remote_handle->rkey,
                   &comp->comp_ctx); /* completion context */
+    fprintf(stderr, "Called fi_wrwite rc = %s\n", fi_strerror(-rc));
 
     if (-FI_EAGAIN == rc) {
         opal_free_list_return(comp->base.my_list, (opal_free_list_item_t *) comp);

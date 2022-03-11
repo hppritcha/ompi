@@ -106,6 +106,9 @@ int mca_btl_ofi_send(mca_btl_base_module_t *btl, mca_btl_base_endpoint_t *endpoi
 
     /* send the frag. Note that we start sending from BTL header + payload
      * because we need the other side to have this header information. */
+#if 0
+    fprintf(stderr, "In mca_btl_ofi_send frag->hdr.len = %ld\n", frag->hdr.len);
+#endif
     rc = fi_send(context->tx_ctx, &frag->hdr, sizeof(mca_btl_ofi_header_t) + frag->hdr.len, NULL,
                  ofi_ep->peer_addr, &comp->comp_ctx);
 
@@ -124,6 +127,7 @@ int mca_btl_ofi_recv_frag(mca_btl_ofi_module_t *ofi_btl, mca_btl_base_endpoint_t
     mca_btl_active_message_callback_t *reg = mca_btl_base_active_message_trigger + frag->hdr.tag;
     mca_btl_base_segment_t segment = {.seg_addr.pval = (void *) (frag + 1),
                                       .seg_len = frag->hdr.len};
+
     /* Tell PML where the payload is */
     mca_btl_base_receive_descriptor_t recv_desc = {.endpoint = endpoint,
                                                    .des_segments = &segment,
