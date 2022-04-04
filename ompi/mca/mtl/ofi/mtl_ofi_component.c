@@ -839,6 +839,7 @@ select_prov:
         ompi_mtl_ofi_define_tag_mode(ofi_tag_mode, &ofi_tag_bits_for_cid);
     }
 
+    fprintf(stderr, "ofi_tag_mode = %d auto = %d full = %d\n", ofi_tag_mode, MTL_OFI_TAG_AUTO, MTL_OFI_TAG_FULL);
     /**
      * Initialize the MTL OFI Symbol Tables & function pointers
      * for specialized functions.
@@ -876,6 +877,7 @@ select_prov:
            (ofi_tag_bits_for_cid >= MTL_OFI_MINIMUM_CID_BITS)){
        ofi_tag_bits_for_cid--;
     }
+    fprintf(stderr, "ofi_tag_bits_for_cid is %d\n", ofi_tag_bits_for_cid);
 
     if (ofi_tag_bits_for_cid < MTL_OFI_MINIMUM_CID_BITS) {
         opal_show_help("help-mtl-ofi.txt", "Not enough bits for CID", true,

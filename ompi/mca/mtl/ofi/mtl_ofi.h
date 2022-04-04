@@ -637,6 +637,13 @@ ompi_mtl_ofi_ssend_recv(ompi_mtl_ofi_request_t *ack_req,
 
     ofi_req->completion_count += 1;
 
+#define CXIP_TAG_WIDTH          48
+#define CXIP_RDZV_ID_WIDTH      7
+#define CXIP_TX_ID_WIDTH        11
+#define CXIP_TAG_MASK           ((1UL << CXIP_TAG_WIDTH) - 1)
+
+    fprintf(stderr, "about to call fi_trecv with match bits 0x%016lx cxi tag 0x%016lx src addr %ld\n",
+             *match_bits | ompi_mtl_ofi.sync_send_ack, CXIP_TAG_MASK, *src_addr);
     MTL_OFI_RETRY_UNTIL_DONE(fi_trecv(ompi_mtl_ofi.ofi_ctxt[ctxt_id].rx_ep,
                                       NULL,
                                       0,
@@ -646,6 +653,7 @@ ompi_mtl_ofi_ssend_recv(ompi_mtl_ofi_request_t *ack_req,
                                       0, /* Exact match, no ignore bits */
                                       (void *) &ack_req->ctx), ret);
     if (OPAL_UNLIKELY(0 > ret)) {
+        fprintf(stderr, "fi_trecv returned %s \n", fi_strerror(-ret));
         opal_output_verbose(1, opal_common_ofi.output,
                             "%s:%d: fi_trecv failed: %s(%zd)",
                             __FILE__, __LINE__, fi_strerror(-ret), ret);
@@ -825,6 +833,7 @@ ompi_mtl_ofi_send_generic(struct mca_mtl_base_module_t *mtl,
 
     /* For Scalable Endpoints, gather target receive context */
     sep_peer_fiaddr = fi_rx_addr(endpoint->peer_fiaddr, ctxt_id, ompi_mtl_ofi.rx_ctx_bits);
+    fprintf(stderr, "sep_peer_fiaddr = %ld rx_ctx_bits = 0x%x\n", ctxt_id, ompi_mtl_ofi.rx_ctx_bits);
 
     ompi_ret = ompi_mtl_datatype_pack(convertor, &start, &length, &free_after);
     if (OPAL_UNLIKELY(OMPI_SUCCESS != ompi_ret)) {
@@ -1295,6 +1304,8 @@ ompi_mtl_ofi_irecv_generic(struct mca_mtl_base_module_t *mtl,
         return ompi_ret;
     }
 
+    fprintf(stderr, "about to no ssend call fi_trecv with match bits 0x%016lx \n",
+             match_bits);
     MTL_OFI_RETRY_UNTIL_DONE(fi_trecv(ompi_mtl_ofi.ofi_ctxt[ctxt_id].rx_ep,
                                       start,
                                       length,
