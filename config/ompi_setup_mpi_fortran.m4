@@ -598,6 +598,12 @@ end type test_mpi_handle],
                [OMPI_FORTRAN_ELEMENTAL_TYPE=])])
     AC_SUBST(OMPI_FORTRAN_ELEMENTAL_TYPE)
 
+    OMPI_FORTRAN_HAVE_C_ISO_FORTRAN=0
+    AS_IF([test $OMPI_TRY_FORTRAN_BINDINGS -ge $OMPI_FORTRAN_USEMPIF08_BINDINGS && \
+           test $OMPI_BUILD_FORTRAN_BINDINGS -ge $OMPI_FORTRAN_USEMPIF08_BINDINGS],
+          [OMPI_FORTRAN_CHECK_ISO_FORTRAN_BINDING([OMPI_FORTRAN_HAVE_C_ISO_FORTRAN=1],
+                                                  [OMPI_FORTRAN_HAVE_C_ISO_FORTRAN=0])])
+
     # Note: the current implementation *only* has wrappers;
     # there is no optimized implementation for a "good"
     # compiler.  I'm leaving the above logic in place for
@@ -619,6 +625,8 @@ end type test_mpi_handle],
     # If Fortran bindings is requested, make sure at least one can be built
     AS_IF([test $OMPI_MIN_REQUIRED_FORTRAN_BINDINGS -gt $OMPI_BUILD_FORTRAN_BINDINGS],
           [AC_MSG_ERROR([Cannot build requested Fortran bindings, aborting])])
+
+    AC_CONFIG_FILES([ompi/mpi/fortran/use-mpi-f08/bindings/mpi-f-interfaces-bind.h])
 
     # -------------------
     # mpif.h final setup
@@ -844,6 +852,20 @@ end type test_mpi_handle],
 
     # For configure-fortran-output.h
     AC_SUBST(OMPI_FORTRAN_HAVE_BIND_C)
+
+    AM_CONDITIONAL(OMPI_FORTRAN_HAVE_C_ISO_FORTRAN,
+                   [test $OMPI_FORTRAN_HAVE_C_ISO_FORTRAN -eq 1])
+
+    AS_IF([test $OMPI_FORTRAN_HAVE_C_ISO_FORTRAN -eq 1],
+          [OMPI_F08_IGNORE_TKR_TYPE="type(*), dimension(..)"
+           OMPI_F08_GCC_ATTRIBUTES=
+           OMPI_F08_BINDINGS_EXTENSION="cdesc"],
+          [OMPI_F08_IGNORE_TKR_TYPE=$OMPI_FORTRAN_IGNORE_TKR_TYPE
+           OMPI_F08_GCC_ATTRIBUTES='!GCC$ ATTRIBUTES NO_ARG_CHECK :: buf'
+           OMPI_F08_BINDINGS_EXTENSION="f"])
+    AC_SUBST(OMPI_F08_IGNORE_TKR_TYPE)
+    AC_SUBST(OMPI_F08_GCC_ATTRIBUTES)
+    AC_SUBST(OMPI_F08_BINDINGS_EXTENSION)
 
     # Somewhat redundant because ompi/Makefile.am won't traverse into
     # ompi/mpi/fortran/use-mpi-f08 if it's not to be built, but we

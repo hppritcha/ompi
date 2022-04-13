@@ -17,7 +17,7 @@ subroutine MPI_Scatterv_f08(sendbuf,sendcounts,displs,sendtype,recvbuf,&
    use :: ompi_mpifh_bindings, only : ompi_scatterv_f
    implicit none
    OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: sendbuf
-   OMPI_FORTRAN_IGNORE_TKR_TYPE :: recvbuf
+   OMPI_F08_IGNORE_TKR_TYPE :: recvbuf
    INTEGER, INTENT(IN) :: recvcount, root
    INTEGER, INTENT(IN) :: sendcounts(*), displs(*)
    TYPE(MPI_Datatype), INTENT(IN) :: sendtype

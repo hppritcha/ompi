@@ -14,8 +14,8 @@
 # Copyright (c) 2010-2011 Sandia National Laboratories. All rights reserved.
 # Copyright (c) 2013-2015 Los Alamos National Security, LLC. All rights
 #                         reserved.
-# Copyright (c) 2015-2019 Intel, Inc.  All rights reserved.
-# Copyright (c) 2015-2020 Research Organization for Information Science
+# Copyright (c) 2015-2017 Intel, Inc. All rights reserved.
+# Copyright (c) 2015-2019 Research Organization for Information Science
 #                         and Technology (RIST).  All rights reserved.
 # Copyright (c) 2016      IBM Corporation.  All rights reserved.
 # Copyright (c) 2018      FUJITSU LIMITED.  All rights reserved.
@@ -88,6 +88,7 @@ SUBDIRS = \
         mpi/fortran/use-mpi-f08/base \
         mpi/fortran/use-mpi-f08/mod \
         mpi/fortran/use-mpi-f08/bindings \
+        mpi/fortran/use-mpi-f08/cdesc \
         $(OMPI_MPIEXT_USEMPIF08_DIRS) \
         mpi/fortran/use-mpi-f08 \
         mpi/fortran/mpiext-use-mpi-f08 \
@@ -120,6 +121,7 @@ DIST_SUBDIRS = \
         mpi/fortran/use-mpi-f08/base \
         mpi/fortran/use-mpi-f08/mod \
         mpi/fortran/use-mpi-f08/bindings \
+        mpi/fortran/use-mpi-f08/cdesc \
         mpi/fortran/mpiext-use-mpi-f08 \
         mpi/java \
         $(OMPI_MPIEXT_ALL_SUBDIRS) \

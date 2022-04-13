@@ -45,6 +45,8 @@ AM_FCFLAGS = -I$(top_srcdir)/ompi/mpi/fortran/use-mpi-f08/mod \
              $(OMPI_FC_MODULE_FLAG)mod \
              $(OMPI_FC_MODULE_FLAG)bindings \
              -I$(top_srcdir) -I$(top_builddir) $(FCFLAGS_f90) \
+             $(OMPI_FC_MODULE_FLAG)cdesc \
+             -I$(top_srcdir) $(FCFLAGS_f90) \
              -DOMPI_BUILD_MPI_PROFILING=0
 
 MOSTLYCLEANFILES = *.mod
@@ -57,7 +59,14 @@ module_sentinel_files = \
         mod/libforce_usempif08_internal_modules_to_be_built.la \
         bindings/libforce_usempif08_internal_bindings_to_be_built.la
 
+if OMPI_FORTRAN_HAVE_C_ISO_FORTRAN
+module_sentinel_file += \
+        cdesc/libusempif08_cdesc.la
+endif
+
 mpi-f08.lo: $(module_sentinel_files)
+
+mpi-f08.lo: $(module_sentinel_file)
 mpi-f08.lo: mpi-f08.F90
 mpi-f08.lo: sizeof_f08.h
 
