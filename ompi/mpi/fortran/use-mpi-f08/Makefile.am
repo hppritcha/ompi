@@ -60,7 +60,7 @@ module_sentinel_files = \
         bindings/libforce_usempif08_internal_bindings_to_be_built.la
 
 if OMPI_FORTRAN_HAVE_C_ISO_FORTRAN
-module_sentinel_file += \
+module_sentinel_files += \
         cdesc/libusempif08_cdesc.la
 endif
 
@@ -546,6 +546,10 @@ lib@OMPI_LIBMPI_NAME@_usempif08_la_LIBADD = \
         $(top_builddir)/ompi/lib@OMPI_LIBMPI_NAME@.la \
         mod/libusempif08_internal_modules.la \
         base/libusempif08_ccode.la
+if OMPI_FORTRAN_HAVE_C_ISO_FORTRAN
+lib@OMPI_LIBMPI_NAME@_usempif08_la_LIBADD += \
+        cdesc/libusempif08_cdesc.la
+endif
 lib@OMPI_LIBMPI_NAME@_usempif08_la_DEPENDENCIES = $(module_sentinel_files)
 lib@OMPI_LIBMPI_NAME@_usempif08_la_LDFLAGS = -version-info $(libmpi_usempif08_so_version)
 
