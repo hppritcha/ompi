@@ -54,11 +54,13 @@ int opal_accelerator_base_select(void)
     opal_list_t ordered_list, initialized_list;
     opal_list_item_t *item = NULL;
 
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     OBJ_CONSTRUCT(&ordered_list, opal_list_t);
     OBJ_CONSTRUCT(&initialized_list, opal_list_t);
 
     /* Traverse the list of available components and create a new ordered list with
        the NULL Component on the back of the new list */
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     OPAL_LIST_FOREACH(cli, &opal_accelerator_base_framework.framework_components, mca_base_component_list_item_t) {
         ali = (accelerator_list_item_t*) malloc(sizeof(accelerator_list_item_t));
         if (NULL == ali) {
@@ -76,6 +78,7 @@ int opal_accelerator_base_select(void)
         }
     }
 
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     /* Traverse the ordered list of available components and try and initialize every component.
      * Save all initialized components in initialized component list. */
     OPAL_LIST_FOREACH(ali, &ordered_list, accelerator_list_item_t) {
@@ -109,6 +112,7 @@ int opal_accelerator_base_select(void)
         }
     }
 
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     /* There are four possible cases to handle:
      * 1. List empty, someone selected a component with --mca accelerator <component> and it fails to initialize
      * 2. There is 1 component in the list (NULL will always initialize, or someone selected a component)
@@ -137,6 +141,7 @@ int opal_accelerator_base_select(void)
     opal_output_verbose(10, opal_accelerator_base_framework.framework_output, "selected %s\n",
                         accelerator_base_selected_component.base_version.mca_component_name);
 
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     /* This base function closes, unloads, and removes from the available list all
      * unselected components. The available list will contain only the selected component. */
     mca_base_framework_components_close(&opal_accelerator_base_framework, skip);
@@ -147,6 +152,7 @@ int opal_accelerator_base_select(void)
         free(item);
     }
 
+    fprintf(stderr, "at line %d in file %s\n", __LINE__,__FILE__);
     for (item = opal_list_remove_first(&initialized_list); NULL != item; item = opal_list_remove_first(&initialized_list)) {
         OBJ_DESTRUCT(item);
         free(item);

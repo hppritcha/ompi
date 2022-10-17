@@ -4,6 +4,8 @@
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2022      Amazon.com, Inc. or its affiliates.
  *                         All Rights reserved.
+ * Copyright (c) 2022      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,12 +38,21 @@ static int opal_accelerator_base_frame_register(mca_base_register_flag_t flags)
 
 static int opal_accelerator_base_frame_close(void)
 {
+    if (NULL != accelerator_base_selected_component.accelerator_finalize) {
+        accelerator_base_selected_component.accelerator_finalize(&opal_accelerator);
+    }
     return mca_base_framework_components_close(&opal_accelerator_base_framework, NULL);
 }
 
 static int opal_accelerator_base_frame_open(mca_base_open_flag_t flags)
 {
-    return mca_base_framework_components_open(&opal_accelerator_base_framework, flags);
+    int rc;
+    rc = mca_base_framework_components_open(&opal_accelerator_base_framework, flags);
+    if (OPAL_SUCCESS == rc) {
+        rc = opal_accelerator_base_select();
+    }
+
+    return rc;
 }
 
 OBJ_CLASS_INSTANCE(

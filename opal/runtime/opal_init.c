@@ -22,7 +22,7 @@
  *                         All Rights reserved.
  * Copyright (c) 2018      Mellanox Technologies, Inc.
  *                         All rights reserved.
- * Copyright (c) 2018-2019 Triad National Security, LLC. All rights
+ * Copyright (c) 2018-2022 Triad National Security, LLC. All rights
  *                         reserved.
  * Copyright (c) 2020      FUJITSU LIMITED.  All rights reserved.
  * Copyright (c) 2021      Nanook Consulting.  All rights reserved.
@@ -119,6 +119,8 @@ int opal_init_psm(void)
     return OPAL_SUCCESS;
 }
 
+/* MCA frameworks needed by OPAL.  New frameworks need to be added to this list */
+
 /* the memcpy component should be one of the first who get
  * loaded in order to make sure we have all the available
  * versions of memcpy correctly configured.
@@ -129,7 +131,7 @@ static mca_base_framework_t *opal_init_frameworks[] = {
     &opal_memcpy_base_framework, &opal_memchecker_base_framework,
     &opal_backtrace_base_framework, &opal_timer_base_framework,
     &opal_shmem_base_framework, &opal_reachable_base_framework,
-    &opal_pmix_base_framework,
+    &opal_pmix_base_framework, &opal_accelerator_base_framework,
     NULL,
 };
 
@@ -192,15 +194,6 @@ int opal_init(int *pargc, char ***pargv)
     if (OPAL_UNLIKELY(OPAL_SUCCESS != ret)) {
         return opal_init_error("opal_init framework open", ret);
     }
-
-    /* Intitialize Accelerator framework
-     * The datatype convertor code has a dependency on the accelerator framework
-     * being initialized. */
-    ret = mca_base_framework_open(&opal_accelerator_base_framework, 0);
-    if (OPAL_SUCCESS == ret && OPAL_SUCCESS != (ret = opal_accelerator_base_select())) {
-        return opal_init_error("opal_accelerator_base_select", ret);
-    }
-    opal_finalize_register_cleanup(accelerator_base_selected_component.accelerator_finalize);
 
     /* initialize the datatype engine */
     if (OPAL_SUCCESS != (ret = opal_datatype_init())) {

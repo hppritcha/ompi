@@ -120,6 +120,8 @@ static int mca_part_base_close(void)
  */
 static int mca_part_base_open(mca_base_open_flag_t flags)
 {
+    int rc = OMPI_SUCCESS;
+
     OBJ_CONSTRUCT(&mca_part_base_part, opal_pointer_array_t);
 
     
@@ -127,9 +129,9 @@ static int mca_part_base_open(mca_base_open_flag_t flags)
     OBJ_CONSTRUCT(&mca_part_base_precv_requests, opal_free_list_t);
     /* Open up all available components */
 
-    if (OPAL_SUCCESS !=
-        mca_base_framework_components_open(&ompi_part_base_framework, flags)) {
-        return OMPI_ERROR;
+    rc = mca_base_framework_components_open(&ompi_part_base_framework, flags)) {
+    if (OMPI_SUCCESS != rc) {
+        return rc;
     }
 
     /* Set a sentinel in case we don't select any components (e.g.,
@@ -140,7 +142,9 @@ static int mca_part_base_open(mca_base_open_flag_t flags)
     /* Currently this uses a default with no selection criteria as there is only 1 module. */
     opal_pointer_array_add(&mca_part_base_part, strdup("persist"));
 
-    return OMPI_SUCCESS;
+    rc = mca_part_base_select (true, true);
+
+    return rc;
 }
 
 MCA_BASE_FRAMEWORK_DECLARE(ompi, part, "OMPI PART", mca_part_base_register,
