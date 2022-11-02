@@ -106,7 +106,7 @@ static int validate_info(struct fi_info *info, uint64_t required_caps, char **in
     mr_mode = info->domain_attr->mr_mode;
 
     if (!(mr_mode == FI_MR_BASIC || mr_mode == FI_MR_SCALABLE
-          || (mr_mode & ~(FI_MR_VIRT_ADDR | FI_MR_ALLOCATED | FI_MR_PROV_KEY | FI_MR_ENDPOINT)) == 0)) {
+          || (mr_mode & ~(FI_MR_VIRT_ADDR | FI_MR_ALLOCATED | FI_MR_PROV_KEY | FI_MR_ENDPOINT | FI_MR_HMEM)) == 0)) {
         BTL_VERBOSE(("unsupported MR mode"));
         return OPAL_ERROR;
     }
@@ -339,14 +339,34 @@ static mca_btl_base_module_t **mca_btl_ofi_component_init(int *num_btl_modules,
 
     mca_btl_ofi_component.module_count = 0;
 
-    /* do the query. */
-    rc = fi_getinfo(FI_VERSION(1, 5), NULL, NULL, 0, &hints, &info_list);
+    /* Request device transfer capabilities, separate from required_caps */
+    hints.caps |= FI_HMEM;
+    hints.domain_attr->mr_mode |= FI_MR_HMEM;
+    /* TODO: Qualify as a GPU BTL */
+no_hmem:
+
+    /* Do the query. The earliest version that supports FI_HMEM hints is 1.9  */
+    rc = fi_getinfo(FI_VERSION(1, 9), NULL, NULL, 0, &hints, &info_list);
     if (0 != rc) {
+        if (hints.caps & FI_HMEM) {
+            /* Try again without FI_HMEM hints */
+            hints.caps &= ~FI_HMEM;
+            hints.domain_attr->mr_mode &= ~FI_MR_HMEM;
+            /* TODO: Disqualify since this is a non GPU BTL */
+            goto no_hmem;
+        }
         BTL_VERBOSE(("fi_getinfo failed with code %d: %s", rc, fi_strerror(-rc)));
         if (NULL != include_list) {
             opal_argv_free(include_list);
         }
         return NULL;
+    }
+
+    /* If we get to this point with FI_HMEM hint set, we want it to be a
+     * required capability
+     */
+    if (hints.caps & FI_HMEM) {
+        required_caps |= FI_HMEM;
     }
 
     /* count the number of resources/ */
