@@ -458,6 +458,10 @@ static int mca_btl_ofi_init_device(struct fi_info *info)
         goto fail;
     }
 
+    if (info->caps & FI_HMEM) {
+        module->super.btl_flags |= MCA_BTL_FLAGS_ACCELERATOR_RDMA;
+    }
+
     /* If the user ask for two sided support, something bad is happening
      * to the MTL, so we will take maximum priority to supersede the MTL. */
     module->super.btl_exclusivity = MCA_BTL_EXCLUSIVITY_DEFAULT;
