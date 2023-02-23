@@ -153,6 +153,7 @@ OMPI_DECLSPEC int ompi_win_group(ompi_win_t *win, ompi_group_t **group);
    to the defintion of an "invalid" communicator.  See a big comment
    in ompi/communicator/communicator.h about this. */
 static inline int ompi_win_invalid(ompi_win_t *win) {
+    fprintf(stderr, "win == %p\n", (void *)win);
     if (NULL == win ||
         MPI_WIN_NULL == win ||
         (OMPI_WIN_INVALID & win->w_flags) ||

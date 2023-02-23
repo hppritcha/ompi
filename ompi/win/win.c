@@ -319,6 +319,7 @@ ompi_win_allocate_shared(size_t size, int disp_unit, opal_info_t *info,
         return ret;
     }
 
+    fprintf(stderr, "window size is %ld\n", size);
     *((void**) baseptr) = base;
     *newwin = win;
 

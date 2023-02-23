@@ -52,5 +52,6 @@ int MPI_Win_shared_query(MPI_Win win, int rank, MPI_Aint *size, int *disp_unit, 
     } else {
         rc = MPI_ERR_RMA_FLAVOR;
     }
+    fprintf(stderr, "from MPI_Win_shared_query baseptr = %p\n", *(void **)baseptr);
     OMPI_ERRHANDLER_RETURN(rc, win, rc, FUNC_NAME);
 }

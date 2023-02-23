@@ -229,6 +229,7 @@ component_select(struct ompi_win_t *win, void **base, size_t size, int disp_unit
 
         module->sizes[0] = size;
         module->bases[0] = malloc(size);
+        fprintf(stderr, "creating shared memory  segement of size %ld bytes %p\n", size, (void *)module->bases[0]);
         if (NULL == module->bases[0]) return OMPI_ERR_TEMP_OUT_OF_RESOURCE;
 
         module->global_state = malloc(sizeof(ompi_osc_sm_global_state_t));
@@ -456,6 +457,7 @@ ompi_osc_sm_shared_query(struct ompi_win_t *win, int rank, size_t *size, int *di
 
     if (MPI_PROC_NULL != rank) {
         *size = module->sizes[rank];
+        fprintf(stderr, "stuffing %p module->bases[%d] into baseptr\n", module->bases[rank], rank);
         *((void**) baseptr) = module->bases[rank];
         *disp_unit = module->disp_units[rank];
     } else {
