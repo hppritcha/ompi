@@ -1,6 +1,7 @@
 # -*- shell-script -*-
 #
 # Copyright (c) 2022      Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (c) 2023     Triad National Security, LLC. All rights reserved.
 # $COPYRIGHT$
 #
 # Additional copyrights may follow
@@ -17,7 +18,7 @@ AC_DEFUN([MCA_opal_accelerator_ze_CONFIG],[
     OPAL_CHECK_ZE([opal_ze],
 	        [opal_ze_happy="yes"],
 	        [opal_ze_happy="no"])
-    OPAL_SUMMARY_ADD([Accelerators], [ROCm support], [], [$opal_ze_happy])
+    OPAL_SUMMARY_ADD([Accelerators], [Intel ZE support], [], [$opal_ze_happy])
 
     AS_IF([test "$opal_ze_happy" = "yes"],
 	  [$1],
