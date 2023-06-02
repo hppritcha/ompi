@@ -25,6 +25,11 @@
 
 int opal_accelerator_ze_memcpy_async = 1;
 int opal_accelerator_ze_verbose = 0;
+uint32_t opal_accelerator_ze_device_count;
+ze_device_handle_t *opal_accelerator_ze_devices_handle = NULL;
+ze_driver_handle_t opal_accelerator_ze_driver_handle;
+ze_context_handle_t opal_accelerator_ze_context;
+
 size_t opal_accelerator_ze_memcpyD2H_limit=1024;
 size_t opal_accelerator_ze_memcpyH2D_limit=1048576;
 
@@ -32,34 +37,18 @@ size_t opal_accelerator_ze_memcpyH2D_limit=1048576;
 static opal_mutex_t accelerator_ze_init_lock;
 static bool accelerator_ze_init_complete = false;
 
-hipStream_t opal_accelerator_ze_MemcpyStream = NULL;
+#define ZE_ERR_CHECK(ret) \
+    do { \
+        if ((ret) != ZE_RESULT_SUCCESS) \
+            goto fn_fail; \
+    } while (0)
+
 
 /*
  * Public string showing the accelerator ze component version number
  */
 const char *opal_accelerator_ze_component_version_string
     = "OPAL ze accelerator MCA component version " OPAL_VERSION;
-
-
-#define HIP_CHECK(condition)                                                 \
-{                                                                            \
-    hipError_t error = condition;                                            \
-    if (hipSuccess != error){                                                \
-        const char* msg = hipGetErrorString(error);                \
-        opal_output(0, "HIP error: %d %s file: %s line: %d\n", error, msg, __FILE__, __LINE__); \
-        return error;                                                        \
-    }                                                                        \
-}
-
-#define HIP_CHECK_RETNULL(condition)                                         \
-{                                                                            \
-    hipError_t error = condition;                                            \
-    if (hipSuccess != error){                                                \
-        const char* msg = hipGetErrorString(error);                \
-        opal_output(0, "HIP error: %d %s file: %s line: %d\n", error, msg, __FILE__, __LINE__); \
-        return NULL;                                                         \
-    }                                                                        \
-}
 
 
 /*
@@ -130,6 +119,7 @@ static int accelerator_ze_component_register(void)
                                  0, 0, OPAL_INFO_LVL_9, MCA_BASE_VAR_SCOPE_READONLY,
                                  &opal_accelerator_ze_verbose);
 
+#if 0
     /* Switching point between using memcpy and hipMemcpy* functions. */
     opal_accelerator_ze_memcpyD2H_limit = 1024;
     (void) mca_base_var_register("ompi", "mpi", "accelerator_ze", "memcpyD2H_limit",
@@ -154,16 +144,26 @@ static int accelerator_ze_component_register(void)
                                  "Set to 0 to force using hipMemcpy instead of hipMemcpyAsync",
                                  MCA_BASE_VAR_TYPE_INT, NULL, 0, 0, OPAL_INFO_LVL_9,
                                  MCA_BASE_VAR_SCOPE_READONLY, &opal_accelerator_ze_memcpy_async);
-
+#endif
     return OPAL_SUCCESS;
 }
 
-int opal_accelerator_ze_lazy_init()
+/*
+ * If this method is invoked it means we already
+ * initialized ZE in the accelerator_ze_init method below
+ */
+
+int opal_accelerator_ze_lazy_init(void)
 {
+    uint32_t i,d;
     int err = OPAL_SUCCESS;
+    ze_result_t zret;
+    uint32_t driver_count = 0;
+    ze_driver_handle_t *all_drivers = NULL;
 
     /* Double checked locking to avoid having to
      * grab locks post lazy-initialization.  */
+
     opal_atomic_rmb();
     if (true == accelerator_ze_init_complete) {
         return OPAL_SUCCESS;
@@ -175,42 +175,129 @@ int opal_accelerator_ze_lazy_init()
         goto out;
     }
 
-#if 0
-    err = hipStreamCreate(&opal_accelerator_ze_MemcpyStream);
-    if (hipSuccess != err) {
-        opal_output(0, "Could not create hipStream, err=%d %s\n",
-                err, hipGetErrorString(err));
+    zret = zeDriverGet(&driver_count, NULL);
+    if (ZE_RESULT_SUCCESS != zret) {
+        err =  OPAL_ERR_NOT_INITIALIZED;
         goto out;
     }
-#endif
-    /*
-     * call following routines:
-     * - zeInit
-     * - zeDriverGet to get a driver count
-     * - zeDriverGet to load the drivers 
 
-    err = OPAL_SUCCESS;
+    /*
+     * driver count should not be zero as to get here ZE component
+     * was successfully init'd.
+     */
+    if (0 == driver_count) {
+        err = OPAL_ERR_NOT_FOUND;
+    }
+
+    all_drivers = (ze_driver_handle_t *)malloc(driver_count * sizeof(ze_driver_handle_t));
+    if (all_drivers == NULL) {
+        err = OPAL_ERR_OUT_OF_RESOURCE;
+        goto out;
+    }
+
+    zret = zeDriverGet(&driver_count, all_drivers);
+    if (ZE_RESULT_SUCCESS != zret) {
+        err = OPAL_ERR_NOT_FOUND;
+        goto out;
+    }
+
+    /*
+     * Current design of ZE component assumes we find the first driver with a GPU device.
+     * we'll create a single ZE context if we do find such a device.  This may need to
+     * be revisited at some point but would impact areas of code outside of the 
+     * accelerator framework.
+     */
+
+    for (i = 0; i < driver_count; ++i) {
+        opal_accelerator_ze_device_count = 0;
+        zret = zeDeviceGet(all_drivers[i], &opal_accelerator_ze_device_count, NULL);
+        ZE_ERR_CHECK(zret);
+        opal_accelerator_ze_devices_handle =
+            malloc(opal_accelerator_ze_device_count * sizeof(ze_device_handle_t));
+        if (NULL == opal_accelerator_ze_devices_handle) {
+            err = OPAL_ERR_OUT_OF_RESOURCE;
+            goto out;
+        }
+        zret = zeDeviceGet(all_drivers[i], &opal_accelerator_ze_device_count, opal_accelerator_ze_devices_handle);
+        ZE_ERR_CHECK(zret);
+        /* Check if the driver supports a gpu */
+        for (d = 0; d < opal_accelerator_ze_device_count; ++d) {
+            ze_device_properties_t device_properties;
+            zret = zeDeviceGetProperties(opal_accelerator_ze_devices_handle[d], &device_properties);
+            ZE_ERR_CHECK(zret);
+
+            if (ZE_DEVICE_TYPE_GPU == device_properties.type) {
+                opal_accelerator_ze_driver_handle = all_drivers[i];
+                break;
+            }
+        }
+
+        if (NULL != opal_accelerator_ze_driver_handle) {
+            break;
+        } else {
+            free(opal_accelerator_ze_devices_handle);
+            opal_accelerator_ze_devices_handle = NULL;
+        }
+    }
+
+    ze_context_desc_t contextDesc = {
+        .stype = ZE_STRUCTURE_TYPE_CONTEXT_DESC,
+        .pNext = NULL,
+        .flags = 0,
+    };
+    zret = zeContextCreate(opal_accelerator_ze_driver_handle, &contextDesc, &opal_accelerator_ze_context);
+    ZE_ERR_CHECK(zret);
+
     opal_atomic_wmb();
     accelerator_ze_init_complete = true;
+
 out:
+fn_fail:
+    if (NULL != all_drivers) {
+        free(all_drivers);
+    }
+
+    if (OPAL_SUCCESS != err)  {
+        free(opal_accelerator_ze_devices_handle);
+        opal_accelerator_ze_devices_handle = NULL;
+    }
+      
     OPAL_THREAD_UNLOCK(&accelerator_ze_init_lock);
     return err;
 }
 
 static opal_accelerator_base_module_t* accelerator_ze_init(void)
 {
+    uint32_t driver_count=0;
+    ze_result_t zret;
+    ze_init_flag_t flags = ZE_INIT_FLAG_GPU_ONLY;
+
     OBJ_CONSTRUCT(&accelerator_ze_init_lock, opal_mutex_t);
-    
-    hipError_t err;
 
     if (opal_ze_runtime_initialized) {
         return NULL;
     }
 
-    int count=0;
-    err = hipGetDeviceCount(&count);
-    if (hipSuccess != err || 0 == count) {
-        opal_output(0, "No HIP capabale device found. Disabling component.\n");
+    /* 
+     * Initialize ze, this function can be called multiple times
+     */
+
+    zret = zeInit(flags);
+    if (ZE_RESULT_SUCCESS != zret) {
+        return NULL;
+    }
+
+    /*
+     * zeDriverGet can return:
+     * ZE_RESULT_SUCCESS
+     * ZE_RESULT_ERROR_UNINITIALIZED
+     * ZE_RESULT_ERROR_DEVICE_LOST
+     * ZE_RESULT_ERROR_OUT_OF_HOST_MEMORY
+     * ZE_RESULT_ERROR_OUT_OF_DEVICE_MEMORY
+     */
+    zret = zeDriverGet(&driver_count, NULL);
+    if (ZE_RESULT_SUCCESS != zret || 0 == driver_count) {
+        opal_output(0, "No ZE capabale device found. Disabling component.\n");
         return NULL;
     }
 
@@ -218,10 +305,15 @@ static opal_accelerator_base_module_t* accelerator_ze_init(void)
     opal_ze_runtime_initialized = true;
 
     return &opal_accelerator_ze_module;
+    return NULL;
 }
 
 static void accelerator_ze_finalize(opal_accelerator_base_module_t* module)
 {
+    if (NULL != (void *)opal_accelerator_ze_context) {
+        zeContextDestroy(opal_accelerator_ze_context);
+    }
+#if 0
     if (NULL != (void*)opal_accelerator_ze_MemcpyStream) {
         hipError_t err = hipStreamDestroy(opal_accelerator_ze_MemcpyStream);
         if (hipSuccess != err) {
@@ -229,6 +321,7 @@ static void accelerator_ze_finalize(opal_accelerator_base_module_t* module)
         }
         opal_accelerator_ze_MemcpyStream = NULL;
     }
+#endif
 
     OBJ_DESTRUCT(&accelerator_ze_init_lock);
     return;

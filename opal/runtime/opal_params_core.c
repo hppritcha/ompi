@@ -74,6 +74,8 @@ bool opal_warn_on_missing_libcuda = true;
 bool opal_built_with_rocm_support = OPAL_INT_TO_BOOL(OPAL_ROCM_SUPPORT);
 bool opal_rocm_runtime_initialized = false;
 
+bool opal_built_with_ze_support = OPAL_INT_TO_BOOL(OPAL_ZE_SUPPORT);
+bool opal_ze_runtime_initialized = false;
 
 /**
  * Globals imported from the OMPI layer.

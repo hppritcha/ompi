@@ -37,7 +37,9 @@ struct opal_accelerator_ze_event_t {
 typedef struct opal_accelerator_ze_event_t opal_accelerator_ze_event_t;
 OBJ_CLASS_DECLARATION(opal_accelerator_ze_event_t);
 
+#if 0
 OPAL_DECLSPEC extern hipStream_t opal_accelerator_ze_MemcpyStream;
+#endif
 OPAL_DECLSPEC extern int opal_accelerator_ze_memcpy_async;
 OPAL_DECLSPEC extern int opal_accelerator_ze_verbose;
 OPAL_DECLSPEC extern size_t opal_accelerator_ze_memcpyH2D_limit;
