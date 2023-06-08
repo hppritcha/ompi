@@ -37,6 +37,11 @@ struct opal_accelerator_ze_event_t {
 typedef struct opal_accelerator_ze_event_t opal_accelerator_ze_event_t;
 OBJ_CLASS_DECLARATION(opal_accelerator_ze_event_t);
 
+OPAL_DECLSPEC extern uint32_t opal_accelerator_ze_device_count;
+OPAL_DECLSPEC extern ze_device_handle_t *opal_accelerator_ze_devices_handle;
+OPAL_DECLSPEC extern ze_driver_handle_t opal_accelerator_ze_driver_handle;
+OPAL_DECLSPEC extern ze_context_handle_t opal_accelerator_ze_context;
+
 #if 0
 OPAL_DECLSPEC extern hipStream_t opal_accelerator_ze_MemcpyStream;
 #endif
@@ -46,5 +51,11 @@ OPAL_DECLSPEC extern size_t opal_accelerator_ze_memcpyH2D_limit;
 OPAL_DECLSPEC extern size_t opal_accelerator_ze_memcpyD2H_limit;
 
 OPAL_DECLSPEC extern int opal_accelerator_ze_lazy_init(void);
+
+#define ZE_ERR_CHECK(ret) \
+    do { \
+        if ((ret) != ZE_RESULT_SUCCESS) \
+            goto fn_fail; \
+    } while (0)
 
 #endif

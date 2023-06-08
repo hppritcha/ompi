@@ -71,7 +71,47 @@ opal_accelerator_base_module_t opal_accelerator_ze_module =
 
 static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_t *flags)
 {
-    return OPAL_SUCCESS;
+    int ret = 0;
+    ze_memory_allocation_properties_t attr;
+    ze_device_handle_t phDevice;
+
+    *dev_id = MCA_ACCELERATOR_NO_DEVICE_ID;
+    *flags = 0;
+
+    if (NULL == addr || NULL == flags) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    ret = opal_accelerator_ze_lazy_init();
+    if (OPAL_SUCCESS != ret) {
+        return ret;
+    }
+
+    ret = zeMemGetAllocProperties(opal_accelerator_ze_context, 
+                                  addr,
+                                  &attr,
+                                  &phDevice);
+    ZE_ERR_CHECK(ret);
+    switch (attr.type) {
+        case ZE_MEMORY_TYPE_UNKNOWN:
+        case ZE_MEMORY_TYPE_HOST:
+            break;
+        case ZE_MEMORY_TYPE_DEVICE:
+        /*
+         *  Assume that although shared is accessible from host, access may be slow so
+         *  like device memory for now.
+         */
+        case ZE_MEMORY_TYPE_SHARED:
+           *flags |= MCA_ACCELERATOR_FLAGS_UNIFIED_MEMORY;
+            ret = 1;
+            break;
+        default:
+            goto fn_fail;
+    }
+
+fn_fail:
+
+    return ret;
 }
 
 static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_t **stream)
@@ -139,6 +179,30 @@ static int mca_accelerator_ze_memmove(int dest_dev_id, int src_dev_id, void *des
 
 static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
 {
+#if 0
+   int mpl_err = MPL_SUCCESS;
+    int ret;
+    size_t mem_alignment;
+    ze_device_mem_alloc_desc_t device_desc = {
+        .stype = ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC,
+        .pNext = NULL,
+        .flags = 0,
+        .ordinal = 0,   /* We currently support a single memory type */
+    };
+    /* Currently ZE ignores this argument and uses an internal alignment
+     * value. However, this behavior can change in the future. */
+    mem_alignment = 1;
+    ret = zeMemAllocDevice(global_ze_context, &device_desc, size, mem_alignment, h_device, ptr);
+
+    ZE_ERR_CHECK(ret);
+
+  fn_exit:
+    return mpl_err;
+  fn_fail:
+    mpl_err = MPL_ERR_GPU_INTERNAL;
+    goto fn_exit;
+
+#endif
     return OPAL_SUCCESS;
 }
 
@@ -152,6 +216,10 @@ static int mca_accelerator_ze_get_address_range(int dev_id, const void *ptr, voi
 {
     return OPAL_SUCCESS;
 }
+
+/*
+ * ZE doesn't have explicit host memory registration functions
+ */
 
 static int mca_accelerator_ze_host_register(int dev_id, void *ptr, size_t size)
 {
