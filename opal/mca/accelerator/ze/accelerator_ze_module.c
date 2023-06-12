@@ -116,12 +116,17 @@ fn_fail:
 
 static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_t **stream)
 {
+    /*
+     *  maps to hipStreamCreate - zeCommandQueueCreate
+     */
     return OPAL_SUCCESS;
 }
 
 static void mca_accelerator_ze_stream_destruct(opal_accelerator_ze_stream_t *stream)
 {
-
+    /*
+     *  maps to hipStreamDestroy
+     */
 }
 
 OBJ_CLASS_INSTANCE(
@@ -132,11 +137,48 @@ OBJ_CLASS_INSTANCE(
 
 static int mca_accelerator_ze_create_event(int dev_id, opal_accelerator_event_t **event)
 {
+    if (NULL == event) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+#if 0
+    *event = (opal_accelerator_event_t*)OBJ_NEW(opal_accelerator_rocm_event_t);
+    if (NULL == *event) {
+        return OPAL_ERR_OUT_OF_RESOURCE;
+    }
+
+    (*event)->event = malloc(sizeof(hipEvent_t));
+    if (NULL == (*event)->event) {
+        OBJ_RELEASE(*event);
+        return OPAL_ERR_OUT_OF_RESOURCE;
+    }
+    hipError_t err = hipEventCreateWithFlags((hipEvent_t*)(*event)->event,
+                                                       hipEventDisableTiming);
+    if (hipSuccess != err) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "error creating event\n");
+        free((*event)->event);
+        OBJ_RELEASE(*event);
+        return OPAL_ERROR;
+    }
+#endif
+
     return OPAL_SUCCESS;
+
 }
 
 static void mca_accelerator_ze_event_destruct(opal_accelerator_ze_event_t *event)
 {
+#if 0
+    if (NULL != event->base.event) {
+        hipError_t err = hipEventDestroy(*(hipEvent_t*)event->base.event);
+        if (hipSuccess != err) {
+            opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                                "error destroying event\n");
+        }
+        free(event->base.event);
+    }
+#endif
 }
 
 OBJ_CLASS_INSTANCE(
@@ -148,11 +190,48 @@ OBJ_CLASS_INSTANCE(
 static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t *event,
                                              opal_accelerator_stream_t *stream)
 {
+    if (NULL == event || NULL == event->event){
+        return OPAL_ERR_BAD_PARAM;
+    }
+    if (NULL == stream || NULL == stream->stream){
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+#if 0
+    hipError_t err = hipEventRecord(*((hipEvent_t *)event->event),
+                                              *((hipStream_t *)stream->stream));
+    if (hipSuccess != err) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "error recording event\n");
+        return OPAL_ERROR;
+    }
+#endif
+
     return OPAL_SUCCESS;
 }
 
 static int mca_accelerator_ze_query_event(int dev_id, opal_accelerator_event_t *event)
 {
+    if (NULL == event || NULL == event->event) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+#if 0
+    hipError_t err = hipEventQuery(*((hipEvent_t *)event->event));
+    switch (err) {
+        case hipSuccess:
+            return OPAL_SUCCESS;
+            break;
+        case hipErrorNotReady:
+            return OPAL_ERR_RESOURCE_BUSY;
+            break;
+        default:
+            opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                                "error while querying event\n");
+            return OPAL_ERROR;
+    }
+#endif
+
     return OPAL_SUCCESS;
 }
 
