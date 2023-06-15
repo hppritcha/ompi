@@ -41,6 +41,7 @@ OPAL_DECLSPEC extern uint32_t opal_accelerator_ze_device_count;
 OPAL_DECLSPEC extern ze_device_handle_t *opal_accelerator_ze_devices_handle;
 OPAL_DECLSPEC extern ze_driver_handle_t opal_accelerator_ze_driver_handle;
 OPAL_DECLSPEC extern ze_context_handle_t opal_accelerator_ze_context;
+OPAL_DECLSPEC extern ze_event_pool_handle_t opal_accelerator_ze_event_pool;
 
 #if 0
 OPAL_DECLSPEC extern hipStream_t opal_accelerator_ze_MemcpyStream;

@@ -29,6 +29,7 @@ uint32_t opal_accelerator_ze_device_count;
 ze_device_handle_t *opal_accelerator_ze_devices_handle = NULL;
 ze_driver_handle_t opal_accelerator_ze_driver_handle;
 ze_context_handle_t opal_accelerator_ze_context;
+ze_event_pool_handle_t opal_accelerator_ze_event_pool;
 
 size_t opal_accelerator_ze_memcpyD2H_limit=1024;
 size_t opal_accelerator_ze_memcpyH2D_limit=1048576;

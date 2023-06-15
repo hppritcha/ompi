@@ -116,17 +116,63 @@ fn_fail:
 
 static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_t **stream)
 {
+    int zret;
+
+    ze_command_queue_desc_t cmdQueueDesc = {
+            .stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC,
+            .pNext = NULL,
+            .index = 0,
+            .flags = 0,
+            .ordinal = 0,
+            .mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS,
+            .priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL,
+    };
+
+    (*stream)->stream = (ze_command_queue_handle_t *)malloc(sizeof(ze_command_queue_handle_t));
+    if (NULL == (*stream)->stream) {
+        OBJ_RELEASE(*stream);
+        return OPAL_ERR_OUT_OF_RESOURCE;
+    }
+
+    zret = zeCommandQueueCreate(opal_accelerator_ze_context, 
+                                opal_accelerator_ze_devices_handle[0], 
+                                &cmdQueueDesc, 
+                                (ze_command_queue_handle_t *)(*stream)->stream);
+    assert(zret == ZE_RESULT_SUCCESS);
+
     /*
-     *  maps to hipStreamCreate - zeCommandQueueCreate
+     * set up an event pool
      */
+
+    ze_event_pool_desc_t eventPoolDesc = {
+            .stype = ZE_STRUCTURE_TYPE_EVENT_POOL_DESC,
+            .pNext = NULL,
+            .flags = 0,
+            .count = 1000,  /* TODO: fix this! */
+    };
+
+    zret = zeEventPoolCreate(opal_accelerator_ze_context,
+                             &eventPoolDesc,
+                             1,
+                             opal_accelerator_ze_devices_handle,
+                             &opal_accelerator_ze_event_pool);
+    assert(zret == ZE_RESULT_SUCCESS);
+
     return OPAL_SUCCESS;
 }
 
 static void mca_accelerator_ze_stream_destruct(opal_accelerator_ze_stream_t *stream)
 {
-    /*
-     *  maps to hipStreamDestroy
-     */
+    int zret;
+
+    if (NULL != stream->base.stream) {
+        zret = zeCommandQueueDestroy(*(ze_command_queue_handle_t *)stream->base.stream);
+        if (ZE_RESULT_SUCCESS != zret) {
+            opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                                "error while destroying the hipStream\n");
+        }
+        free(stream->base.stream);
+    }
 }
 
 OBJ_CLASS_INSTANCE(
@@ -137,31 +183,40 @@ OBJ_CLASS_INSTANCE(
 
 static int mca_accelerator_ze_create_event(int dev_id, opal_accelerator_event_t **event)
 {
+    int zret;
+
+
+    ze_event_desc_t eventDesc = {
+       .stype = ZE_STRUCTURE_TYPE_EVENT_DESC,
+       .pNext = NULL,
+       .index = 0,
+       .signal = ZE_EVENT_SCOPE_FLAG_HOST,
+       .wait = ZE_EVENT_SCOPE_FLAG_HOST,
+    };
+
     if (NULL == event) {
         return OPAL_ERR_BAD_PARAM;
     }
 
-#if 0
-    *event = (opal_accelerator_event_t*)OBJ_NEW(opal_accelerator_rocm_event_t);
+    *event = (opal_accelerator_event_t*)OBJ_NEW(opal_accelerator_ze_event_t);
     if (NULL == *event) {
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
 
-    (*event)->event = malloc(sizeof(hipEvent_t));
+    (*event)->event = malloc(sizeof(ze_event_handle_t));
     if (NULL == (*event)->event) {
         OBJ_RELEASE(*event);
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
-    hipError_t err = hipEventCreateWithFlags((hipEvent_t*)(*event)->event,
-                                                       hipEventDisableTiming);
-    if (hipSuccess != err) {
+
+    zret = zeEventCreate(opal_accelerator_ze_event_pool, &eventDesc, (ze_event_handle_t *)(*event)->event);
+    if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "error creating event\n");
         free((*event)->event);
         OBJ_RELEASE(*event);
         return OPAL_ERROR;
     }
-#endif
 
     return OPAL_SUCCESS;
 
@@ -169,16 +224,15 @@ static int mca_accelerator_ze_create_event(int dev_id, opal_accelerator_event_t 
 
 static void mca_accelerator_ze_event_destruct(opal_accelerator_ze_event_t *event)
 {
-#if 0
+    int zret;
     if (NULL != event->base.event) {
-        hipError_t err = hipEventDestroy(*(hipEvent_t*)event->base.event);
-        if (hipSuccess != err) {
+        zret = zeEventDestroy(*(ze_event_handle_t *)event->base.event);
+        if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                                 "error destroying event\n");
         }
         free(event->base.event);
     }
-#endif
 }
 
 OBJ_CLASS_INSTANCE(
@@ -258,36 +312,45 @@ static int mca_accelerator_ze_memmove(int dest_dev_id, int src_dev_id, void *des
 
 static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
 {
-#if 0
-   int mpl_err = MPL_SUCCESS;
-    int ret;
-    size_t mem_alignment;
-    ze_device_mem_alloc_desc_t device_desc = {
+   int zret;
+   int ret = OPAL_SUCCESS;
+   size_t mem_alignment;
+   
+   ze_device_mem_alloc_desc_t device_desc = {
         .stype = ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC,
         .pNext = NULL,
         .flags = 0,
         .ordinal = 0,   /* We currently support a single memory type */
     };
+
     /* Currently ZE ignores this argument and uses an internal alignment
      * value. However, this behavior can change in the future. */
     mem_alignment = 1;
-    ret = zeMemAllocDevice(global_ze_context, &device_desc, size, mem_alignment, h_device, ptr);
-
-    ZE_ERR_CHECK(ret);
+    zret = zeMemAllocDevice(opal_accelerator_ze_context, 
+                           &device_desc, 
+                           size, 
+                           mem_alignment, 
+                           opal_accelerator_ze_devices_handle[0],
+                           ptr);
+    ZE_ERR_CHECK(zret);
 
   fn_exit:
-    return mpl_err;
-  fn_fail:
-    mpl_err = MPL_ERR_GPU_INTERNAL;
-    goto fn_exit;
-
-#endif
     return OPAL_SUCCESS;
+  fn_fail:
+    return OPAL_ERROR;
 }
 
 static int mca_accelerator_ze_mem_release(int dev_id, void *ptr)
 {
+    int zerr;
+
+    zerr = zeMemFree(opal_accelerator_ze_context, ptr);
+    ZE_ERR_CHECK(zerr);
+
+  fn_exit:
     return OPAL_SUCCESS;
+  fn_fail:
+    return OPAL_ERROR;
 }
 
 static int mca_accelerator_ze_get_address_range(int dev_id, const void *ptr, void **base,
