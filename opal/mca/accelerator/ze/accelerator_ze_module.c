@@ -158,6 +158,23 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
                              &opal_accelerator_ze_event_pool);
     assert(zret == ZE_RESULT_SUCCESS);
 
+    /*
+     * create a command list
+     */
+
+    ze_command_list_desc_t commandListDesc = {
+        .stype =  ZE_STRUCTURE_TYPE_COMMAND_LIST_DESC,
+        .pNext = NULL,
+        .commandQueueGroupOrdinal = 0,
+        .flags = 0, 
+    };
+
+    zret = zeCommandListCreate(opal_accelerator_ze_context, 
+                               opal_accelerator_ze_devices_handle[0], 
+                               &commandListDesc, 
+                               &opal_accelerator_ze_commandlist);
+    assert(zret == ZE_RESULT_SUCCESS);
+
     return OPAL_SUCCESS;
 }
 
@@ -184,7 +201,6 @@ OBJ_CLASS_INSTANCE(
 static int mca_accelerator_ze_create_event(int dev_id, opal_accelerator_event_t **event)
 {
     int zret;
-
 
     ze_event_desc_t eventDesc = {
        .stype = ZE_STRUCTURE_TYPE_EVENT_DESC,
@@ -244,6 +260,8 @@ OBJ_CLASS_INSTANCE(
 static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t *event,
                                              opal_accelerator_stream_t *stream)
 {
+    int zret = ZE_RESULT_SUCCESS;
+
     if (NULL == event || NULL == event->event){
         return OPAL_ERR_BAD_PARAM;
     }
@@ -251,32 +269,38 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
         return OPAL_ERR_BAD_PARAM;
     }
 
-#if 0
-    hipError_t err = hipEventRecord(*((hipEvent_t *)event->event),
-                                              *((hipStream_t *)stream->stream));
-    if (hipSuccess != err) {
+    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
+        zret = zeCommandListAppendSignalEvent(opal_accelerator_ze_commandlist, 
+                                              *(ze_event_handle_t *)event->event);
+    } else {
+        /*
+         * TODO: alternate device
+         */
+    }
+
+    if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "error recording event\n");
         return OPAL_ERROR;
     }
-#endif
 
     return OPAL_SUCCESS;
 }
 
 static int mca_accelerator_ze_query_event(int dev_id, opal_accelerator_event_t *event)
 {
+    int zret;
+
     if (NULL == event || NULL == event->event) {
         return OPAL_ERR_BAD_PARAM;
     }
 
-#if 0
-    hipError_t err = hipEventQuery(*((hipEvent_t *)event->event));
-    switch (err) {
-        case hipSuccess:
+    zret = zeEventQueryStatus(*((ze_event_handle_t *)event->event));
+    switch (zret) {
+        case ZE_RESULT_SUCCESS:
             return OPAL_SUCCESS;
             break;
-        case hipErrorNotReady:
+        case ZE_RESULT_NOT_READY:
             return OPAL_ERR_RESOURCE_BUSY;
             break;
         default:
@@ -284,7 +308,6 @@ static int mca_accelerator_ze_query_event(int dev_id, opal_accelerator_event_t *
                                 "error while querying event\n");
             return OPAL_ERROR;
     }
-#endif
 
     return OPAL_SUCCESS;
 }
@@ -293,6 +316,9 @@ static int mca_accelerator_ze_memcpy_async(int dest_dev_id, int src_dev_id, void
                                              size_t size, opal_accelerator_stream_t *stream,
                                              opal_accelerator_transfer_type_t type)
 {
+    /*
+     * TODO
+     */
     return OPAL_SUCCESS;
 }
 
@@ -300,6 +326,9 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
 				       const void *src, size_t size,
                                        opal_accelerator_transfer_type_t type)
 {
+    /*
+     * TODO
+     */
     return OPAL_SUCCESS;
 }
 
@@ -307,13 +336,15 @@ static int mca_accelerator_ze_memmove(int dest_dev_id, int src_dev_id, void *des
 					const void *src, size_t size,
                                         opal_accelerator_transfer_type_t type)
 {
+    /*
+     * TODO
+     */
     return OPAL_SUCCESS;
 }
 
 static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
 {
    int zret;
-   int ret = OPAL_SUCCESS;
    size_t mem_alignment;
    
    ze_device_mem_alloc_desc_t device_desc = {
@@ -334,7 +365,6 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
                            ptr);
     ZE_ERR_CHECK(zret);
 
-  fn_exit:
     return OPAL_SUCCESS;
   fn_fail:
     return OPAL_ERROR;
@@ -347,7 +377,6 @@ static int mca_accelerator_ze_mem_release(int dev_id, void *ptr)
     zerr = zeMemFree(opal_accelerator_ze_context, ptr);
     ZE_ERR_CHECK(zerr);
 
-  fn_exit:
     return OPAL_SUCCESS;
   fn_fail:
     return OPAL_ERROR;
@@ -356,6 +385,27 @@ static int mca_accelerator_ze_mem_release(int dev_id, void *ptr)
 static int mca_accelerator_ze_get_address_range(int dev_id, const void *ptr, void **base,
 						  size_t *size)
 {
+    int zret;
+    void *pBase;
+    size_t pSize;
+
+    if (NULL == ptr || NULL == base || NULL == size) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    zret = zeMemGetAddressRange(opal_accelerator_ze_context,
+                                ptr,                             
+                                &pBase,
+                                &pSize);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "couldn't get address range for pointer %p/%lu", ptr, *size);
+        return OPAL_ERROR;
+    }
+
+    *size = pSize;
+    *base = (char *) pBase;
+
     return OPAL_SUCCESS;
 }
 
@@ -375,15 +425,46 @@ static int mca_accelerator_ze_host_unregister(int dev_id, void *ptr)
 
 static int mca_accelerator_ze_get_device(int *dev_id)
 {
+    /*
+     * this method does not map to the Zero Level API, just return 0
+     */
+
+    if (NULL == dev_id) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    *dev_id = 0;
+
     return OPAL_SUCCESS;
 }
 
 static int mca_accelerator_ze_device_can_access_peer(int *access, int dev1, int dev2)
 {
+    int zret;
+    ze_bool_t value;
+
+    ze_device_handle_t hDevice;
+    ze_device_handle_t hPeerDevice;
+
+    hDevice = opal_accelerator_ze_devices_handle[dev1];
+    hPeerDevice = opal_accelerator_ze_devices_handle[dev2];
+    
+    zret = zeDeviceCanAccessPeer(hDevice,
+                                 hPeerDevice,
+                                 &value);
+    if (ZE_RESULT_SUCCESS != zret) {
+        return OPAL_ERROR;
+    }
+
+    *access = (value == 1) ? 1 : 0;
+
     return OPAL_SUCCESS;
 }
 
 static int mca_accelerator_ze_get_buffer_id(int dev_id, const void *addr, opal_accelerator_buffer_id_t *buf_id)
 {
+    /*
+     * TODO
+     */
     return OPAL_SUCCESS;
 }
