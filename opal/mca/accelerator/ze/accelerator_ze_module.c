@@ -39,6 +39,8 @@ static int mca_accelerator_ze_host_unregister(int dev_id, void *ptr);
 static int mca_accelerator_ze_get_device(int *dev_id);
 static int mca_accelerator_ze_device_can_access_peer( int *access, int dev1, int dev2);
 
+static int mca_accelerator_ze_get_device_pci_attr(int dev_id, opal_accelerator_pci_attr_t *pci_attr);
+
 static int mca_accelerator_ze_get_buffer_id(int dev_id, const void *addr, opal_accelerator_buffer_id_t *buf_id);
 
 opal_accelerator_base_module_t opal_accelerator_ze_module =
@@ -62,7 +64,7 @@ opal_accelerator_base_module_t opal_accelerator_ze_module =
     .host_unregister = mca_accelerator_ze_host_unregister,
 
     .get_device= mca_accelerator_ze_get_device,
-    .get_device_pci_attr = NULL,
+    .get_device_pci_attr = mca_accelerator_ze_get_device_pci_attr,
     .device_can_access_peer = mca_accelerator_ze_device_can_access_peer,
 
     .get_buffer_id = mca_accelerator_ze_get_buffer_id
@@ -284,6 +286,28 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
         return OPAL_ERROR;
     }
 
+    /*
+     * okay now close the command list and submit
+     */
+
+    zret = zeCommandListClose(opal_accelerator_ze_commandlist);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListClose returned %d", zret);
+        return OPAL_ERROR;
+    }
+    
+    ze_command_queue_handle_t cmdq = *(ze_command_queue_handle_t *)stream->stream;
+    zret = zeCommandQueueExecuteCommandLists(cmdq,
+                                             1,
+                                             &opal_accelerator_ze_commandlist,
+                                             NULL);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandQueueExecuteCommandList returned %d", zret);
+        return OPAL_ERROR;
+    }
+
     return OPAL_SUCCESS;
 }
 
@@ -316,9 +340,26 @@ static int mca_accelerator_ze_memcpy_async(int dest_dev_id, int src_dev_id, void
                                              size_t size, opal_accelerator_stream_t *stream,
                                              opal_accelerator_transfer_type_t type)
 {
-    /*
-     * TODO
-     */
+   int zret;
+
+   if (NULL == stream || NULL == src ||
+        NULL == dest   || size <= 0) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_commandlist,
+                                         dest,
+                                         src,
+                                         size,
+                                         NULL,
+                                         0,
+                                         NULL);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListAppendMemoryCopy returned %d", zret);
+        return OPAL_ERROR;
+    }
+
     return OPAL_SUCCESS;
 }
 
@@ -326,9 +367,58 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
 				       const void *src, size_t size,
                                        opal_accelerator_transfer_type_t type)
 {
-    /*
-     * TODO
-     */
+    int zret;
+
+    if (NULL == src || NULL == dest || size <=0) {
+        return OPAL_ERR_BAD_PARAM;
+    }                           
+            
+    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_commandlist,
+                                         dest,
+                                         src,
+                                         size,
+                                         NULL,
+                                         0,
+                                         NULL);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListAppendMemoryCopy returned %d", zret);
+        return OPAL_ERROR;
+    }
+
+    zret = zeCommandListClose(opal_accelerator_ze_commandlist);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListClose returned %d", zret);
+        return OPAL_ERROR;
+    }
+
+    zret = zeCommandQueueExecuteCommandLists(opal_accelerator_ze_MemcpyStream, 
+                                             1, 
+                                             &opal_accelerator_ze_commandlist, 
+                                             NULL);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandQueueExecuteCommandList returned %d", zret);
+        return OPAL_ERROR;
+    }
+
+    zret = zeCommandQueueSynchronize(opal_accelerator_ze_MemcpyStream, 
+                                     UINT32_MAX);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandQueueSynchronize returned %d", zret);
+        return OPAL_ERROR;
+    }
+
+    zret = zeCommandListReset(opal_accelerator_ze_commandlist);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListReset returned %d", zret);
+        return OPAL_ERROR;
+    }
+
+
     return OPAL_SUCCESS;
 }
 
@@ -339,7 +429,7 @@ static int mca_accelerator_ze_memmove(int dest_dev_id, int src_dev_id, void *des
     /*
      * TODO
      */
-    return OPAL_SUCCESS;
+    return OPAL_ERR_NOT_IMPLEMENTED;
 }
 
 static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
@@ -438,6 +528,42 @@ static int mca_accelerator_ze_get_device(int *dev_id)
     return OPAL_SUCCESS;
 }
 
+static int mca_accelerator_ze_get_device_pci_attr(int dev_id, opal_accelerator_pci_attr_t *pci_attr)
+{                                       
+    int zret;
+    int ret;
+    ze_device_handle_t hDevice;
+    ze_pci_ext_properties_t pPciProperties;
+    
+    if (NULL == pci_attr) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+    
+    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
+        hDevice = opal_accelerator_ze_devices_handle[0];
+    } else {
+        hDevice = opal_accelerator_ze_devices_handle[dev_id];
+    }
+
+    zret = zeDevicePciGetPropertiesExt(hDevice, &pPciProperties);
+    if(ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "error retrieving device PCI attributes");
+        return OPAL_ERROR;
+    }
+    
+    pci_attr->domain_id = (uint16_t)pPciProperties.address.domain;
+    pci_attr->bus_id = (uint8_t) pPciProperties.address.bus;
+    pci_attr->device_id = (uint8_t)pPciProperties.address.device;
+    pci_attr->function_id = (uint8_t)pPciProperties.address.function;
+
+    return OPAL_SUCCESS;
+}       
+            
+
+/*
+ * could zeDeviceGetP2PProperties be used instead here?
+ */
 static int mca_accelerator_ze_device_can_access_peer(int *access, int dev1, int dev2)
 {
     int zret;

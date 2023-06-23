@@ -31,6 +31,7 @@ ze_driver_handle_t opal_accelerator_ze_driver_handle;
 ze_context_handle_t opal_accelerator_ze_context;
 ze_event_pool_handle_t opal_accelerator_ze_event_pool;
 ze_command_list_handle_t opal_accelerator_ze_commandlist;
+ze_command_queue_handle_t opal_accelerator_ze_MemcpyStream = NULL;
 
 size_t opal_accelerator_ze_memcpyD2H_limit=1024;
 size_t opal_accelerator_ze_memcpyH2D_limit=1048576;
@@ -247,8 +248,31 @@ int opal_accelerator_ze_lazy_init(void)
         .pNext = NULL,
         .flags = 0,
     };
-    zret = zeContextCreate(opal_accelerator_ze_driver_handle, &contextDesc, &opal_accelerator_ze_context);
+    zret = zeContextCreate(opal_accelerator_ze_driver_handle, 
+                          &contextDesc, 
+                          &opal_accelerator_ze_context);
     ZE_ERR_CHECK(zret);
+
+    /*
+     * create command queue for synchronize memcopies
+     */
+
+   ze_command_queue_desc_t cmdQueueDesc = {
+            .stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC,
+            .pNext = NULL,
+            .index = 0,
+            .flags = 0,
+            .ordinal = 0,
+            .mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS,
+            .priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL,
+    };  
+    
+    zret = zeCommandQueueCreate(opal_accelerator_ze_context,
+                                opal_accelerator_ze_devices_handle[0], 
+                                &cmdQueueDesc,
+                                &opal_accelerator_ze_MemcpyStream);
+    assert(zret == ZE_RESULT_SUCCESS);
+        
 
     opal_atomic_wmb();
     accelerator_ze_init_complete = true;
