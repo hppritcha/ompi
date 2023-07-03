@@ -531,7 +531,6 @@ static int mca_accelerator_ze_get_device(int *dev_id)
 static int mca_accelerator_ze_get_device_pci_attr(int dev_id, opal_accelerator_pci_attr_t *pci_attr)
 {                                       
     int zret;
-    int ret;
     ze_device_handle_t hDevice;
     ze_pci_ext_properties_t pPciProperties;
     
@@ -568,9 +567,12 @@ static int mca_accelerator_ze_device_can_access_peer(int *access, int dev1, int 
 {
     int zret;
     ze_bool_t value;
-
     ze_device_handle_t hDevice;
     ze_device_handle_t hPeerDevice;
+
+    if (NULL == access || dev1 < 0 || dev2 < 0){
+        return OPAL_ERR_BAD_PARAM;
+    }
 
     hDevice = opal_accelerator_ze_devices_handle[dev1];
     hPeerDevice = opal_accelerator_ze_devices_handle[dev2];
@@ -589,8 +591,29 @@ static int mca_accelerator_ze_device_can_access_peer(int *access, int dev1, int 
 
 static int mca_accelerator_ze_get_buffer_id(int dev_id, const void *addr, opal_accelerator_buffer_id_t *buf_id)
 {
-    /*
-     * TODO
-     */
+    int zret;
+    ze_memory_allocation_properties_t pMemAllocProperties;
+    ze_device_handle_t hDevice;
+
+    if (NULL == buf_id) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) { 
+        hDevice = opal_accelerator_ze_devices_handle[0];
+    } else {
+        hDevice = opal_accelerator_ze_devices_handle[dev_id];
+    }
+
+    zret = zeMemGetAllocProperties(opal_accelerator_ze_context,
+                                   addr,
+                                   &pMemAllocProperties,
+                                   &hDevice);
+    if (ZE_RESULT_SUCCESS != zret) {
+        return OPAL_ERROR;
+    }
+
+    *buf_id = pMemAllocProperties.id;
+                                   
     return OPAL_SUCCESS;
 }
