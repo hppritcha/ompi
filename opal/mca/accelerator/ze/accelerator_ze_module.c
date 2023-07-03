@@ -70,12 +70,25 @@ opal_accelerator_base_module_t opal_accelerator_ze_module =
     .get_buffer_id = mca_accelerator_ze_get_buffer_id
 };
 
+static int accelerator_ze_dev_handle_to_dev_id(ze_device_handle_t hDevice)
+{
+    int i, ret = MCA_ACCELERATOR_NO_DEVICE_ID;
+
+    for (i = 0; i < (int)opal_accelerator_ze_device_count; i++) {
+        if (opal_accelerator_ze_devices_handle[i] == hDevice) {
+            ret = i;
+            break;
+        }
+    }
+
+    return ret;
+}
 
 static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_t *flags)
 {
     int ret = 0;
     ze_memory_allocation_properties_t attr;
-    ze_device_handle_t phDevice;
+    ze_device_handle_t hDevice;
 
     *dev_id = MCA_ACCELERATOR_NO_DEVICE_ID;
     *flags = 0;
@@ -92,7 +105,7 @@ static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_
     ret = zeMemGetAllocProperties(opal_accelerator_ze_context, 
                                   addr,
                                   &attr,
-                                  &phDevice);
+                                  &hDevice);
     ZE_ERR_CHECK(ret);
     switch (attr.type) {
         case ZE_MEMORY_TYPE_UNKNOWN:
@@ -106,6 +119,7 @@ static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_
         case ZE_MEMORY_TYPE_SHARED:
            *flags |= MCA_ACCELERATOR_FLAGS_UNIFIED_MEMORY;
             ret = 1;
+            *dev_id = accelerator_ze_dev_handle_to_dev_id(hDevice);
             break;
         default:
             goto fn_fail;
