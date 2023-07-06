@@ -530,7 +530,9 @@ static int mca_accelerator_ze_host_unregister(int dev_id, void *ptr)
 static int mca_accelerator_ze_get_device(int *dev_id)
 {
     /*
-     * this method does not map to the Zero Level API, just return 0
+     * this method does not map to the Zero Level API, just return 0.  
+     * This may just work if the runtime is use the ZE_AFFINITY_MASK
+     * environment variable to control the visible PV(s) for a given process.
      */
 
     if (NULL == dev_id) {
