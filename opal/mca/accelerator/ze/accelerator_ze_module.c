@@ -133,6 +133,8 @@ fn_fail:
 static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_t **stream)
 {
     int zret;
+    ze_device_handle_t hDevice;
+    opal_accelerator_ze_stream_t *ze_stream;
 
     ze_command_queue_desc_t cmdQueueDesc = {
             .stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC,
@@ -144,16 +146,35 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
             .priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL,
     };
 
-    (*stream)->stream = (ze_command_queue_handle_t *)malloc(sizeof(ze_command_queue_handle_t));
+    if (NULL == stream) {
+        return OPAL_ERR_BAD_PARAM;
+    }
+
+    ze_stream = (opal_accelerator_ze_stream_t *)malloc(sizeof(opal_accelerator_ze_stream_t));
+    if (NULL == ze_stream) {
+        OBJ_RELEASE(*stream);
+        return OPAL_ERR_OUT_OF_RESOURCE;
+    }
+   
+#if 0
+    (*stream)->stream = (opal_accelerator_ze_stream_t *)malloc(sizeof(opal_accelerator_ze_stream_t));
     if (NULL == (*stream)->stream) {
         OBJ_RELEASE(*stream);
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
+#endif
+
+    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
+        hDevice = opal_accelerator_ze_devices_handle[0];
+    } else {
+        hDevice = opal_accelerator_ze_devices_handle[dev_id];
+    }
+    ze_stream->dev_id = dev_id;
 
     zret = zeCommandQueueCreate(opal_accelerator_ze_context, 
-                                opal_accelerator_ze_devices_handle[0], 
+                                hDevice,
                                 &cmdQueueDesc, 
-                                (ze_command_queue_handle_t *)(*stream)->stream);
+                                &ze_stream->hCommandQueue);
     assert(zret == ZE_RESULT_SUCCESS);
 
     /*
@@ -171,7 +192,7 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
                              &eventPoolDesc,
                              1,
                              opal_accelerator_ze_devices_handle,
-                             &opal_accelerator_ze_event_pool);
+                             &ze_stream->hEventPool);
     assert(zret == ZE_RESULT_SUCCESS);
 
     /*
@@ -188,8 +209,9 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
     zret = zeCommandListCreate(opal_accelerator_ze_context, 
                                opal_accelerator_ze_devices_handle[0], 
                                &commandListDesc, 
-                               &opal_accelerator_ze_commandlist);
+                               &ze_stream->hCommandList);
     assert(zret == ZE_RESULT_SUCCESS);
+    (*stream)->stream = (void *)ze_stream;
 
     return OPAL_SUCCESS;
 }
@@ -197,12 +219,19 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
 static void mca_accelerator_ze_stream_destruct(opal_accelerator_ze_stream_t *stream)
 {
     int zret;
+    opal_accelerator_ze_stream_t *ze_stream;
 
     if (NULL != stream->base.stream) {
-        zret = zeCommandQueueDestroy(*(ze_command_queue_handle_t *)stream->base.stream);
+        ze_stream = (opal_accelerator_ze_stream_t  *)stream->base.stream;
+        zret = zeCommandQueueDestroy(ze_stream->hCommandQueue);
         if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                                "error while destroying the hipStream\n");
+                                "error while destroying the zeCommandQueue\n");
+        }
+        zret = zeEventPoolDestroy(ze_stream->hEventPool);
+        if (ZE_RESULT_SUCCESS != zret) {
+            opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                                "error while destroying the zeEventPool\n");
         }
         free(stream->base.stream);
     }
@@ -277,6 +306,7 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
                                              opal_accelerator_stream_t *stream)
 {
     int zret = ZE_RESULT_SUCCESS;
+    opal_accelerator_ze_stream_t *ze_stream;
 
     if (NULL == event || NULL == event->event){
         return OPAL_ERR_BAD_PARAM;
@@ -285,15 +315,10 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
         return OPAL_ERR_BAD_PARAM;
     }
 
-    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
-        zret = zeCommandListAppendSignalEvent(opal_accelerator_ze_commandlist, 
-                                              *(ze_event_handle_t *)event->event);
-    } else {
-        /*
-         * TODO: alternate device
-         */
-    }
+    ze_stream = (opal_accelerator_ze_stream_t  *)stream->stream;
 
+    zret = zeCommandListAppendSignalEvent(ze_stream->hCommandList,
+                                          *(ze_event_handle_t *)event->event);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "error recording event\n");
@@ -304,17 +329,16 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
      * okay now close the command list and submit
      */
 
-    zret = zeCommandListClose(opal_accelerator_ze_commandlist);
+    zret = zeCommandListClose(ze_stream->hCommandList);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "zeCommandListClose returned %d", zret);
         return OPAL_ERROR;
     }
     
-    ze_command_queue_handle_t cmdq = *(ze_command_queue_handle_t *)stream->stream;
-    zret = zeCommandQueueExecuteCommandLists(cmdq,
+    zret = zeCommandQueueExecuteCommandLists(ze_stream->hCommandQueue,
                                              1,
-                                             &opal_accelerator_ze_commandlist,
+                                             &ze_stream->hCommandList,
                                              NULL);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
@@ -355,13 +379,17 @@ static int mca_accelerator_ze_memcpy_async(int dest_dev_id, int src_dev_id, void
                                              opal_accelerator_transfer_type_t type)
 {
    int zret;
+   opal_accelerator_ze_stream_t *ze_stream = NULL;
 
    if (NULL == stream || NULL == src ||
         NULL == dest   || size <= 0) {
         return OPAL_ERR_BAD_PARAM;
     }
 
-    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_commandlist,
+    ze_stream = (opal_accelerator_ze_stream_t  *)stream->stream;
+    assert(NULL != ze_stream);
+
+    zret = zeCommandListAppendMemoryCopy(ze_stream->hCommandList,
                                          dest,
                                          src,
                                          size,
@@ -450,6 +478,7 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
 {
    int zret;
    size_t mem_alignment;
+   ze_device_handle_t hDevice;
    
    ze_device_mem_alloc_desc_t device_desc = {
         .stype = ZE_STRUCTURE_TYPE_DEVICE_MEM_ALLOC_DESC,
@@ -458,6 +487,12 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
         .ordinal = 0,   /* We currently support a single memory type */
     };
 
+    if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
+        hDevice = opal_accelerator_ze_devices_handle[0];
+    } else {
+        hDevice = opal_accelerator_ze_devices_handle[dev_id];
+    }
+
     /* Currently ZE ignores this argument and uses an internal alignment
      * value. However, this behavior can change in the future. */
     mem_alignment = 1;
@@ -465,7 +500,7 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
                            &device_desc, 
                            size, 
                            mem_alignment, 
-                           opal_accelerator_ze_devices_handle[0],
+                           hDevice,
                            ptr);
     ZE_ERR_CHECK(zret);
 

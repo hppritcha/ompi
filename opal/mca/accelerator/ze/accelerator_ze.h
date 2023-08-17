@@ -27,6 +27,10 @@ OPAL_DECLSPEC extern opal_accelerator_base_module_t opal_accelerator_ze_module;
 
 struct opal_accelerator_ze_stream_t {
     opal_accelerator_stream_t base;
+    ze_command_queue_handle_t hCommandQueue;
+    ze_command_list_handle_t hCommandList;
+    ze_event_pool_handle_t hEventPool;
+    int dev_id;
 };
 typedef struct opal_accelerator_ze_stream_t opal_accelerator_ze_stream_t;
 OBJ_CLASS_DECLARATION(opal_accelerator_ze_stream_t);
