@@ -11,6 +11,8 @@
 
 #include "accelerator_ze.h"
 #include "opal/mca/accelerator/base/base.h"
+#include "opal/util/argv.h"
+#include "opal/util/printf.h"
 #include "opal/constants.h"
 #include "opal/util/output.h"
 
@@ -156,14 +158,6 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
    
-#if 0
-    (*stream)->stream = (opal_accelerator_ze_stream_t *)malloc(sizeof(opal_accelerator_ze_stream_t));
-    if (NULL == (*stream)->stream) {
-        OBJ_RELEASE(*stream);
-        return OPAL_ERR_OUT_OF_RESOURCE;
-    }
-#endif
-
     if (MCA_ACCELERATOR_NO_DEVICE_ID == dev_id) {
         hDevice = opal_accelerator_ze_devices_handle[0];
     } else {
@@ -409,13 +403,27 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
 				       const void *src, size_t size,
                                        opal_accelerator_transfer_type_t type)
 {
-    int zret;
+    int ret, zret;
+    opal_accelerator_ze_stream_t *ze_stream = NULL;
 
     if (NULL == src || NULL == dest || size <=0) {
         return OPAL_ERR_BAD_PARAM;
     }                           
-            
-    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_commandlist,
+
+    if (NULL == opal_accelerator_ze_MemcpyStream[src_dev_id]) {
+        ret = mca_accelerator_ze_create_stream(src_dev_id,
+                                               (opal_accelerator_stream_t **)&opal_accelerator_ze_MemcpyStream[src_dev_id]);
+        if (OPAL_SUCCESS != ret) {
+            return ret;
+        }
+    }            
+
+    ze_stream = opal_accelerator_ze_MemcpyStream[src_dev_id];
+
+#if 0
+    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_MemcpyStream[src_dev_id]->hCommandList,
+#endif
+    zret = zeCommandListAppendMemoryCopy(ze_stream->hCommandList,
                                          dest,
                                          src,
                                          size,
@@ -428,16 +436,16 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
         return OPAL_ERROR;
     }
 
-    zret = zeCommandListClose(opal_accelerator_ze_commandlist);
+    zret = zeCommandListClose(ze_stream->hCommandList);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "zeCommandListClose returned %d", zret);
         return OPAL_ERROR;
     }
 
-    zret = zeCommandQueueExecuteCommandLists(opal_accelerator_ze_MemcpyStream, 
+    zret = zeCommandQueueExecuteCommandLists(ze_stream->hCommandQueue, 
                                              1, 
-                                             &opal_accelerator_ze_commandlist, 
+                                             &ze_stream->hCommandList,
                                              NULL);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
@@ -445,7 +453,7 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
         return OPAL_ERROR;
     }
 
-    zret = zeCommandQueueSynchronize(opal_accelerator_ze_MemcpyStream, 
+    zret = zeCommandQueueSynchronize(ze_stream->hCommandQueue,
                                      UINT32_MAX);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
@@ -453,7 +461,7 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
         return OPAL_ERROR;
     }
 
-    zret = zeCommandListReset(opal_accelerator_ze_commandlist);
+    zret = zeCommandListReset(ze_stream->hCommandList);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                             "zeCommandListReset returned %d", zret);

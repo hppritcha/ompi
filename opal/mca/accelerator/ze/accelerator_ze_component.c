@@ -22,6 +22,12 @@
 #include "opal/mca/dl/base/base.h"
 #include "opal/runtime/opal_params.h"
 #include "accelerator_ze.h"
+#include "opal/mca/accelerator/base/base.h"
+#include "opal_config.h"
+#include "opal/util/argv.h"
+#include "opal/util/printf.h"
+#include "opal/util/output.h"                
+
 
 int opal_accelerator_ze_memcpy_async = 1;
 int opal_accelerator_ze_verbose = 0;
@@ -30,8 +36,11 @@ ze_device_handle_t *opal_accelerator_ze_devices_handle = NULL;
 ze_driver_handle_t opal_accelerator_ze_driver_handle;
 ze_context_handle_t opal_accelerator_ze_context;
 ze_event_pool_handle_t opal_accelerator_ze_event_pool;
-ze_command_list_handle_t opal_accelerator_ze_commandlist;
+#if 0
+ze_command_list_handle_t opal_accelerator_ze_commandlist = NULL;
 ze_command_queue_handle_t opal_accelerator_ze_MemcpyStream = NULL;
+#endif
+opal_accelerator_ze_stream_t **opal_accelerator_ze_MemcpyStream = NULL;
 
 size_t opal_accelerator_ze_memcpyD2H_limit=1024;
 size_t opal_accelerator_ze_memcpyH2D_limit=1048576;
@@ -180,6 +189,8 @@ int opal_accelerator_ze_lazy_init(void)
 
     zret = zeDriverGet(&driver_count, NULL);
     if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                            "ZE: zeDriverGet returned %d\n", zret);
         err =  OPAL_ERR_NOT_INITIALIZED;
         goto out;
     }
@@ -214,7 +225,12 @@ int opal_accelerator_ze_lazy_init(void)
     for (i = 0; i < driver_count; ++i) {
         opal_accelerator_ze_device_count = 0;
         zret = zeDeviceGet(all_drivers[i], &opal_accelerator_ze_device_count, NULL);
-        ZE_ERR_CHECK(zret);
+        if (ZE_RESULT_SUCCESS != zret) {
+            opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                               "ZE: zeDeviceGet returned %d\n", zret);
+            err = OPAL_ERROR;
+            goto fn_fail;
+        }
         opal_accelerator_ze_devices_handle =
             malloc(opal_accelerator_ze_device_count * sizeof(ze_device_handle_t));
         if (NULL == opal_accelerator_ze_devices_handle) {
@@ -222,12 +238,22 @@ int opal_accelerator_ze_lazy_init(void)
             goto out;
         }
         zret = zeDeviceGet(all_drivers[i], &opal_accelerator_ze_device_count, opal_accelerator_ze_devices_handle);
-        ZE_ERR_CHECK(zret);
+        if (ZE_RESULT_SUCCESS != zret) {
+            opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                               "ZE: zeDeviceGet returned %d\n", zret);
+            err = OPAL_ERROR;
+            goto fn_fail;
+        }
         /* Check if the driver supports a gpu */
         for (d = 0; d < opal_accelerator_ze_device_count; ++d) {
             ze_device_properties_t device_properties;
             zret = zeDeviceGetProperties(opal_accelerator_ze_devices_handle[d], &device_properties);
-            ZE_ERR_CHECK(zret);
+            if (ZE_RESULT_SUCCESS != zret) {
+                opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                                   "ZE: zeDeviceGetProperties returned %d\n", zret);
+                err = OPAL_ERROR;
+                goto fn_fail;
+            }
 
             if (ZE_DEVICE_TYPE_GPU == device_properties.type) {
                 opal_accelerator_ze_driver_handle = all_drivers[i];
@@ -251,8 +277,25 @@ int opal_accelerator_ze_lazy_init(void)
     zret = zeContextCreate(opal_accelerator_ze_driver_handle, 
                           &contextDesc, 
                           &opal_accelerator_ze_context);
-    ZE_ERR_CHECK(zret);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                           "ZE: zeContextCreate returned %d\n", zret);
+        err = OPAL_ERROR;
+        goto fn_fail;
+    }
 
+    /*
+     * allocate sycnrhons memcpy stream handles, but delay creating streams till needed
+     */
+
+    opal_accelerator_ze_MemcpyStream = (opal_accelerator_ze_stream_t **)malloc(opal_accelerator_ze_device_count * 
+                                                                              sizeof(opal_accelerator_ze_stream_t *));
+    if (NULL == opal_accelerator_ze_MemcpyStream) {
+        err = OPAL_ERR_OUT_OF_RESOURCE;
+        goto fn_fail;
+    }
+
+#if 0
     /*
      * create command queue for synchronize memcopies
      */
@@ -271,7 +314,13 @@ int opal_accelerator_ze_lazy_init(void)
                                 opal_accelerator_ze_devices_handle[0], 
                                 &cmdQueueDesc,
                                 &opal_accelerator_ze_MemcpyStream);
-    assert(zret == ZE_RESULT_SUCCESS);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                           "ZE: zeCommandQueueCreate returned %d\n", zret);
+        err = OPAL_ERROR;
+        goto fn_fail;
+    }
+#endif
         
 
     opal_atomic_wmb();
@@ -279,6 +328,11 @@ int opal_accelerator_ze_lazy_init(void)
 
 out:
 fn_fail:
+    if (NULL != opal_accelerator_ze_MemcpyStream) {
+        free(opal_accelerator_ze_MemcpyStream);
+        opal_accelerator_ze_MemcpyStream = NULL;
+    }
+
     if (NULL != all_drivers) {
         free(all_drivers);
     }
@@ -301,6 +355,7 @@ static opal_accelerator_base_module_t* accelerator_ze_init(void)
     OBJ_CONSTRUCT(&accelerator_ze_init_lock, opal_mutex_t);
 
     if (opal_ze_runtime_initialized) {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output, "ZE: runtime not initialized");
         return NULL;
     }
 
@@ -310,6 +365,7 @@ static opal_accelerator_base_module_t* accelerator_ze_init(void)
 
     zret = zeInit(flags);
     if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output, "ZE: zeInit returned %d flags = %d\n", zret, flags);
         return NULL;
     }
 
@@ -323,19 +379,31 @@ static opal_accelerator_base_module_t* accelerator_ze_init(void)
      */
     zret = zeDriverGet(&driver_count, NULL);
     if (ZE_RESULT_SUCCESS != zret || 0 == driver_count) {
-        opal_output(0, "No ZE capabale device found. Disabling component.\n");
+        if (ZE_RESULT_SUCCESS != zret) {
+            opal_output_verbose(20, opal_accelerator_base_framework.framework_output, 
+                               "ZE: zeDriverGet returned %d\n", zret);
+        } else {
+            opal_output_verbose(20, opal_accelerator_base_framework.framework_output, 
+                               "ZE: no device drivers found\n");
+        }
         return NULL;
+    } else {
+        opal_output_verbose(20, opal_accelerator_base_framework.framework_output, 
+                                   "ZE: %d device drivers found\n", driver_count);
     }
 
     opal_atomic_mb();
     opal_ze_runtime_initialized = true;
 
     return &opal_accelerator_ze_module;
-    return NULL;
 }
 
 static void accelerator_ze_finalize(opal_accelerator_base_module_t* module)
 {
+
+    opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
+                            "ZE: finalizing component\n");
+
     if (NULL != (void *)opal_accelerator_ze_context) {
         zeContextDestroy(opal_accelerator_ze_context);
     }

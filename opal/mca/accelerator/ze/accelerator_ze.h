@@ -46,8 +46,11 @@ OPAL_DECLSPEC extern ze_device_handle_t *opal_accelerator_ze_devices_handle;
 OPAL_DECLSPEC extern ze_driver_handle_t opal_accelerator_ze_driver_handle;
 OPAL_DECLSPEC extern ze_context_handle_t opal_accelerator_ze_context;
 OPAL_DECLSPEC extern ze_event_pool_handle_t opal_accelerator_ze_event_pool;
+#if 0
 OPAL_DECLSPEC extern ze_command_list_handle_t opal_accelerator_ze_commandlist;
-OPAL_DECLSPEC extern ze_command_queue_handle_t opal_accelerator_ze_MemcpyStream;
+OPAL_DECLSPEC extern ze_command_queue_handle_t *opal_accelerator_ze_MemcpyStream;
+#endif
+OPAL_DECLSPEC extern opal_accelerator_ze_stream_t **opal_accelerator_ze_MemcpyStream;
 
 OPAL_DECLSPEC extern int opal_accelerator_ze_memcpy_async;
 OPAL_DECLSPEC extern int opal_accelerator_ze_verbose;
