@@ -7,6 +7,7 @@
  * Copyright (c) 2017-2022 Amazon.com, Inc. or its affiliates.
  *                         All Rights reserved.
  * Copyright (c) 2022      Advanced Micro Devices, Inc. All Rights reserved.
+ * Copyright (c) 2023      Triad National Security, LLC. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -36,14 +37,7 @@ ze_device_handle_t *opal_accelerator_ze_devices_handle = NULL;
 ze_driver_handle_t opal_accelerator_ze_driver_handle;
 ze_context_handle_t opal_accelerator_ze_context;
 ze_event_pool_handle_t opal_accelerator_ze_event_pool;
-#if 0
-ze_command_list_handle_t opal_accelerator_ze_commandlist = NULL;
-ze_command_queue_handle_t opal_accelerator_ze_MemcpyStream = NULL;
-#endif
 opal_accelerator_ze_stream_t **opal_accelerator_ze_MemcpyStream = NULL;
-
-size_t opal_accelerator_ze_memcpyD2H_limit=1024;
-size_t opal_accelerator_ze_memcpyH2D_limit=1048576;
 
 /* Initialization lock for lazy ze initialization */
 static opal_mutex_t accelerator_ze_init_lock;
@@ -131,32 +125,6 @@ static int accelerator_ze_component_register(void)
                                  0, 0, OPAL_INFO_LVL_9, MCA_BASE_VAR_SCOPE_READONLY,
                                  &opal_accelerator_ze_verbose);
 
-#if 0
-    /* Switching point between using memcpy and hipMemcpy* functions. */
-    opal_accelerator_ze_memcpyD2H_limit = 1024;
-    (void) mca_base_var_register("ompi", "mpi", "accelerator_ze", "memcpyD2H_limit",
-                                 "Max. msg. length to use memcpy instead of hip functions "
-                                 "for device-to-host copy operations",
-                                 MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
-                                 OPAL_INFO_LVL_9, MCA_BASE_VAR_SCOPE_READONLY,
-                                 &opal_accelerator_ze_memcpyD2H_limit);
-
-    /* Switching point between using memcpy and hipMemcpy* functions. */
-    opal_accelerator_ze_memcpyH2D_limit = 1048576;
-    (void) mca_base_var_register("ompi", "mpi", "accelerator_ze", "memcpyH2D_limit",
-                                 "Max. msg. length to use memcpy instead of hip functions "
-                                 "for host-to-device copy operations",
-                                 MCA_BASE_VAR_TYPE_INT, NULL, 0, 0,
-                                 OPAL_INFO_LVL_9, MCA_BASE_VAR_SCOPE_READONLY,
-                                 &opal_accelerator_ze_memcpyH2D_limit);
-
-    /* Use this flag to test async vs sync copies */
-    opal_accelerator_ze_memcpy_async = 1;
-    (void) mca_base_var_register("ompi", "mpi", "accelerator_ze", "memcpy_async",
-                                 "Set to 0 to force using hipMemcpy instead of hipMemcpyAsync",
-                                 MCA_BASE_VAR_TYPE_INT, NULL, 0, 0, OPAL_INFO_LVL_9,
-                                 MCA_BASE_VAR_SCOPE_READONLY, &opal_accelerator_ze_memcpy_async);
-#endif
     return OPAL_SUCCESS;
 }
 

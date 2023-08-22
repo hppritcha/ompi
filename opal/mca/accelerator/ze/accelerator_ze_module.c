@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022      Advanced Micro Devices, Inc. All Rights reserved.
+ * Copyright (c) 2023      Triad National Security, LLC. All rights reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -88,7 +89,7 @@ static int accelerator_ze_dev_handle_to_dev_id(ze_device_handle_t hDevice)
 
 static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_t *flags)
 {
-    int ret = 0;
+    int zret = 0, ret;
     ze_memory_allocation_properties_t attr;
     ze_device_handle_t hDevice;
 
@@ -104,11 +105,15 @@ static int mca_accelerator_ze_check_addr (const void *addr, int *dev_id, uint64_
         return ret;
     }
 
-    ret = zeMemGetAllocProperties(opal_accelerator_ze_context, 
+    zret = zeMemGetAllocProperties(opal_accelerator_ze_context, 
                                   addr,
                                   &attr,
                                   &hDevice);
-    ZE_ERR_CHECK(ret);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                               "zeMemGetAllocProperties returned %d", zret);
+        goto fn_fail;
+    }
     switch (attr.type) {
         case ZE_MEMORY_TYPE_UNKNOWN:
         case ZE_MEMORY_TYPE_HOST:
@@ -220,12 +225,12 @@ static void mca_accelerator_ze_stream_destruct(opal_accelerator_ze_stream_t *str
         zret = zeCommandQueueDestroy(ze_stream->hCommandQueue);
         if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                                "error while destroying the zeCommandQueue\n");
+                                "error while destroying the zeCommandQueue");
         }
         zret = zeEventPoolDestroy(ze_stream->hEventPool);
         if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                                "error while destroying the zeEventPool\n");
+                                "error while destroying the zeEventPool");
         }
         free(stream->base.stream);
     }
@@ -267,7 +272,7 @@ static int mca_accelerator_ze_create_event(int dev_id, opal_accelerator_event_t 
     zret = zeEventCreate(opal_accelerator_ze_event_pool, &eventDesc, (ze_event_handle_t *)(*event)->event);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "error creating event\n");
+                            "error creating event %d", zret);
         free((*event)->event);
         OBJ_RELEASE(*event);
         return OPAL_ERROR;
@@ -284,7 +289,7 @@ static void mca_accelerator_ze_event_destruct(opal_accelerator_ze_event_t *event
         zret = zeEventDestroy(*(ze_event_handle_t *)event->base.event);
         if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                                "error destroying event\n");
+                                "error destroying event %d", zret);
         }
         free(event->base.event);
     }
@@ -315,7 +320,7 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
                                           *(ze_event_handle_t *)event->event);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "error recording event\n");
+                           "zeCommandListAppendSignalEvent returned %d", zret);
         return OPAL_ERROR;
     }
 
@@ -326,7 +331,7 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
     zret = zeCommandListClose(ze_stream->hCommandList);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "zeCommandListClose returned %d", zret);
+                           "zeCommandListClose returned %d", zret);
         return OPAL_ERROR;
     }
     
@@ -336,7 +341,7 @@ static int mca_accelerator_ze_record_event(int dev_id, opal_accelerator_event_t 
                                              NULL);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "zeCommandQueueExecuteCommandList returned %d", zret);
+                           "zeCommandQueueExecuteCommandList returned %d", zret);
         return OPAL_ERROR;
     }
 
@@ -361,7 +366,7 @@ static int mca_accelerator_ze_query_event(int dev_id, opal_accelerator_event_t *
             break;
         default:
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                                "error while querying event\n");
+                                "zeEventQueryStatus returned %d", zret);
             return OPAL_ERROR;
     }
 
@@ -420,9 +425,6 @@ static int mca_accelerator_ze_memcpy(int dest_dev_id, int src_dev_id, void *dest
 
     ze_stream = opal_accelerator_ze_MemcpyStream[src_dev_id];
 
-#if 0
-    zret = zeCommandListAppendMemoryCopy(opal_accelerator_ze_MemcpyStream[src_dev_id]->hCommandList,
-#endif
     zret = zeCommandListAppendMemoryCopy(ze_stream->hCommandList,
                                          dest,
                                          src,
@@ -510,7 +512,11 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
                            mem_alignment, 
                            hDevice,
                            ptr);
-    ZE_ERR_CHECK(zret);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeMemAllocDevice returned %d", zret);
+        goto fn_fail;
+    }
 
     return OPAL_SUCCESS;
   fn_fail:
@@ -519,10 +525,14 @@ static int mca_accelerator_ze_mem_alloc(int dev_id, void **ptr, size_t size)
 
 static int mca_accelerator_ze_mem_release(int dev_id, void *ptr)
 {
-    int zerr;
+    int zret;
 
-    zerr = zeMemFree(opal_accelerator_ze_context, ptr);
-    ZE_ERR_CHECK(zerr);
+    zret = zeMemFree(opal_accelerator_ze_context, ptr);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeMemFree returned %d", zret);
+        goto fn_fail;
+    }
 
     return OPAL_SUCCESS;
   fn_fail:
@@ -546,7 +556,7 @@ static int mca_accelerator_ze_get_address_range(int dev_id, const void *ptr, voi
                                 &pSize);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "couldn't get address range for pointer %p/%lu", ptr, *size);
+                            "couldn't get address range for pointer %p/%lu %d", ptr, *size, zret);
         return OPAL_ERROR;
     }
 
@@ -606,7 +616,7 @@ static int mca_accelerator_ze_get_device_pci_attr(int dev_id, opal_accelerator_p
     zret = zeDevicePciGetPropertiesExt(hDevice, &pPciProperties);
     if(ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
-                            "error retrieving device PCI attributes");
+                            "zeDevicePciGetPropertiesExt returned %d", zret);
         return OPAL_ERROR;
     }
     
@@ -640,6 +650,8 @@ static int mca_accelerator_ze_device_can_access_peer(int *access, int dev1, int 
                                  hPeerDevice,
                                  &value);
     if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeDeviceCanAccessPeer returned %d", zret);
         return OPAL_ERROR;
     }
 
@@ -669,6 +681,8 @@ static int mca_accelerator_ze_get_buffer_id(int dev_id, const void *addr, opal_a
                                    &pMemAllocProperties,
                                    &hDevice);
     if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeMemGetAllocProperties returned %d", zret);
         return OPAL_ERROR;
     }
 

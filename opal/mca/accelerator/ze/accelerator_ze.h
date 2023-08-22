@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022-2023  Advanced Micro Devices, Inc. All rights reserved.
+ * Copyright (c) 2023       Triad National Security, LLC. All rights reserved.
  *
  * $COPYRIGHT$
  *
@@ -46,23 +47,11 @@ OPAL_DECLSPEC extern ze_device_handle_t *opal_accelerator_ze_devices_handle;
 OPAL_DECLSPEC extern ze_driver_handle_t opal_accelerator_ze_driver_handle;
 OPAL_DECLSPEC extern ze_context_handle_t opal_accelerator_ze_context;
 OPAL_DECLSPEC extern ze_event_pool_handle_t opal_accelerator_ze_event_pool;
-#if 0
-OPAL_DECLSPEC extern ze_command_list_handle_t opal_accelerator_ze_commandlist;
-OPAL_DECLSPEC extern ze_command_queue_handle_t *opal_accelerator_ze_MemcpyStream;
-#endif
 OPAL_DECLSPEC extern opal_accelerator_ze_stream_t **opal_accelerator_ze_MemcpyStream;
 
 OPAL_DECLSPEC extern int opal_accelerator_ze_memcpy_async;
 OPAL_DECLSPEC extern int opal_accelerator_ze_verbose;
-OPAL_DECLSPEC extern size_t opal_accelerator_ze_memcpyH2D_limit;
-OPAL_DECLSPEC extern size_t opal_accelerator_ze_memcpyD2H_limit;
 
 OPAL_DECLSPEC extern int opal_accelerator_ze_lazy_init(void);
-
-#define ZE_ERR_CHECK(ret) \
-    do { \
-        if ((ret) != ZE_RESULT_SUCCESS) \
-            goto fn_fail; \
-    } while (0)
 
 #endif
