@@ -1,7 +1,7 @@
 # -*- shell-script -*-
 #
 # Copyright (c) 2022      Advanced Micro Devices, Inc. All rights reserved.
-# Copyright (c) 2023     Triad National Security, LLC. All rights reserved.
+# Copyright (c) 2023      Triad National Security, LLC. All rights reserved.
 # $COPYRIGHT$
 #
 # Additional copyrights may follow
