@@ -43,19 +43,11 @@ opal_accelerator_ze_stream_t **opal_accelerator_ze_MemcpyStream = NULL;
 static opal_mutex_t accelerator_ze_init_lock;
 static bool accelerator_ze_init_complete = false;
 
-#define ZE_ERR_CHECK(ret) \
-    do { \
-        if ((ret) != ZE_RESULT_SUCCESS) \
-            goto fn_fail; \
-    } while (0)
-
-
 /*
  * Public string showing the accelerator ze component version number
  */
 const char *opal_accelerator_ze_component_version_string
     = "OPAL ze accelerator MCA component version " OPAL_VERSION;
-
 
 /*
  * Local function
@@ -263,33 +255,31 @@ int opal_accelerator_ze_lazy_init(void)
         goto fn_fail;
     }
 
-#if 0
     /*
-     * create command queue for synchronize memcopies
+     * set up an event pool
      */
 
-   ze_command_queue_desc_t cmdQueueDesc = {
-            .stype = ZE_STRUCTURE_TYPE_COMMAND_QUEUE_DESC,
+    ze_event_pool_desc_t eventPoolDesc = {
+            .stype = ZE_STRUCTURE_TYPE_EVENT_POOL_DESC,
             .pNext = NULL,
-            .index = 0,
             .flags = 0,
-            .ordinal = 0,
-            .mode = ZE_COMMAND_QUEUE_MODE_ASYNCHRONOUS,
-            .priority = ZE_COMMAND_QUEUE_PRIORITY_NORMAL,
-    };  
-    
-    zret = zeCommandQueueCreate(opal_accelerator_ze_context,
-                                opal_accelerator_ze_devices_handle[0], 
-                                &cmdQueueDesc,
-                                &opal_accelerator_ze_MemcpyStream);
+            .count = 1000,  /* TODO: fix this! */
+    };
+
+    /*
+     * create an event pool that can be used by all devices associated with this ze context
+     */
+    zret = zeEventPoolCreate(opal_accelerator_ze_context,
+                             &eventPoolDesc,
+                             0,
+                             NULL,
+                             &opal_accelerator_ze_event_pool);
     if (ZE_RESULT_SUCCESS != zret) {
         opal_output_verbose(20, opal_accelerator_base_framework.framework_output,
-                           "ZE: zeCommandQueueCreate returned %d\n", zret);
+                           "ZE: zeEventPoolCreate returned %d\n", zret);
         err = OPAL_ERROR;
         goto fn_fail;
     }
-#endif
-        
 
     opal_atomic_wmb();
     accelerator_ze_init_complete = true;
