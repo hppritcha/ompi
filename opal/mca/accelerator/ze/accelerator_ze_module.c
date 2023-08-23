@@ -174,8 +174,13 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
                                 hDevice,
                                 &cmdQueueDesc, 
                                 &ze_stream->hCommandQueue);
-    assert(zret == ZE_RESULT_SUCCESS);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandQueueCreate returned %d", zret);
+        return OPAL_ERROR;
+    }
 
+#if 0
     /*
      * set up an event pool
      */
@@ -193,6 +198,7 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
                              opal_accelerator_ze_devices_handle,
                              &ze_stream->hEventPool);
     assert(zret == ZE_RESULT_SUCCESS);
+#endif
 
     /*
      * create a command list
@@ -209,7 +215,11 @@ static int mca_accelerator_ze_create_stream(int dev_id, opal_accelerator_stream_
                                opal_accelerator_ze_devices_handle[0], 
                                &commandListDesc, 
                                &ze_stream->hCommandList);
-    assert(zret == ZE_RESULT_SUCCESS);
+    if (ZE_RESULT_SUCCESS != zret) {
+        opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
+                            "zeCommandListCreate returned %d", zret);
+        return OPAL_ERROR;
+    }
     (*stream)->stream = (void *)ze_stream;
 
     return OPAL_SUCCESS;
@@ -227,11 +237,13 @@ static void mca_accelerator_ze_stream_destruct(opal_accelerator_ze_stream_t *str
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                                 "error while destroying the zeCommandQueue");
         }
+#if 0
         zret = zeEventPoolDestroy(ze_stream->hEventPool);
         if (ZE_RESULT_SUCCESS != zret) {
             opal_output_verbose(10, opal_accelerator_base_framework.framework_output,
                                 "error while destroying the zeEventPool");
         }
+#endif
         free(stream->base.stream);
     }
 }

@@ -30,7 +30,9 @@ struct opal_accelerator_ze_stream_t {
     opal_accelerator_stream_t base;
     ze_command_queue_handle_t hCommandQueue;
     ze_command_list_handle_t hCommandList;
+#if 0
     ze_event_pool_handle_t hEventPool;
+#endif
     int dev_id;
 };
 typedef struct opal_accelerator_ze_stream_t opal_accelerator_ze_stream_t;
