@@ -260,5 +260,20 @@ AS_IF([! test -e "$binding_file" && test "$PYTHON" = ":"],
       [AC_MSG_ERROR([Open MPI requires Python >=3.6 for generating the bindings. Aborting])])
 AM_CONDITIONAL(OMPI_GENERATE_BINDINGS,[test "$PYTHON" != ":"])
 
+AC_MSG_CHECKING([if want to enable standard ABI library])
+AC_ARG_ENABLE([standard-abi],
+    [AS_HELP_STRING([--enable-standard-abi],
+                    [Enable building the standard ABI library (default: disabled)])])
+if test "$enable_standard_abi" = "yes"; then
+    AC_MSG_RESULT([yes])
+    ompi_standard_abi=1
+else
+    AC_MSG_RESULT([no])
+    ompi_standard_abi=0
+fi
+AC_DEFINE_UNQUOTED([OMPI_STANDARD_ABI],[$ompi_standard_abi],
+                   [Whether we want to build the standard ABI library])
+AM_CONDITIONAL(OMPI_STANDARD_ABI,[test "$enable_standard_abi" = "yes"])
+
 ])dnl
 
