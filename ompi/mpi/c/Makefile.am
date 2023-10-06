@@ -328,9 +328,7 @@ interface_profile_sources = \
         pready.c \
         pready_list.c \
         pready_range.c \
-        precv_init.c \
         probe.c \
-        psend_init.c \
         publish_name.c \
         query_thread.c \
         raccumulate.c \

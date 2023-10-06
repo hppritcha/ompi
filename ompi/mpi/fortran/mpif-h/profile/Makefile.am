@@ -304,13 +304,10 @@ linked_files = \
         ppready_f.c \
         ppready_list_f.c \
         ppready_range_f.c \
-        pprecv_init_f.c \
         pprobe_f.c \
-        ppsend_init_f.c \
         ppublish_name_f.c \
         pquery_thread_f.c \
         precv_f.c \
-        precv_init_f.c \
         preduce_f.c \
         preduce_init_f.c \
         preduce_local_f.c \
@@ -329,7 +326,6 @@ linked_files = \
         pscatterv_f.c \
         pscatterv_init_f.c \
         psend_f.c \
-        psend_init_f.c \
         psendrecv_f.c \
         psendrecv_replace_f.c \
         psession_call_errhandler_f.c \

@@ -308,30 +308,6 @@ subroutine ompi_issend_f(buf,count,datatype,dest,tag,comm,request,ierror) &
    INTEGER, INTENT(OUT) :: ierror
 end subroutine ompi_issend_f
 
-subroutine ompi_psend_init_f(buf,partitions,count,datatype,dest,tag,comm,info,request,ierror) &
-   BIND(C, name="ompi_psend_init_f")
-   implicit none
-   OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: buf
-   INTEGER, INTENT(IN) :: partitions, count, dest, tag
-   INTEGER, INTENT(IN) :: datatype
-   INTEGER, INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: info
-   INTEGER, INTENT(OUT) :: request
-   INTEGER, INTENT(OUT) :: ierror
-end subroutine ompi_psend_init_f
-
-subroutine ompi_precv_init_f(buf,partitions,count,datatype,dest,tag,comm,info,request,ierror) &
-   BIND(C, name="ompi_precv_init_f")
-   implicit none
-   OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) :: buf
-   INTEGER, INTENT(IN) :: partitions, count, dest, tag
-   INTEGER, INTENT(IN) :: datatype
-   INTEGER, INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: info
-   INTEGER, INTENT(OUT) :: request
-   INTEGER, INTENT(OUT) :: ierror
-end subroutine ompi_precv_init_f
-
 subroutine ompi_pready_f(partition,request,ierror) &
    BIND(C, name="ompi_pready_f")
    implicit none

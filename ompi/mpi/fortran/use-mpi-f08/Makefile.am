@@ -373,9 +373,7 @@ mpi_api_files = \
         pready_f08.F90 \
         pready_range_f08.F90 \
         pready_list_f08.F90 \
-        precv_init_f08.F90 \
         probe_f08.F90 \
-        psend_init_f08.F90 \
         publish_name_f08.F90 \
         put_f08.F90 \
         query_thread_f08.F90 \

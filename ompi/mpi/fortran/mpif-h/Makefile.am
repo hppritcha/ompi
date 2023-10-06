@@ -392,9 +392,7 @@ lib@OMPI_LIBMPI_NAME@_mpifh_la_SOURCES += \
         pready_f.c \
         pready_list_f.c \
         pready_range_f.c \
-        precv_init_f.c \
         probe_f.c \
-        psend_init_f.c \
         publish_name_f.c \
         query_thread_f.c \
         recv_f.c \
