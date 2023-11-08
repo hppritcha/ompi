@@ -135,3 +135,12 @@ int opal_util_keyval_init_buffer(FILE *file)
 
     return 0;
 }
+
+int opal_util_keyval_init_buffer_wbuflen(FILE *file, size_t buflen)
+{
+    YY_BUFFER_STATE buf = yy_create_buffer(file, (int)buflen);
+    yy_switch_to_buffer(buf);
+
+    return 0;
+}
+

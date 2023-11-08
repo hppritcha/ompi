@@ -475,9 +475,11 @@ static int data_init(const char *appname)
     int ret;
     char *datafile;
 
+    fprintf(stderr, "inside data_init appname %s\n", appname);
     /* now load the data */
     opal_asprintf(&datafile, "%s%s%s-wrapper-data.txt", opal_install_dirs.opaldatadir,
                   OPAL_PATH_SEP, appname);
+    fprintf(stderr, "datafile = %s\n", datafile);
     if (NULL == datafile) {
         return OPAL_ERR_TEMP_OUT_OF_RESOURCE;
     }
@@ -590,6 +592,7 @@ int main(int argc, char *argv[])
     bool disable_flags = true;
     bool real_flag = false;
 
+    fprintf(stderr, "inside opal wrapper main\n");
     if (OPAL_SUCCESS != (ret = opal_init_util(&argc, &argv))) {
         return ret;
     }

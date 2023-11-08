@@ -33,6 +33,7 @@
 #include "opal/util/string_copy.h"
 #include <ctype.h>
 #include <string.h>
+#include <sys/stat.h>
 
 int opal_util_keyval_parse_lineno = 0;
 
@@ -70,7 +71,10 @@ int opal_util_keyval_parse_init(void)
 int opal_util_keyval_parse(const char *filename, opal_keyval_parse_fn_t callback)
 {
     int val;
-    int ret = OPAL_SUCCESS;
+    int ret = OPAL_SUCCESS, rc;
+    int fd_to_stat;
+    struct stat sb;
+    size_t filelen;
     ;
 
     OPAL_THREAD_LOCK(&keyval_mutex);
@@ -85,9 +89,20 @@ int opal_util_keyval_parse(const char *filename, opal_keyval_parse_fn_t callback
         goto cleanup;
     }
 
+    fprintf(stderr, "i am here in keyval parse\n");
     opal_util_keyval_parse_done = false;
     opal_util_keyval_yynewlines = 1;
-    opal_util_keyval_init_buffer(opal_util_keyval_yyin);
+    fd_to_stat = fileno(opal_util_keyval_yyin);
+    rc = fstat(fd_to_stat, &sb);
+    fprintf(stderr, "i am here in keyval parse rc = %d\n", rc);
+    if (0 == rc) {
+        fprintf(stderr, "the file to grok is %ld bytes in length\n", (long)sb.st_size);
+        filelen = sb.st_size;
+        filelen *= 2; /* safety */
+        opal_util_keyval_init_buffer_wbuflen(opal_util_keyval_yyin, filelen);
+    } else {
+        opal_util_keyval_init_buffer(opal_util_keyval_yyin);
+    }
     while (!opal_util_keyval_parse_done) {
         val = opal_util_keyval_yylex();
         switch (val) {
