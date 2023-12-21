@@ -32,19 +32,13 @@ noinst_LTLIBRARIES = libusempif08_ccode.la
 
 libusempif08_ccode_la_SOURCES = \
         buffer_detach.c \
-        send_f08_generated.c \
-        send_f08_c_generated.c \
-        recv_f08_generated.c \
-        recv_f08_c_generated.c \
-        waitall_f08_generated.c
+        api_f08_generated.c
 
 if OMPI_GENERATE_BINDINGS
-%_generated.c: ../%.in $(srcdir)/../generate_bindings.py
+api_f08_generated.c: ../interface.in $(srcdir)/../generate_bindings.py
 	$(PYTHON) $(srcdir)/../generate_bindings.py c $< > $@
-%_c_generated.c: ../%.in $(srcdir)/../generate_bindings.py
-	$(PYTHON) $(srcdir)/../generate_bindings.py c $< --bigcount > $@
 
-MAINTAINERCLEANFILES = send_f08_generated.c
+MAINTAINERCLEANFILES = api_f08_generated.c
 endif
 
 endif

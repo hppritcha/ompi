@@ -1,0 +1,3 @@
+recv(BUFFER buf, COUNT count, DATATYPE datatype, RANK source, TAG tag, COMM comm, STATUS status)
+send(BUFFER buf, COUNT count, DATATYPE datatype, RANK dest, TAG tag, COMM comm)
+waitall(SHORTCUT_COUNT count, REQUEST_ARRAY array_of_requests:count, STATUS_ARRAY array_of_statuses:count)

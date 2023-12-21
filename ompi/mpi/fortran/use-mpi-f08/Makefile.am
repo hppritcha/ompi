@@ -110,12 +110,6 @@ psizeof_f08.f90:
 
 CLEANFILES += sizeof_f08.h sizeof_f08.f90 psizeof_f08.f90
 
-mpi_api_generated_files = \
-        send_f08_generated.F90 \
-        send_f08_c_generated.F90 \
-        recv_f08_generated.F90 \
-        recv_f08_c_generated.F90 \
-        waitall_f08_generated.F90
 mpi_api_files = \
         abort_f08.F90 \
         accumulate_f08.F90 \
@@ -510,7 +504,7 @@ mpi_api_files = \
         win_unlock_f08.F90 \
         win_unlock_all_f08.F90 \
         win_wait_f08.F90 \
-        $(mpi_api_generated_files)
+        api_f08_generated.F90
 
 # JMS Somehow this variable substitution isn't quite working, and I
 # don't have time to figure it out.  So just wholesale copy the file
@@ -589,9 +583,7 @@ MAINTAINERCLEANFILES =
 # tarball
 EXTRA_DIST = \
         generate_bindings.py \
-        recv_f08.in \
-        send_f08.in \
-        waitall_f08.in
+        interface.in
 
 #
 # Generate the Fortran bindings and C wrapper functions for bindings with a
@@ -599,12 +591,10 @@ EXTRA_DIST = \
 #
 
 if OMPI_GENERATE_BINDINGS
-%_generated.F90: %.in generate_bindings.py
+api_f08_generated.F90: interface.in generate_bindings.py
 	$(PYTHON) $(srcdir)/generate_bindings.py fortran $< > $@
-%_c_generated.F90: %.in generate_bindings.py
-	$(PYTHON) $(srcdir)/generate_bindings.py fortran $< --bigcount > $@
 
-MAINTAINERCLEANFILES += $(mpi_api_generated_files)
+MAINTAINERCLEANFILES += api_f08_generated.F90
 endif
 
 ###########################################################################
