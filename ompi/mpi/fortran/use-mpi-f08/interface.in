@@ -1,3 +1,6 @@
-recv(BUFFER buf, COUNT count, DATATYPE datatype, RANK source, TAG tag, COMM comm, STATUS status)
+recv(BUFFER_OUT buf, COUNT count, DATATYPE datatype, RANK source, TAG tag, COMM comm, STATUS status)
+irecv(BUFFER_ASYNC_OUT buf, COUNT count, DATATYPE datatype, RANK source, TAG tag, COMM comm, REQUEST request)
 send(BUFFER buf, COUNT count, DATATYPE datatype, RANK dest, TAG tag, COMM comm)
+isend(BUFFER_ASYNC buf, COUNT count, DATATYPE data, RANK dest, TAG tag, COMM comm, REQUEST request)
 waitall(SHORTCUT_COUNT count, REQUEST_ARRAY array_of_requests:count, STATUS_ARRAY array_of_statuses:count)
+testany(SHORTCUT_COUNT count, REQUEST_ARRAY array_of_requests:count, INDEX_OUT index, LOGICAL_OUT flag, STATUS status)

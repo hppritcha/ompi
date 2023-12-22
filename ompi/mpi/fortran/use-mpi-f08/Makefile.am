@@ -332,7 +332,6 @@ mpi_api_files = \
         intercomm_create_from_groups_f08.F90 \
         intercomm_merge_f08.F90 \
         iprobe_f08.F90 \
-        irecv_f08.F90 \
         ireduce_f08.F90 \
         ireduce_scatter_f08.F90 \
         ireduce_scatter_block_f08.F90 \
@@ -340,7 +339,6 @@ mpi_api_files = \
         iscan_f08.F90 \
         iscatter_f08.F90 \
         iscatterv_f08.F90 \
-        isend_f08.F90 \
         isendrecv_f08.F90 \
         isendrecv_replace_f08.F90 \
         issend_f08.F90 \
@@ -423,7 +421,6 @@ mpi_api_files = \
         status_set_elements_f08.F90 \
         status_set_elements_x_f08.F90 \
         testall_f08.F90 \
-        testany_f08.F90 \
         test_cancelled_f08.F90 \
         test_f08.F90 \
         testsome_f08.F90 \

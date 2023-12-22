@@ -46,12 +46,12 @@ class FortranType(ABC):
         return c_api_func_name(self.fn_name, bigcount=self.bigcount).upper()
 
     @property
-    def tmp_c_name(self):
+    def tmp_name(self):
         """Return a temporary name for use in C."""
         return f'c_{self.name}'
 
     @property
-    def tmp_c_name2(self):
+    def tmp_name2(self):
         """Return a secondary temporary name for use in C."""
         return f'c_{self.name}2'
 
@@ -65,6 +65,10 @@ class FortranType(ABC):
     def declare(self):
         """Return a declaration for the type."""
 
+    def declare_tmp(self):
+        """Declare temporaries on in the subroutine."""
+        return []
+
     def declare_cbinding_fortran(self):
         """Return the C binding declaration as seen from Fortran."""
         return self.declare()
@@ -75,6 +79,10 @@ class FortranType(ABC):
 
     def use(self):
         """Return list of (module, name) for a Fortran use-statement."""
+        return []
+
+    def post(self):
+        """Return post-processing code to be run after the call."""
         return []
 
     @abstractmethod
@@ -129,6 +137,24 @@ class BufferType(FortranType):
         return f'OMPI_F2C_BOTTOM({self.name})'
 
 
+@FortranType.add('BUFFER_ASYNC')
+class BufferAsyncType(BufferType):
+    def declare(self):
+        return f'OMPI_FORTRAN_IGNORE_TKR_TYPE, INTENT(IN) OMPI_ASYNCHRONOUS :: {self.name}'
+
+
+@FortranType.add('BUFFER_OUT')
+class BufferOutType(BufferType):
+    def declare(self):
+        return f'OMPI_FORTRAN_IGNORE_TKR_TYPE :: {self.name}'
+
+
+@FortranType.add('BUFFER_ASYNC_OUT')
+class BufferAsyncOutType(BufferType):
+    def declare(self):
+        return f'OMPI_FORTRAN_IGNORE_TKR_TYPE OMPI_ASYNCHRONOUS :: {self.name}'
+
+
 @FortranType.add('COUNT')
 class CountType(FortranType):
     def declare(self):
@@ -166,10 +192,10 @@ class DatatypeType(FortranType):
         return f'MPI_Fint *{self.name}'
 
     def c_prepare(self):
-        return [f'MPI_Datatype {self.tmp_c_name} = PMPI_Type_f2c(*{self.name});']
+        return [f'MPI_Datatype {self.tmp_name} = PMPI_Type_f2c(*{self.name});']
 
     def c_argument(self):
-        return self.tmp_c_name
+        return self.tmp_name
 
 
 class IntType(FortranType):
@@ -193,6 +219,69 @@ class TagType(IntType):
     pass
 
 
+@FortranType.add('INDEX_OUT')
+class IndexOutType(IntType):
+    def declare(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+
+    def c_declare_tmp(self):
+        return [f'int {self.tmp_name};']
+
+    def c_shortcut_code(self):
+        return [f'*{self.name} = OMPI_INT_2_FINT(MPI_UNDEFINED);']
+
+    def c_argument(self):
+        return f'&{self.tmp_name}'
+
+    def c_post(self):
+        return [
+            f'if (MPI_SUCCESS == {C_ERROR_TMP_NAME} && MPI_UNDEFINED != {self.tmp_name}) {{',
+            f'    {self.tmp_name} += 1;'
+            f'    *{self.name} = OMPI_INT_2_FINT({self.tmp_name});'
+            '}',
+        ]
+
+
+@FortranType.add('LOGICAL_OUT')
+class LogicalOutType(IntType):
+    """Logical type.
+
+    NOTE: Since the logical type causes difficulties when passed to C code,
+    this code uses a temporary integer in Fortran to pass to the C code. On
+    completion the logical type is set based on C's true/false rules.
+    """
+
+    def declare(self):
+        return f'LOGICAL, INTENT(OUT) :: {self.name}'
+
+    def declare_tmp(self):
+        return [f'INTEGER :: {self.tmp_name} = 0']
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+
+    def argument(self):
+        return self.tmp_name
+
+    def post(self):
+        return [f'{self.name} = {self.tmp_name} /= 0']
+
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
+    def c_declare_tmp(self):
+        return [f'int {self.tmp_name};']
+
+    def c_shortcut_code(self):
+        return [f'*{self.name} = OMPI_INT_2_FINT(1);']
+
+    def c_argument(self):
+        return f'&{self.tmp_name}'
+
+    def c_post(self):
+        return [f'*{self.name} = OMPI_INT_2_FINT({self.tmp_name});']
+
+
 @FortranType.add('COMM')
 class CommType(FortranType):
     def declare(self):
@@ -211,10 +300,10 @@ class CommType(FortranType):
         return f'MPI_Fint *{self.name}'
 
     def c_prepare(self):
-        return [f'MPI_Comm {self.tmp_c_name} = PMPI_Comm_f2c(*{self.name});']
+        return [f'MPI_Comm {self.tmp_name} = PMPI_Comm_f2c(*{self.name});']
 
     def c_argument(self):
-        return self.tmp_c_name
+        return self.tmp_name
 
 
 @FortranType.add('STATUS')
@@ -229,17 +318,21 @@ class StatusType(FortranType):
         # TODO: Is this correct? (I've listed it as TYPE(MPI_Status) in the binding)
         return f'MPI_Fint *{self.name}'
 
+    def c_shortcut_code(self):
+        return [f'PMPI_Status_c2f(&ompi_status_empty, {self.name});']
+
+    # TODO: This code should be in c_declare_tmp()
     def c_prepare(self):
         return [
-            f'OMPI_FORTRAN_STATUS_DECLARATION({self.tmp_c_name}, {self.tmp_c_name2});',
-            f'OMPI_FORTRAN_STATUS_SET_POINTER({self.tmp_c_name}, {self.tmp_c_name2}, {self.name});'
+            f'OMPI_FORTRAN_STATUS_DECLARATION({self.tmp_name}, {self.tmp_name2});',
+            f'OMPI_FORTRAN_STATUS_SET_POINTER({self.tmp_name}, {self.tmp_name2}, {self.name});'
         ]
 
     def c_argument(self):
-        return self.tmp_c_name
+        return self.tmp_name
 
     def c_post(self):
-        return [f'OMPI_FORTRAN_STATUS_RETURN({self.tmp_c_name}, {self.tmp_c_name2}, {self.name}, {C_ERROR_TMP_NAME});']
+        return [f'OMPI_FORTRAN_STATUS_RETURN({self.tmp_name}, {self.tmp_name2}, {self.name}, {C_ERROR_TMP_NAME});']
 
 
 @FortranType.add('SHORTCUT_COUNT')
@@ -265,6 +358,37 @@ class ShortcutCountType(FortranType):
 
     def c_argument(self):
         return f'OMPI_FINT_2_INT(*{self.name})'
+
+
+@FortranType.add('REQUEST')
+class RequestType(FortranType):
+    def declare(self):
+        return f'TYPE(MPI_Request), INTENT(OUT) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+
+    def argument(self):
+        return f'{self.name}%MPI_VAL'
+
+    def use(self):
+        return [('mpi_f08_types', 'MPI_Request')]
+
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
+    def c_declare_tmp(self):
+        return [f'MPI_Request {self.tmp_name};']
+
+    def c_argument(self):
+        return f'&{self.tmp_name}'
+
+    def c_post(self):
+        return [
+            f'if (MPI_SUCCESS == {C_ERROR_TMP_NAME}) {{',
+            f'    *{self.name} = PMPI_Request_c2f({self.tmp_name});',
+            '}',
+        ]
 
 
 def allocate_array(name, malloc_expr, fn_api_name):
@@ -297,10 +421,10 @@ class RequestArrayType(FortranType):
         return f'MPI_Fint *{self.name}'
 
     def c_declare_tmp(self):
-        return [f'MPI_Request *{self.tmp_c_name};']
+        return [f'MPI_Request *{self.tmp_name};']
 
     def c_prepare(self):
-        tmp_name = self.tmp_c_name
+        tmp_name = self.tmp_name
         code = allocate_array(tmp_name,
                               f'{self.dep_param.c_argument()} * sizeof(MPI_Request)',
                               self.fn_api_name)
@@ -313,17 +437,17 @@ class RequestArrayType(FortranType):
         return code
 
     def c_argument(self):
-        return self.tmp_c_name
+        return self.tmp_name
 
     def c_post(self):
         i = self.tmp_counter()
         return [
             f'if (MPI_SUCCESS == {C_ERROR_TMP_NAME}) {{',
             f'    for (int {i} = 0; {i} < {self.dep_param.c_argument()}; ++{i}) {{',
-            f'        {self.name}[{i}] = {self.tmp_c_name}[{i}]->req_f_to_c_index;',
+            f'        {self.name}[{i}] = {self.tmp_name}[{i}]->req_f_to_c_index;',
             '    }',
             '}',
-            f'free({self.tmp_c_name});',
+            f'free({self.tmp_name});',
         ]
 
 
@@ -339,15 +463,15 @@ class StatusArrayType(FortranType):
         return f'MPI_Fint *{self.name}'
 
     def c_declare_tmp(self):
-        return [f'MPI_Status *{self.tmp_c_name};']
+        return [f'MPI_Status *{self.tmp_name};']
 
     def c_prepare(self):
-        return allocate_array(self.tmp_c_name,
+        return allocate_array(self.tmp_name,
                               f'{self.dep_param.c_argument()} * sizeof(MPI_Status)',
                               self.fn_api_name)
 
     def c_argument(self):
-        return self.tmp_c_name
+        return self.tmp_name
 
     def c_post(self):
         i = self.tmp_counter()
@@ -356,11 +480,11 @@ class StatusArrayType(FortranType):
             f'    for (int {i} = 0; {i} < {self.dep_param.c_argument()}; ++{i}) {{',
             f'        if (!OMPI_IS_FORTRAN_STATUSES_IGNORE({self.name}) &&',
             f'            !OMPI_IS_FORTRAN_STATUS_IGNORE(&{self.name}[{i}])) {{',
-            f'            PMPI_Status_c2f(&{self.tmp_c_name}[{i}], &{self.name}[{i} * (sizeof(MPI_Status) / sizeof(int))]);',
+            f'            PMPI_Status_c2f(&{self.tmp_name}[{i}], &{self.name}[{i} * (sizeof(MPI_Status) / sizeof(int))]);',
             '        }',
             '    }',
             '}',
-            f'free({self.tmp_c_name});'
+            f'free({self.tmp_name});'
         ]
 
 
@@ -377,6 +501,12 @@ def c_api_func_name(fn_name, bigcount=False):
 def c_api_func_name_profile(fn_name, bigcount=False):
     """Produce the actual PMPI API function name to call into."""
     return f'P{c_api_func_name(fn_name, bigcount)}'
+
+
+def fortran_f08_name(fn_name, bigcount=False):
+    """Produce the final f08 name from base_name."""
+    suffix = '_c' if bigcount else ''
+    return f'MPI_{fn_name.capitalize()}_f08{suffix}'
 
 
 FortranParameter = namedtuple('FortranParameter', ['type_', 'name', 'dep_name'])
@@ -434,11 +564,6 @@ class FortranBinding:
         return '_c' if self.bigcount else ''
 
     @property
-    def fortran_f08_name(self):
-        """Produce the final f08 name from base_name."""
-        return f'MPI_{self.fn_name.capitalize()}_f08{self._fn_name_suffix()}'
-
-    @property
     def c_func_name(self):
         """Produce the final C func name from base_name."""
         return f'ompi_{self.fn_name}_wrapper_f08{self._fn_name_suffix()}'
@@ -483,7 +608,7 @@ class FortranBinding:
 
     def print_f_source(self):
         """Output the main MPI Fortran subroutine."""
-        sub_name = self.fortran_f08_name
+        sub_name = fortran_f08_name(self.fn_name, bigcount=self.bigcount)
         c_func = self.c_func_name
         print('subroutine', f'{sub_name}({self._param_list()},{FORTRAN_ERROR_NAME})')
         # Use statements
@@ -499,6 +624,9 @@ class FortranBinding:
         print(f'    INTEGER, OPTIONAL, INTENT(OUT) :: {FORTRAN_ERROR_NAME}')
         # Temporaries
         print(f'    INTEGER :: {C_ERROR_TMP_NAME}')
+        for param in self.parameters:
+            for line in param.declare_tmp():
+                print(f'    {line}')
 
         # Interface for call to C function
         print()
@@ -510,6 +638,10 @@ class FortranBinding:
         print(f'    call {c_func}({args},{C_ERROR_TMP_NAME})')
         # Convert error type
         print(f'    if (present({FORTRAN_ERROR_NAME})) {FORTRAN_ERROR_NAME} = {C_ERROR_TMP_NAME}')
+
+        for param in self.parameters:
+            for line in param.post():
+                print(f'    {line}')
 
         print(f'end subroutine {sub_name}')
 
@@ -541,6 +673,7 @@ class FortranBinding:
             for other_param in self.parameters:
                 for line in other_param.c_shortcut_code():
                     print(f'        {line}')
+            print('        return;')
             print('    }')
 
         # Prepare code for temporaries, etc.
@@ -566,7 +699,22 @@ def print_f_source_header():
     """Print the fortran f08 file header."""
     print(f'! {GENERATED_MESSAGE}')
     print('#include "ompi/mpi/fortran/configure-fortran-output.h"')
-    print('#include "mpi-f08-rename.h"')
+
+
+def print_profiling_rename_macros(prototypes):
+    """Print macros for renaming functions for the profiling interface.
+
+    Previously hardcoded in mpi-f08-rename.h.
+    """
+    print('#if OMPI_BUILD_MPI_PROFILING')
+    for prototype in prototypes:
+        name = fortran_f08_name(prototype.fn_name)
+        print(f'#define {name} P{name}')
+        # Check for bigcount version
+        if any(param.type_ == 'COUNT' for param in prototype.parameters):
+            bigcount_name = fortran_f08_name(prototype.fn_name, bigcount=True)
+            print(f'#define {bigcount_name} P{bigcount_name}')
+    print('#endif /* OMPI_BUILD_MPI_PROFILING */')
 
 
 def print_c_source_header():
@@ -602,11 +750,16 @@ def main():
     prototypes = load_prototypes(args.template)
     if args.lang == 'fortran':
         print_f_source_header()
+        print()
+        print_profiling_rename_macros(prototypes)
+        print()
     else:
         print_c_source_header()
     for prototype in prototypes:
+        print()
         print_binding(prototype, args.lang)
         if any(param.type_ == 'COUNT' for param in prototype.parameters):
+            print()
             print_binding(prototype, args.lang, bigcount=True)
 
 
