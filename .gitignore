@@ -545,3 +545,4 @@ ompi/mpi/c/standard_abi
 # Generated Fortran Bindings
 ompi/mpi/fortran/use-mpi-f08/*_generated.F90
 ompi/mpi/fortran/use-mpi-f08/base/*_generated.c
+ompi/mpi/fortran/use-mpi-f08/generate_bindings.py
