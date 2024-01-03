@@ -1,0 +1,36 @@
+name: MPI4PY Sanity check CI
+
+on: [pull_request]
+
+env:
+  ROCM_VER: 5-4
+  PYTHONPATH: $PYTHONPATH:$PWD/mpi4py-3.1.5/
+jobs:
+  run_mpi4py:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y --no-install-recommends wget lsb-core software-properties-common curl pip3
+        pip3 install cython
+    - uses: actions/checkout@v3
+      with:
+            submodules: recursive
+    - name: Build Open MPI
+      run: |
+        ./autogen.pl
+        ./configure --disable-mpi-fortran
+        make -j install
+    - name: Build MPI4py
+      run: |
+        wget https://github.com/mpi4py/mpi4py/releases/download/3.1.5/mpi4py-3.1.5.tar.gz
+        tar -zxf mpi4py-3.1.5.tar.gz
+        cd mpi4py-3.1.5
+        python3 setup.py build --mpicc="mpicc -shared"
+        python3 setup.py install --user
+    - name: Run MPI4py
+      run: |
+        cd mpi4py-3.1.5/test
+        mpirun --map-by :OVERSUBSCRIBE -np 3 python3 ./main.py -v -f
+
