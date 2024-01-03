@@ -198,6 +198,7 @@ class DatatypeType(FortranType):
         return self.tmp_name
 
 
+@FortranType.add('INT')
 class IntType(FortranType):
     def declare(self):
         return f'INTEGER, INTENT(IN) :: {self.name}'
