@@ -1,4 +1,4 @@
-name: MPI4PY check
+name: name: GitHub Action CI
 
 on: [pull_request]
 
@@ -6,7 +6,7 @@ env:
   ROCM_VER: 5-4
   MPI4PY_VERSION: 3.1.5
 jobs:
-  run_mpi4py:
+  mpi4py:
     runs-on: ubuntu-latest
     steps:
     - name: Install dependencies
@@ -26,14 +26,12 @@ jobs:
       run: |
         wget https://github.com/mpi4py/mpi4py/releases/download/${MPI4PY_VERSION}/mpi4py-3.1.5.tar.gz
         tar -zxf mpi4py-${MPI4PY_VERSION}.tar.gz
-        export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
-        export PATH=${GITHUB_WORKSPACE}/install/bin:$PATH
-        echo "${GITHUB_WORKSPACE}/install/bin" >> $GITHUB_PATH
+        echo "PYTHONPATH=${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/" >> ${GITHUB_ENV}
+        echo "${GITHUB_WORKSPACE}/install/bin" >> ${GITHUB_PATH}
         cd mpi4py-${MPI4PY_VERSION}
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
     - name: Run MPI4py
       run: |
-        export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
         cd mpi4py-${MPI4PY_VERSION}/test
         mpirun --map-by :OVERSUBSCRIBE -np 3 python3 ./runtests.py
