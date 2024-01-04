@@ -36,6 +36,7 @@ jobs:
       run: |
         export PATH=$PWD/install/bin:$PATH
         echo $PWD
+        echo $GITHUB_WORKSPACE
         ls 
         ls $PWD/install/bin
         cd mpi4py-3.1.5/test
