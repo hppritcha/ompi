@@ -20,12 +20,15 @@ jobs:
     - name: Build Open MPI
       run: |
         ./autogen.pl
-        ./configure --disable-mpi-fortran
+        ./configure --prefix=$PWD/install --disable-oshmem --disable-mpi-fortran
         make -j install
+        echo $PWD
+        export PATH=$PWD/install:$PATH
     - name: Build MPI4py
       run: |
         wget https://github.com/mpi4py/mpi4py/releases/download/3.1.5/mpi4py-3.1.5.tar.gz
         tar -zxf mpi4py-3.1.5.tar.gz
+        echo $PWD
         cd mpi4py-3.1.5
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
