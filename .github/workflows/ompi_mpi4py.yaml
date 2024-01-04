@@ -27,11 +27,12 @@ jobs:
         wget https://github.com/mpi4py/mpi4py/releases/download/${MPI4PY_VERSION}/mpi4py-3.1.5.tar.gz
         tar -zxf mpi4py-${MPI4PY_VERSION}.tar.gz
         echo "PYTHONPATH=${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/" >> ${GITHUB_ENV}
-        echo "${GITHUB_WORKSPACE}/install/bin" >> ${GITHUB_PATH}
+        export PATH=${GITHUB_WORKSPACE}/install/bin:$PATH
         cd mpi4py-${MPI4PY_VERSION}
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
     - name: Run MPI4py
       run: |
+        export PATH=${GITHUB_WORKSPACE}/install/bin:$PATH
         cd mpi4py-${MPI4PY_VERSION}/test
         mpirun --map-by :OVERSUBSCRIBE -np 3 python3 ./runtests.py
