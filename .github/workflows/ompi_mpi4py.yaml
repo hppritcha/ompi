@@ -5,7 +5,6 @@ on: [pull_request]
 env:
   ROCM_VER: 5-4
   MPI4PY_VERSION: 3.1.5
-  PATH: ${GITHUB_WORKSPACE}/install/bin:${PATH}
 jobs:
   run_mpi4py:
     runs-on: ubuntu-latest
@@ -28,6 +27,7 @@ jobs:
         wget https://github.com/mpi4py/mpi4py/releases/download/${MPI4PY_VERSION}/mpi4py-3.1.5.tar.gz
         tar -zxf mpi4py-${MPI4PY_VERSION}.tar.gz
         export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
+        export PATH=${GITHUB_WORKSPACE}/install/bin:$PATH
         cd mpi4py-${MPI4PY_VERSION}
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
