@@ -4,6 +4,8 @@ on: [pull_request]
 
 env:
   ROCM_VER: 5-4
+  MPI4PY_VERSION: 3.1.5
+  PATH: ${GITHUB_WORKSPACE}/install/bin:${PATH}
 jobs:
   run_mpi4py:
     runs-on: ubuntu-latest
@@ -19,25 +21,18 @@ jobs:
     - name: Build Open MPI
       run: |
         ./autogen.pl
-        ./configure --prefix=$PWD/install --disable-oshmem --disable-mpi-fortran
+        ./configure --prefix=${GITHUB_WORKSPACE}/install --disable-oshmem --disable-mpi-fortran
         make -j install
     - name: Build MPI4py
       run: |
-        wget https://github.com/mpi4py/mpi4py/releases/download/3.1.5/mpi4py-3.1.5.tar.gz
-        tar -zxf mpi4py-3.1.5.tar.gz
-        echo $PWD
-        export PATH=$PWD/install/bin:$PATH
-        ls $PWD/install/bin
-        export PYTHONPATH=$PYTHONPATH:$PWD/mpi4py-3.1.5/
-        cd mpi4py-3.1.5
+        wget https://github.com/mpi4py/mpi4py/releases/download/${MPI4PY_VERSION}/mpi4py-3.1.5.tar.gz
+        tar -zxf mpi4py-${MPI4PY_VERSION}.tar.gz
+        export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
+        cd mpi4py-${MPI4PY_VERSION}
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
     - name: Run MPI4py
       run: |
-        export PATH=$PWD/install/bin:$PATH
-        echo $PWD
-        echo $GITHUB_WORKSPACE
-        ls 
-        ls $PWD/install/bin
-        cd mpi4py-3.1.5/test
+        export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
+        cd mpi4py-${MPI4PY_VERSION}/test
         mpirun --map-by :OVERSUBSCRIBE -np 3 python3 ./runtests.py
