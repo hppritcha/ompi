@@ -28,6 +28,7 @@ jobs:
         tar -zxf mpi4py-${MPI4PY_VERSION}.tar.gz
         export PYTHONPATH=$PYTHONPATH:${GITHUB_WORKSPACE}/mpi4py-${MPI4PY_VERSION}/
         export PATH=${GITHUB_WORKSPACE}/install/bin:$PATH
+        echo "${GITHUB_WORKSPACE}/install/bin" >> $GITHUB_PATH
         cd mpi4py-${MPI4PY_VERSION}
         python3 setup.py build --mpicc="mpicc -shared"
         python3 setup.py install --user
