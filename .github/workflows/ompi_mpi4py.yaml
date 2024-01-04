@@ -35,6 +35,8 @@ jobs:
     - name: Run MPI4py
       run: |
         export PATH=$PWD/install/bin:$PATH
+        echo $PWD
+        ls 
         ls $PWD/install/bin
         cd mpi4py-3.1.5/test
         mpirun --map-by :OVERSUBSCRIBE -np 3 python3 ./main.py -v -f
