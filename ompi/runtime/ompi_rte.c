@@ -812,10 +812,13 @@ int ompi_rte_init(int *pargc, char ***pargv)
     OPAL_MODEX_RECV_VALUE_OPTIONAL(rc, PMIX_NSDIR, &pname, &val, PMIX_STRING);
     if (PMIX_SUCCESS == rc && NULL != val) {
         opal_process_info.job_session_dir = val;
+	fprintf(stderr, " PMIX_NSDIR returned success and got %s\n", val);
         val = NULL;  // protect the string
     } else {
         /* we need to create something */
+	fprintf(stderr, " PMIX_NSDIR returned %d\n", rc);
         rc = _setup_job_session_dir(&opal_process_info.job_session_dir);
+	fprintf(stderr, " sessions dir set to %s\n", opal_process_info.job_session_dir);
         if (OPAL_SUCCESS != rc) {
             error = "job session directory";
             goto error;

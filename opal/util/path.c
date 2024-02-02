@@ -680,12 +680,16 @@ int opal_path_df(const char *path, uint64_t *out_avail)
 
     do {
 #if defined(USE_STATFS)
+        fprintf(stderr, "statfs %s\n", path);
         rc = statfs(path, &buf);
 #elif defined(HAVE_STATVFS)
+        fprintf(stderr, "statvfs %s\n", path);
         rc = statvfs(path, &buf);
 #endif
         err = errno;
     } while (-1 == rc && ESTALE == err && (--trials > 0));
+
+    fprintf(stderr, "err = %d rc = %d\n", err, rc);
 
     if (-1 == rc) {
         OPAL_OUTPUT_VERBOSE((10, 2,

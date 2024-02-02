@@ -206,6 +206,12 @@ static int smcuda_register(void)
     mca_btl_smcuda.super.btl_bandwidth = 9000; /* Mbs */
     mca_btl_smcuda.super.btl_latency = 1;      /* Microsecs */
 
+    if (0 == access("/dev/shm", W_OK)) {
+        mca_btl_smcuda_component.backing_directory = "/dev/shm";
+    } else {
+        mca_btl_smcuda_component.backing_directory = opal_process_info.job_session_dir;
+    }
+
     /* Call the BTL based to register its MCA params */
     mca_btl_base_param_register(&mca_btl_smcuda_component.super.btl_version, &mca_btl_smcuda.super);
     /* If user has not set the value, then set to the defalt */
@@ -423,28 +429,28 @@ static int set_uniq_paths_for_init_rndv(mca_btl_smcuda_component_t *comp_ptr)
 
     if (opal_asprintf(&comp_ptr->sm_mpool_ctl_file_name,
                       "%s" OPAL_PATH_SEP "shared_mem_cuda_pool.%s",
-                      opal_process_info.job_session_dir, opal_process_info.nodename)
+                      mca_btl_smcuda_component.backing_directory, opal_process_info.nodename)
         < 0) {
         /* rc set */
         goto out;
     }
     if (opal_asprintf(&comp_ptr->sm_mpool_rndv_file_name,
                       "%s" OPAL_PATH_SEP "shared_mem_cuda_pool_rndv.%s",
-                      opal_process_info.job_session_dir, opal_process_info.nodename)
+                      mca_btl_smcuda_component.backing_directory, opal_process_info.nodename)
         < 0) {
         /* rc set */
         goto out;
     }
     if (opal_asprintf(&comp_ptr->sm_ctl_file_name,
                       "%s" OPAL_PATH_SEP "shared_mem_cuda_btl_module.%s",
-                      opal_process_info.job_session_dir, opal_process_info.nodename)
+                      mca_btl_smcuda_component.backing_directory, opal_process_info.nodename)
         < 0) {
         /* rc set */
         goto out;
     }
     if (opal_asprintf(&comp_ptr->sm_rndv_file_name,
                       "%s" OPAL_PATH_SEP "shared_mem_cuda_btl_rndv.%s",
-                      opal_process_info.job_session_dir, opal_process_info.nodename)
+                      mca_btl_smcuda_component.backing_directory, opal_process_info.nodename)
         < 0) {
         /* rc set */
         goto out;
@@ -842,7 +848,7 @@ mca_btl_smcuda_component_init(int *num_btls, bool enable_progress_threads, bool 
 #if OPAL_ENABLE_PROGRESS_THREADS == 1
     /* create a named pipe to receive events  */
     sprintf(mca_btl_smcuda_component.sm_fifo_path, "%s" OPAL_PATH_SEP "sm_fifo.%lu",
-            opal_process_info.job_session_dir, (unsigned long) OPAL_PROC_MY_NAME->vpid);
+            mca_btl_smcuda_component.backing_directory, (unsigned long) OPAL_PROC_MY_NAME->vpid);
     if (mkfifo(mca_btl_smcuda_component.sm_fifo_path, 0660) < 0) {
         opal_output(0, "mca_btl_smcuda_component_init: mkfifo failed with errno=%d\n", errno);
         return NULL;

@@ -206,6 +206,8 @@ struct mca_btl_smcuda_component_t {
 
     unsigned long mpool_min_size;
     char *allocator;
+    char *backing_directory; /**< directory to place shared memory backing files */
+
 };
 typedef struct mca_btl_smcuda_component_t mca_btl_smcuda_component_t;
 OPAL_DECLSPEC extern mca_btl_smcuda_component_t mca_btl_smcuda_component;
