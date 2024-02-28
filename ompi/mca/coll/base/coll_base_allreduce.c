@@ -54,7 +54,7 @@
  *
  */
 int
-ompi_coll_base_allreduce_intra_nonoverlapping(const void *sbuf, void *rbuf, int count,
+ompi_coll_base_allreduce_intra_nonoverlapping(const void *sbuf, void *rbuf, size_t count,
                                                struct ompi_datatype_t *dtype,
                                                struct ompi_op_t *op,
                                                struct ompi_communicator_t *comm,
@@ -131,7 +131,7 @@ ompi_coll_base_allreduce_intra_nonoverlapping(const void *sbuf, void *rbuf, int 
  */
 int
 ompi_coll_base_allreduce_intra_recursivedoubling(const void *sbuf, void *rbuf,
-                                                  int count,
+                                                  size_t count,
                                                   struct ompi_datatype_t *dtype,
                                                   struct ompi_op_t *op,
                                                   struct ompi_communicator_t *comm,
@@ -341,7 +341,7 @@ ompi_coll_base_allreduce_intra_recursivedoubling(const void *sbuf, void *rbuf,
  *
  */
 int
-ompi_coll_base_allreduce_intra_ring(const void *sbuf, void *rbuf, int count,
+ompi_coll_base_allreduce_intra_ring(const void *sbuf, void *rbuf, size_t count,
                                      struct ompi_datatype_t *dtype,
                                      struct ompi_op_t *op,
                                      struct ompi_communicator_t *comm,
@@ -618,7 +618,7 @@ ompi_coll_base_allreduce_intra_ring(const void *sbuf, void *rbuf, int count,
  *
  */
 int
-ompi_coll_base_allreduce_intra_ring_segmented(const void *sbuf, void *rbuf, int count,
+ompi_coll_base_allreduce_intra_ring_segmented(const void *sbuf, void *rbuf, size_t count,
                                                struct ompi_datatype_t *dtype,
                                                struct ompi_op_t *op,
                                                struct ompi_communicator_t *comm,
@@ -881,7 +881,7 @@ ompi_coll_base_allreduce_intra_ring_segmented(const void *sbuf, void *rbuf, int 
  *	Returns:	- MPI_SUCCESS or error code
  */
 int
-ompi_coll_base_allreduce_intra_basic_linear(const void *sbuf, void *rbuf, int count,
+ompi_coll_base_allreduce_intra_basic_linear(const void *sbuf, void *rbuf, size_t count,
                                              struct ompi_datatype_t *dtype,
                                              struct ompi_op_t *op,
                                              struct ompi_communicator_t *comm,
@@ -971,7 +971,7 @@ ompi_coll_base_allreduce_intra_basic_linear(const void *sbuf, void *rbuf, int co
  *   count * typesize + 4 * \log_2(p) * sizeof(int) = O(count)
  */
 int ompi_coll_base_allreduce_intra_redscat_allgather(
-    const void *sbuf, void *rbuf, int count, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t count, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {
@@ -1261,7 +1261,7 @@ int ompi_coll_base_allreduce_intra_redscat_allgather(
  * Caution is needed on larger communicators(n) and data sizes(m), which will
  * result in m*n^2 total traffic and potential network congestion.
  */
-int ompi_coll_base_allreduce_intra_allgather_reduce(const void *sbuf, void *rbuf, int count,
+int ompi_coll_base_allreduce_intra_allgather_reduce(const void *sbuf, void *rbuf, size_t count,
                                                     struct ompi_datatype_t *dtype,
                                                     struct ompi_op_t *op,
                                                     struct ompi_communicator_t *comm,

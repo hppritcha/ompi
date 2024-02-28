@@ -92,16 +92,17 @@
  *         [5]    [5]    [5]    [5]    [5]    [5]    [5]
  *         [6]    [6]    [6]    [6]    [6]    [6]    [6]
  */
-int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, int scount,
+int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, size_t scount,
                                            struct ompi_datatype_t *sdtype,
-                                           void *rbuf, const int *rcounts,
-                                           const int *rdispls,
+                                           void *rbuf, const size_t *rcounts,
+                                           const ptrdiff_t *rdispls,
                                            struct ompi_datatype_t *rdtype,
                                            struct ompi_communicator_t *comm,
                                            mca_coll_base_module_t *module)
 {
     int line = -1, err = 0, rank, size, sendto, recvfrom, distance, blockcount, i;
-    int *new_rcounts = NULL, *new_rdispls = NULL, *new_scounts = NULL, *new_sdispls = NULL;
+    size_t *new_rcounts = NULL, *new_scounts = NULL;
+    ptrdiff_t *new_rdispls = NULL, *new_sdispls = NULL;
     ptrdiff_t rlb, rext;
     char *tmpsend = NULL, *tmprecv = NULL;
     struct ompi_datatype_t *new_rdtype, *new_sdtype;
@@ -142,11 +143,14 @@ int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, int scount,
     blockcount = 1;
     tmpsend = (char*) rbuf;
 
-    new_rcounts = (int*) calloc(4*size, sizeof(int));
+    new_rcounts = calloc(size, sizeof(size_t));
     if (NULL == new_rcounts) { err = -1; line = __LINE__; goto err_hndl; }
-    new_rdispls = new_rcounts + size;
-    new_scounts = new_rdispls + size;
-    new_sdispls = new_scounts + size;
+    new_scounts = calloc(size, sizeof(size_t));
+    if (NULL == new_scounts) { err = -1; line = __LINE__; goto err_hndl; }
+    new_rdispls = calloc(size, sizeof(ptrdiff_t));
+    if (NULL == new_rdispls) { err = -1; line = __LINE__; goto err_hndl; }
+    new_sdispls = calloc(size, sizeof(ptrdiff_t));
+    if (NULL == new_sdispls) { err = -1; line = __LINE__; goto err_hndl; }
 
     for (distance = 1; distance < size; distance<<=1) {
 
@@ -256,10 +260,10 @@ int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, int scount,
  *         [5]    [5]    [5]    [5]    [5]    [5]
  */
 
-int ompi_coll_base_allgatherv_intra_sparbit(const void *sbuf, int scount,
+int ompi_coll_base_allgatherv_intra_sparbit(const void *sbuf, size_t scount,
                                            struct ompi_datatype_t *sdtype,
-                                           void* rbuf, const int *rcounts,
-                                           const int *rdispls,
+                                           void* rbuf, const size_t *rcounts,
+                                           const ptrdiff_t *rdispls,
                                            struct ompi_datatype_t *rdtype,
                                            struct ompi_communicator_t *comm,
                                            mca_coll_base_module_t *module)
@@ -269,7 +273,8 @@ int ompi_coll_base_allgatherv_intra_sparbit(const void *sbuf, int scount,
     /* list of variable declaration */
     int rank = 0, comm_size = 0, comm_log = 0, exclusion = 0; 
     int data_expected = 1, transfer_count = 0, step_requests = 0;
-    int sendto, recvfrom, send_disp, recv_disp;
+    int sendto, recvfrom;
+    ptrdiff_t send_disp, recv_disp;
     uint32_t last_ignore, ignore_steps, distance = 1;
 
     int err = 0;
@@ -368,9 +373,9 @@ err_hndl:
  *               No additional memory requirements.
  *
  */
-int ompi_coll_base_allgatherv_intra_ring(const void *sbuf, int scount,
+int ompi_coll_base_allgatherv_intra_ring(const void *sbuf, size_t scount,
                                           struct ompi_datatype_t *sdtype,
-                                          void* rbuf, const int *rcounts, const int *rdisps,
+                                          void* rbuf, const size_t *rcounts, const ptrdiff_t *rdisps,
                                           struct ompi_datatype_t *rdtype,
                                           struct ompi_communicator_t *comm,
                                           mca_coll_base_module_t *module)
@@ -495,16 +500,17 @@ int ompi_coll_base_allgatherv_intra_ring(const void *sbuf, int scount,
  *         [5]    [5]    [5]    [5]    [5]    [5]
  */
 int
-ompi_coll_base_allgatherv_intra_neighborexchange(const void *sbuf, int scount,
+ompi_coll_base_allgatherv_intra_neighborexchange(const void *sbuf, size_t scount,
                                                   struct ompi_datatype_t *sdtype,
-                                                  void* rbuf, const int *rcounts, const int *rdispls,
+                                                  void* rbuf, const size_t *rcounts, const ptrdiff_t *rdispls,
                                                   struct ompi_datatype_t *rdtype,
                                                   struct ompi_communicator_t *comm,
                                                   mca_coll_base_module_t *module)
 {
     int line = -1, rank, size, i, even_rank, err = 0;
     int neighbor[2], offset_at_step[2], recv_data_from[2], send_data_from;
-    int new_scounts[2], new_sdispls[2], new_rcounts[2], new_rdispls[2];
+    size_t new_scounts[2], new_rcounts[2];
+    ptrdiff_t new_sdispls[2], new_rdispls[2];
     ptrdiff_t rlb, rext;
     char *tmpsend = NULL, *tmprecv = NULL;
     struct ompi_datatype_t  *new_rdtype, *new_sdtype;
@@ -640,10 +646,10 @@ ompi_coll_base_allgatherv_intra_neighborexchange(const void *sbuf, int scount,
 }
 
 
-int ompi_coll_base_allgatherv_intra_two_procs(const void *sbuf, int scount,
+int ompi_coll_base_allgatherv_intra_two_procs(const void *sbuf, size_t scount,
                                                struct ompi_datatype_t *sdtype,
-                                               void* rbuf, const int *rcounts,
-                                               const int *rdispls,
+                                               void* rbuf, const size_t *rcounts,
+                                               const ptrdiff_t *rdispls,
                                                struct ompi_datatype_t *rdtype,
                                                struct ompi_communicator_t *comm,
                                                mca_coll_base_module_t *module)
@@ -726,10 +732,10 @@ int ompi_coll_base_allgatherv_intra_two_procs(const void *sbuf, int scount,
  *	Returns:	- MPI_SUCCESS or error code
  */
 int
-ompi_coll_base_allgatherv_intra_basic_default(const void *sbuf, int scount,
+ompi_coll_base_allgatherv_intra_basic_default(const void *sbuf, size_t scount,
                                               struct ompi_datatype_t *sdtype,
-                                              void *rbuf, const int *rcounts,
-                                              const int *disps,
+                                              void *rbuf, const size_t *rcounts,
+                                              const ptrdiff_t *disps,
                                               struct ompi_datatype_t *rdtype,
                                               struct ompi_communicator_t *comm,
                                               mca_coll_base_module_t *module)

@@ -54,7 +54,7 @@
  *     up at some point)
  */
 int
-ompi_coll_base_reduce_scatter_block_basic_linear(const void *sbuf, void *rbuf, int rcount,
+ompi_coll_base_reduce_scatter_block_basic_linear(const void *sbuf, void *rbuf, size_t rcount,
                                                  struct ompi_datatype_t *dtype,
                                                  struct ompi_op_t *op,
                                                  struct ompi_communicator_t *comm,
@@ -195,14 +195,16 @@ ompi_coll_base_reduce_scatter_block_basic_linear(const void *sbuf, void *rbuf, i
  */
 int
 ompi_coll_base_reduce_scatter_block_intra_recursivedoubling(
-    const void *sbuf, void *rbuf, int rcount, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t rcount, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {
     struct ompi_datatype_t *dtypesend = NULL, *dtyperecv = NULL;
     char *tmprecv_raw = NULL, *tmpbuf_raw = NULL, *tmprecv, *tmpbuf;
-    ptrdiff_t span, gap, totalcount, extent;
-    int blocklens[2], displs[2];
+    ptrdiff_t span, gap, extent;
+    size_t totalcount;
+    size_t blocklens[2];
+    ptrdiff_t displs[2];
     int err = MPI_SUCCESS;
     int comm_size = ompi_comm_size(comm);
     int rank = ompi_comm_rank(comm);
@@ -400,7 +402,7 @@ static int ompi_range_sum(int a, int b, int r)
  */
 int
 ompi_coll_base_reduce_scatter_block_intra_recursivehalving(
-    const void *sbuf, void *rbuf, int rcount, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t rcount, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {
@@ -580,7 +582,7 @@ cleanup_and_return:
 }
 
 static int ompi_coll_base_reduce_scatter_block_intra_butterfly_pof2(
-    const void *sbuf, void *rbuf, int rcount, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t rcount, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module);
 
@@ -642,7 +644,7 @@ static int ompi_coll_base_reduce_scatter_block_intra_butterfly_pof2(
  */
 int
 ompi_coll_base_reduce_scatter_block_intra_butterfly(
-    const void *sbuf, void *rbuf, int rcount, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t rcount, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {
@@ -889,7 +891,7 @@ cleanup_and_return:
  */
 static int
 ompi_coll_base_reduce_scatter_block_intra_butterfly_pof2(
-    const void *sbuf, void *rbuf, int rcount, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, size_t rcount, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {
