@@ -371,7 +371,7 @@ mca_coll_basic_reduce_scatter_inter(const void *sbuf, void *rbuf, const size_t *
     char *tmpbuf = NULL, *tmpbuf2 = NULL, *lbuf = NULL, *buf;
     ptrdiff_t gap, span;
     ompi_request_t *req;
-    int *disps = NULL;
+    ptrdiff_t *disps = NULL;
 
     rank = ompi_comm_rank(comm);
     rsize = ompi_comm_remote_size(comm);
@@ -403,7 +403,7 @@ mca_coll_basic_reduce_scatter_inter(const void *sbuf, void *rbuf, const size_t *
         span = opal_datatype_span(&dtype->super, totalcounts, &gap);
 
         /* Generate displacements for the scatterv part */
-        disps = (int*) malloc(sizeof(int) * lsize);
+        disps = malloc(sizeof(ptrdiff_t) * lsize);
         if (NULL == disps) {
             return OMPI_ERR_OUT_OF_RESOURCE;
         }

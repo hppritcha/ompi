@@ -90,7 +90,7 @@ mca_coll_han_set_allreduce_args(mca_coll_han_allreduce_args_t * args,
 int
 mca_coll_han_allreduce_intra(const void *sbuf,
                              void *rbuf,
-                             int count,
+                             size_t count,
                              struct ompi_datatype_t *dtype,
                              struct ompi_op_t *op,
                              struct ompi_communicator_t *comm, mca_coll_base_module_t * module)
@@ -464,7 +464,7 @@ int mca_coll_han_allreduce_t3_task(void *task_args)
 int
 mca_coll_han_allreduce_intra_simple(const void *sbuf,
                                     void *rbuf,
-                                    int count,
+                                    size_t count,
                                     struct ompi_datatype_t *dtype,
                                     struct ompi_op_t *op,
                                     struct ompi_communicator_t *comm,
@@ -611,7 +611,7 @@ mca_coll_han_allreduce_reproducible_decision(struct ompi_communicator_t *comm,
 int
 mca_coll_han_allreduce_reproducible(const void *sbuf,
                                     void *rbuf,
-                                     int count,
+                                     size_t count,
                                      struct ompi_datatype_t *dtype,
                                      struct ompi_op_t *op,
                                      struct ompi_communicator_t *comm,

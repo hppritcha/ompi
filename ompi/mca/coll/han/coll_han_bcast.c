@@ -64,7 +64,7 @@ mca_coll_han_set_bcast_args(mca_coll_han_bcast_args_t * args, mca_coll_task_t * 
  */
 int
 mca_coll_han_bcast_intra(void *buf,
-                         int count,
+                         size_t count,
                          struct ompi_datatype_t *dtype,
                          int root,
                          struct ompi_communicator_t *comm, mca_coll_base_module_t * module)
@@ -223,7 +223,7 @@ int mca_coll_han_bcast_t1_task(void *task_args)
  */
 int
 mca_coll_han_bcast_intra_simple(void *buf,
-                                int count,
+                                size_t count,
                                 struct ompi_datatype_t *dtype,
                                 int root,
                                 struct ompi_communicator_t *comm,

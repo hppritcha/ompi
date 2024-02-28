@@ -68,7 +68,7 @@ mca_coll_han_set_reduce_args(mca_coll_han_reduce_args_t * args, mca_coll_task_t 
 int
 mca_coll_han_reduce_intra(const void *sbuf,
                           void *rbuf,
-                          int count,
+                          size_t count,
                           struct ompi_datatype_t *dtype,
                           ompi_op_t* op,
                           int root,
@@ -284,7 +284,7 @@ int mca_coll_han_reduce_t1_task(void *task_args) {
 int
 mca_coll_han_reduce_intra_simple(const void *sbuf,
                                  void* rbuf,
-                                 int count,
+                                 size_t count,
                                  struct ompi_datatype_t *dtype,
                                  ompi_op_t *op,
                                  int root,
@@ -451,7 +451,7 @@ mca_coll_han_reduce_reproducible_decision(struct ompi_communicator_t *comm,
 int
 mca_coll_han_reduce_reproducible(const void *sbuf,
                                  void *rbuf,
-                                  int count,
+                                  size_t count,
                                   struct ompi_datatype_t *dtype,
                                   struct ompi_op_t *op,
                                   int root,
