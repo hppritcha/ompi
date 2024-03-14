@@ -53,7 +53,7 @@ int MPI_Neighbor_allgatherv_init(const void *sendbuf, int sendcount, MPI_Datatyp
                                  MPI_Datatype recvtype, MPI_Comm comm,
                                  MPI_Info info, MPI_Request *request)
 {
-    int i, size, err;
+    int i, size, tmp_size, err;
     OMPI_TEMP_ARRAYS_DECL(recvcounts, displs);
 
     SPC_RECORD(OMPI_SPC_NEIGHBOR_ALLGATHERV_INIT, 1);
@@ -107,8 +107,8 @@ int MPI_Neighbor_allgatherv_init(const void *sendbuf, int sendcount, MPI_Datatyp
          get the size of the remote group here for both intra- and
          intercommunicators */
 
-        size = ompi_comm_remote_size(comm);
-        for (i = 0; i < size; ++i) {
+        tmp_size = ompi_comm_remote_size(comm);
+        for (i = 0; i < tmp_size; ++i) {
           if (recvcounts[i] < 0) {
             return OMPI_ERRHANDLER_INVOKE(comm, MPI_ERR_COUNT, FUNC_NAME);
           }
