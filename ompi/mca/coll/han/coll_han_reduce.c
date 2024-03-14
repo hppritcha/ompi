@@ -126,7 +126,7 @@ mca_coll_han_reduce_intra(const void *sbuf,
 
     int num_segments = (count + seg_count - 1) / seg_count;
     OPAL_OUTPUT_VERBOSE((20, mca_coll_han_component.han_output,
-                         "In HAN seg_count %d count %d num_seg %d\n",
+                         "In HAN seg_count %d count %zu num_seg %d\n",
                          seg_count, count, num_segments));
 
     int *vranks = han_module->cached_vranks;
