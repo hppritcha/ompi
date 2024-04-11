@@ -116,14 +116,16 @@ int MPI_Ialltoallw(const void *sendbuf, const int sendcounts[], const int sdispl
         }
     }
 
+    /* Invoke the coll component to perform the back-end operation */
     OMPI_TEMP_ARRAYS_PREPARE(sendcounts, sdispls, i, size);
     OMPI_TEMP_ARRAYS_PREPARE(recvcounts, rdispls, i, size);
-    /* Invoke the coll component to perform the back-end operation */
     err = comm->c_coll->coll_ialltoallw(sendbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(sendcounts),
                                        OMPI_TEMP_ARRAY_NAME_CONVERT(sdispls),
                                        sendtypes, recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
                                        OMPI_TEMP_ARRAY_NAME_CONVERT(rdispls), recvtypes, comm, request,
                                        comm->c_coll->coll_ialltoallw_module);
+    OMPI_TEMP_ARRAYS_CLEANUP(sendcounts, sdispls);
+    OMPI_TEMP_ARRAYS_CLEANUP(recvcounts, rdispls);
     if (OPAL_LIKELY(OMPI_SUCCESS == err)) {
         ompi_coll_base_retain_datatypes_w(*request, (MPI_IN_PLACE==sendbuf)?NULL:sendtypes, recvtypes, false);
     }

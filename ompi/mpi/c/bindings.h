@@ -104,6 +104,13 @@ BEGIN_C_DECLS
         }                                                               \
     } while (0)
 
+/*
+ * The following OMPI_TEMP_ARRAY* functions are designed to convert count and
+ * displacement arrays of type 'int *' to 'size_t *' and 'ptrdiff_t *'
+ * respectively, since the backend interface is designed for size_t/ptrdiff_t
+ * arrays only. In the case of bigcount (or largecount) *_c functions, these
+ * macros will just copy the pointer from the input and skip the allocation.
+ */
 #define OMPI_TEMP_ARRAY_NAME_CONVERT(name) tmp_ ## name
 #define OMPI_TEMP_ARRAYS_DECL(counts, displs) \
     size_t *OMPI_TEMP_ARRAY_NAME_CONVERT(counts) = NULL; \
@@ -147,6 +154,9 @@ BEGIN_C_DECLS
             } \
         } \
     } while (0)
+/*
+ * Free temporary allocations for counts/displs, if necessary
+ */
 #define OMPI_TEMP_ARRAYS_CLEANUP(counts, displs) \
     do { \
         if ((void *) OMPI_TEMP_ARRAY_NAME_CONVERT(counts) != (void *) counts) { \

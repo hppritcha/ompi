@@ -122,9 +122,9 @@ int MPI_Alltoallw_init(const void *sendbuf, const int sendcounts[], const int sd
         }
     }
 
+    /* Invoke the coll component to perform the back-end operation */
     OMPI_TEMP_ARRAYS_PREPARE(sendcounts, sdispls, i, size);
     OMPI_TEMP_ARRAYS_PREPARE(recvcounts, rdispls, i, size);
-    /* Invoke the coll component to perform the back-end operation */
     err = comm->c_coll->coll_alltoallw_init(sendbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(sendcounts),
                                             OMPI_TEMP_ARRAY_NAME_CONVERT(sdispls),
                                             sendtypes, recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),

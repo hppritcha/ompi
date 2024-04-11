@@ -149,9 +149,9 @@ int MPI_Neighbor_alltoallw(const void *sendbuf, const int sendcounts[], const MP
     }
 #endif
 
+    /* Invoke the coll component to perform the back-end operation */
     OMPI_TEMP_ARRAYS_PREPARE(sendcounts, sdispls, i, outdegree);
     OMPI_TEMP_ARRAYS_PREPARE(recvcounts, rdispls, i, indegree);
-    /* Invoke the coll component to perform the back-end operation */
     err = comm->c_coll->coll_neighbor_alltoallw(sendbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(sendcounts),
                                                OMPI_TEMP_ARRAY_NAME_CONVERT(sdispls), sendtypes,
                                                recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),

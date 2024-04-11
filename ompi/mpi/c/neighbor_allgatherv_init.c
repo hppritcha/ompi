@@ -141,8 +141,8 @@ int MPI_Neighbor_allgatherv_init(const void *sendbuf, int sendcount, MPI_Datatyp
         }
     }
 
-    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     /* Invoke the coll component to perform the back-end operation */
+    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     err = comm->c_coll->coll_neighbor_allgatherv_init(sendbuf, sendcount, sendtype,
                                                       recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
                                                       OMPI_TEMP_ARRAY_NAME_CONVERT(displs),

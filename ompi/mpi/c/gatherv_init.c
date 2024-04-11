@@ -200,8 +200,8 @@ int MPI_Gatherv_init(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
         updated_recvbuf = (root == MPI_ROOT) ? recvbuf : NULL;
     }
 
-    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     /* Invoke the coll component to perform the back-end operation */
+    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     err = comm->c_coll->coll_gatherv_init(sendbuf, sendcount, sendtype, updated_recvbuf,
                                           OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
                                           OMPI_TEMP_ARRAY_NAME_CONVERT(displs), recvtype,

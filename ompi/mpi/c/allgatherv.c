@@ -49,7 +49,7 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                    void *recvbuf, const int recvcounts[],
                    const int displs[], MPI_Datatype recvtype, MPI_Comm comm)
 {
-    int i, size, err;
+    int i, size, rsize, err;
     OMPI_TEMP_ARRAYS_DECL(recvcounts, displs);
 
     SPC_RECORD(OMPI_SPC_ALLGATHERV, 1);
@@ -109,8 +109,8 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
          get the size of the remote group here for both intra- and
          intercommunicators */
 
-        size = ompi_comm_remote_size(comm);
-        for (i = 0; i < size; ++i) {
+        rsize = ompi_comm_remote_size(comm);
+        for (i = 0; i < rsize; ++i) {
           if (recvcounts[i] < 0) {
             return OMPI_ERRHANDLER_INVOKE(comm, MPI_ERR_COUNT, FUNC_NAME);
           }
@@ -147,8 +147,6 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
 	}
     }
 
-    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
-
     /* There is no rule that can be applied for inter-communicators, since
        recvcount(s)=0 only indicates that the processes in the other group
        do not send anything, sendcount=0 only indicates that I do not send
@@ -156,6 +154,7 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
        something */
 
     /* Invoke the coll component to perform the back-end operation */
+    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     err = comm->c_coll->coll_allgatherv(sendbuf, sendcount, sendtype,
                                        recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
                                        OMPI_TEMP_ARRAY_NAME_CONVERT(displs), recvtype, comm,
