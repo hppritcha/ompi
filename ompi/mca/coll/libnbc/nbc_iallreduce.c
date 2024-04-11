@@ -118,7 +118,7 @@ static int nbc_allreduce_init(const void* sendbuf, void* recvbuf, size_t count, 
   if (libnbc_iallreduce_algorithm == 0) {
     if(p < 4 || size*count < 65536 || !ompi_op_is_commute(op) || inplace) {
       alg = NBC_ARED_BINOMIAL;
-    } else if (count >= nprocs_pof2 && ompi_op_is_commute(op)) {
+    } else if (count >= (size_t) nprocs_pof2 && ompi_op_is_commute(op)) {
       alg = NBC_ARED_REDSCAT_ALLGATHER;
     }
   } else {
@@ -126,7 +126,7 @@ static int nbc_allreduce_init(const void* sendbuf, void* recvbuf, size_t count, 
       alg = NBC_ARED_RING;
     else if (libnbc_iallreduce_algorithm == 2)
       alg = NBC_ARED_BINOMIAL;
-    else if (libnbc_iallreduce_algorithm == 3 && count >= nprocs_pof2 && ompi_op_is_commute(op))
+    else if (libnbc_iallreduce_algorithm == 3 && count >= (size_t) nprocs_pof2 && ompi_op_is_commute(op))
       alg = NBC_ARED_REDSCAT_ALLGATHER;
     else if (libnbc_iallreduce_algorithm == 4)
       alg = NBC_ARED_RDBL;

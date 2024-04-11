@@ -106,7 +106,7 @@ static int nbc_reduce_init(const void* sendbuf, void* recvbuf, size_t count, MPI
   /* algorithm selection */
   int nprocs_pof2 = opal_next_poweroftwo(p) >> 1;
   if (libnbc_ireduce_algorithm == 0) {
-    if (ompi_op_is_commute(op) && p > 2 && count >= nprocs_pof2) {
+    if (ompi_op_is_commute(op) && p > 2 && count >= (size_t) nprocs_pof2) {
       alg = NBC_RED_REDSCAT_GATHER;
     } else if (p > 4 || size * count < 65536 || !ompi_op_is_commute(op)) {
       alg = NBC_RED_BINOMIAL;
@@ -118,7 +118,7 @@ static int nbc_reduce_init(const void* sendbuf, void* recvbuf, size_t count, MPI
       alg = NBC_RED_CHAIN;
     } else if (libnbc_ireduce_algorithm == 2) {
       alg = NBC_RED_BINOMIAL;
-    } else if (libnbc_ireduce_algorithm == 3 && ompi_op_is_commute(op) && p > 2 && count >= nprocs_pof2) {
+    } else if (libnbc_ireduce_algorithm == 3 && ompi_op_is_commute(op) && p > 2 && count >= (size_t) nprocs_pof2) {
       alg = NBC_RED_REDSCAT_GATHER;
     } else {
       alg = NBC_RED_CHAIN;

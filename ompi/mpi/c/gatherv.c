@@ -48,13 +48,14 @@ int MPI_Gatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                 MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     int i, size, err;
+    OMPI_TEMP_ARRAYS_DECL(recvcounts, displs);
 
     SPC_RECORD(OMPI_SPC_GATHERV, 1);
 
+    size = ompi_comm_remote_size(comm);
     MEMCHECKER(
         ptrdiff_t ext;
 
-        size = ompi_comm_remote_size(comm);
         ompi_datatype_type_extent(recvtype, &ext);
 
         memchecker_comm(comm);
@@ -209,10 +210,13 @@ int MPI_Gatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
         updated_recvbuf = (root == MPI_ROOT) ? recvbuf : NULL;
     }
 
+    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     /* Invoke the coll component to perform the back-end operation */
     err = comm->c_coll->coll_gatherv(sendbuf, sendcount, sendtype, updated_recvbuf,
-                                    recvcounts, displs,
+                                    OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
+                                    OMPI_TEMP_ARRAY_NAME_CONVERT(displs),
                                     recvtype, root, comm,
                                     comm->c_coll->coll_gatherv_module);
+    OMPI_TEMP_ARRAYS_CLEANUP(recvcounts, displs);
     OMPI_ERRHANDLER_RETURN(err, comm, err, FUNC_NAME);
 }

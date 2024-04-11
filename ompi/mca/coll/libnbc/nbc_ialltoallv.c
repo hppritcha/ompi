@@ -70,7 +70,7 @@ static int nbc_alltoallv_init(const void* sendbuf, const size_t *sendcounts, con
 
   /* copy data to receivbuffer */
   if (inplace) {
-    int count = 0;
+    size_t count = 0;
     for (int i = 0; i < p; i++) {
       if (recvcounts[i] > count) {
         count = recvcounts[i];

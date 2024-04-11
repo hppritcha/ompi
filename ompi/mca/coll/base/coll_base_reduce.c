@@ -64,7 +64,7 @@ int ompi_coll_base_reduce_generic( const void* sendbuf, void* recvbuf, size_t or
                                     ompi_datatype_t* datatype, ompi_op_t* op,
                                     int root, ompi_communicator_t* comm,
                                     mca_coll_base_module_t *module,
-                                    ompi_coll_tree_t* tree, int count_by_segment,
+                                    ompi_coll_tree_t* tree, size_t count_by_segment,
                                     int max_outstanding_reqs )
 {
     char *inbuf[2] = {NULL, NULL}, *inbuf_free[2] = {NULL, NULL};
@@ -314,7 +314,7 @@ int ompi_coll_base_reduce_generic( const void* sendbuf, void* recvbuf, size_t or
                 ret = ompi_request_wait(&sreq[creq], MPI_STATUS_IGNORE);
                 if (ret != MPI_SUCCESS) { line = __LINE__; goto error_hndl;  }
 
-                if( original_count < count_by_segment ) {
+                if( original_count < (size_t) count_by_segment ) {
                     count_by_segment = original_count;
                 }
                 ret = MCA_PML_CALL( isend((char*)sendbuf +
@@ -827,7 +827,7 @@ int ompi_coll_base_reduce_intra_redscat_gather(
     }
     int nprocs_pof2 = 1 << nsteps;                              /* flp2(comm_size) */
 
-    if (nprocs_pof2 < 2 || count < nprocs_pof2 || !ompi_op_is_commute(op)) {
+    if (nprocs_pof2 < 2 || count < (size_t) nprocs_pof2 || !ompi_op_is_commute(op)) {
         OPAL_OUTPUT((ompi_coll_base_framework.framework_output,
                      "coll:base:reduce_intra_redscat_gather: rank %d/%d count %d "
                      "switching to basic linear reduce", rank, comm_size, count));

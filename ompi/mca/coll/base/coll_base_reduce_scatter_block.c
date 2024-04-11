@@ -205,6 +205,7 @@ ompi_coll_base_reduce_scatter_block_intra_recursivedoubling(
     size_t totalcount;
     size_t blocklens[2];
     ptrdiff_t displs[2];
+    int tmp_blocklens[2], tmp_displs[2];
     int err = MPI_SUCCESS;
     int comm_size = ompi_comm_size(comm);
     int rank = ompi_comm_rank(comm);
@@ -272,7 +273,12 @@ ompi_coll_base_reduce_scatter_block_intra_recursivedoubling(
                        rcount * (comm_size - cur_tree_root - mask) : 0;
         displs[0] = 0;
         displs[1] = comm_size * rcount - blocklens[1];
-        err = ompi_datatype_create_indexed(2, blocklens, displs, dtype, &dtypesend);
+        /* TODO:BIGCOUNT: Remove temporaries when ompi_datatype interface is updated */
+        tmp_blocklens[0] = (int) blocklens[0];
+        tmp_blocklens[1] = (int) blocklens[1];
+        tmp_displs[0] = (int) displs[0];
+        tmp_displs[1] = (int) displs[1];
+        err = ompi_datatype_create_indexed(2, tmp_blocklens, tmp_displs, dtype, &dtypesend);
         if (MPI_SUCCESS != err) { goto cleanup_and_return; }
         err = ompi_datatype_commit(&dtypesend);
         if (MPI_SUCCESS != err) { goto cleanup_and_return; }
@@ -283,7 +289,12 @@ ompi_coll_base_reduce_scatter_block_intra_recursivedoubling(
                        rcount * (comm_size - remote_tree_root - mask) : 0;
         displs[0] = 0;
         displs[1] = comm_size * rcount - blocklens[1];
-        err = ompi_datatype_create_indexed(2, blocklens, displs, dtype, &dtyperecv);
+        /* TODO:BIGCOUNT: Remove temporaries when ompi_datatype interface is updated */
+        tmp_blocklens[0] = (int) blocklens[0];
+        tmp_blocklens[1] = (int) blocklens[1];
+        tmp_displs[0] = (int) displs[0];
+        tmp_displs[1] = (int) displs[1];
+        err = ompi_datatype_create_indexed(2, tmp_blocklens, tmp_displs, dtype, &dtyperecv);
         if (MPI_SUCCESS != err) { goto cleanup_and_return; }
         err = ompi_datatype_commit(&dtyperecv);
         if (MPI_SUCCESS != err) { goto cleanup_and_return; }
