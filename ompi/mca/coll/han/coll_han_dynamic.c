@@ -1055,8 +1055,10 @@ mca_coll_han_gather_intra_dynamic(const void *sbuf, size_t scount,
  * On the global communicator, calls the han collective implementation, or
  * calls the correct module if fallback mechanism is activated
  */
-int mca_coll_han_gatherv_intra_dynamic(const void *sbuf, int scount, struct ompi_datatype_t *sdtype,
-                                       void *rbuf, const int *rcounts, const int *displs,
+int mca_coll_han_gatherv_intra_dynamic(const void *sbuf, size_t scount,
+                                       struct ompi_datatype_t *sdtype,
+                                       void *rbuf, const size_t *rcounts,
+                                       const ptrdiff_t *displs,
                                        struct ompi_datatype_t *rdtype, int root,
                                        struct ompi_communicator_t *comm,
                                        mca_coll_base_module_t *module)
@@ -1407,9 +1409,9 @@ mca_coll_han_scatter_intra_dynamic(const void *sbuf, size_t scount,
  * calls the correct module if fallback mechanism is activated
  */
 int
-mca_coll_han_scatterv_intra_dynamic(const void *sbuf, const int *scounts,
-                                    const int *displs, struct ompi_datatype_t *sdtype,
-                                    void *rbuf, int rcount,
+mca_coll_han_scatterv_intra_dynamic(const void *sbuf, const size_t *scounts,
+                                    const ptrdiff_t *displs, struct ompi_datatype_t *sdtype,
+                                    void *rbuf, size_t rcount,
                                     struct ompi_datatype_t *rdtype, 
                                     int root,
                                     struct ompi_communicator_t *comm,
