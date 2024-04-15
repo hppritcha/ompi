@@ -214,11 +214,18 @@ int MPI_Scatterv(const void *sendbuf, const int sendcounts[], const int displs[]
     }
 
     /* Invoke the coll component to perform the back-end operation */
-    OMPI_TEMP_ARRAYS_PREPARE(sendcounts, displs, i, size);
-    err = comm->c_coll->coll_scatterv(updated_sendbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(sendcounts),
-                                     OMPI_TEMP_ARRAY_NAME_CONVERT(displs),
-                                     sendtype, updated_recvbuf, recvcount, recvtype, root, comm,
-                                     comm->c_coll->coll_scatterv_module);
-    OMPI_TEMP_ARRAYS_CLEANUP(sendcounts, displs);
+    if (NULL != sendcounts) {
+        OMPI_TEMP_ARRAYS_PREPARE(sendcounts, displs, i, size);
+        err = comm->c_coll->coll_scatterv(updated_sendbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(sendcounts),
+                                           OMPI_TEMP_ARRAY_NAME_CONVERT(displs),
+                                           sendtype, updated_recvbuf, recvcount, recvtype, root, comm,
+                                           comm->c_coll->coll_scatterv_module);
+        OMPI_TEMP_ARRAYS_CLEANUP(sendcounts, displs);
+    } else {
+        err = comm->c_coll->coll_scatterv(updated_sendbuf, NULL,
+                                           NULL,
+                                           sendtype, updated_recvbuf, recvcount, recvtype, root, comm,
+                                           comm->c_coll->coll_scatterv_module);
+    }
     OMPI_ERRHANDLER_RETURN(err, comm, err, FUNC_NAME);
 }

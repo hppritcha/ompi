@@ -57,7 +57,6 @@ int MPI_Neighbor_allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sen
 
     SPC_RECORD(OMPI_SPC_NEIGHBOR_ALLGATHERV, 1);
 
-    mca_topo_base_neighbor_count (comm, &in_size, &out_size);
     MEMCHECKER(
         ptrdiff_t ext;
 
@@ -139,6 +138,8 @@ int MPI_Neighbor_allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sen
             }
         }
     }
+
+    mca_topo_base_neighbor_count (comm, &in_size, &out_size);
 
 #if OPAL_ENABLE_FT_MPI
     /*

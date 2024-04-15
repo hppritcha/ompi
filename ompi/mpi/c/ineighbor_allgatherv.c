@@ -52,15 +52,16 @@ int MPI_Ineighbor_allgatherv(const void *sendbuf, int sendcount, MPI_Datatype se
                              void *recvbuf, const int recvcounts[], const int displs[],
                              MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
 {
-    int i, size, rsize, err;
+    int i, rsize, in_size, out_size, err;
     OMPI_TEMP_ARRAYS_DECL(recvcounts, displs);
 
     SPC_RECORD(OMPI_SPC_INEIGHBOR_ALLGATHERV, 1);
 
-    size = ompi_comm_size(comm);
     MEMCHECKER(
         ptrdiff_t ext;
+        int size;
 
+        size = ompi_comm_size(comm);
         ompi_datatype_type_extent(recvtype, &ext);
 
         memchecker_datatype(recvtype);
@@ -140,8 +141,10 @@ int MPI_Ineighbor_allgatherv(const void *sendbuf, int sendcount, MPI_Datatype se
         }
     }
 
+    mca_topo_base_neighbor_count (comm, &in_size, &out_size);
+
     /* Invoke the coll component to perform the back-end operation */
-    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
+    OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, in_size);
     err = comm->c_coll->coll_ineighbor_allgatherv(sendbuf, sendcount, sendtype,
                                                  recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
                                                  OMPI_TEMP_ARRAY_NAME_CONVERT(displs),
