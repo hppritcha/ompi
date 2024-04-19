@@ -74,6 +74,7 @@ int mca_coll_han_scatterv_intra(const void *sbuf, const size_t *scounts, const p
     size_t *low_scounts = NULL;
     ptrdiff_t *low_displs = NULL;
     ompi_request_t *iscatterv_req = NULL;
+    size_t sdsize = 0UL;
 
     /* Create the subcommunicators */
     err = mca_coll_han_comm_create(comm, han_module);

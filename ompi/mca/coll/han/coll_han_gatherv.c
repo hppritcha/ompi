@@ -69,6 +69,7 @@ int mca_coll_han_gatherv_intra(const void *sbuf, size_t scount, struct ompi_data
     int err, *vranks, low_rank, low_size, up_rank, up_size, *topo;
     size_t *low_rcounts = NULL;
     ptrdiff_t *low_displs = NULL;
+    size_t rdsize = 0UL;
 
     /* Create the subcommunicators */
     err = mca_coll_han_comm_create(comm, han_module);
