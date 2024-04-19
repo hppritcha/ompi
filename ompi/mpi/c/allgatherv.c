@@ -49,16 +49,16 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                    void *recvbuf, const int recvcounts[],
                    const int displs[], MPI_Datatype recvtype, MPI_Comm comm)
 {
-    int i, size, rsize, err;
+    int i, size, err;
     OMPI_TEMP_ARRAYS_DECL(recvcounts, displs);
 
     SPC_RECORD(OMPI_SPC_ALLGATHERV, 1);
 
-    size = ompi_comm_size(comm);
     MEMCHECKER(
         int rank;
         ptrdiff_t ext;
 
+        size = ompi_comm_size(comm);
         rank = ompi_comm_rank(comm);
         ompi_datatype_type_extent(recvtype, &ext);
 
@@ -104,13 +104,13 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
         }
         OMPI_ERRHANDLER_CHECK(err, comm, err, FUNC_NAME);
 
-      /* We always define the remote group to be the same as the local
-         group in the case of an intracommunicator, so it's safe to
-         get the size of the remote group here for both intra- and
-         intercommunicators */
+        if ( OMPI_COMM_IS_INTER(comm) ) {
+            size = ompi_comm_remote_size(comm);
+	} else {
+            size = ompi_comm_size(comm);
+        }
 
-        rsize = ompi_comm_remote_size(comm);
-        for (i = 0; i < rsize; ++i) {
+        for (i = 0; i < size; ++i) {
           if (recvcounts[i] < 0) {
             return OMPI_ERRHANDLER_INVOKE(comm, MPI_ERR_COUNT, FUNC_NAME);
           }
@@ -137,6 +137,7 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
        sum(recvounts) > 0 if there's anything to do. */
 
     if ( OMPI_COMM_IS_INTRA( comm) ) {
+        size = ompi_comm_size(comm);
 	for (i = 0; i < ompi_comm_size(comm); ++i) {
 	    if (0 != recvcounts[i]) {
 		break;
@@ -145,6 +146,8 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
 	if (i >= ompi_comm_size(comm)) {
 	    return MPI_SUCCESS;
 	}
+    } else {
+        size = ompi_comm_remote_size(comm);
     }
 
     /* There is no rule that can be applied for inter-communicators, since
@@ -153,7 +156,9 @@ int MPI_Allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
        anything. However, other processes in my group might very well send
        something */
 
+
     /* Invoke the coll component to perform the back-end operation */
+
     OMPI_TEMP_ARRAYS_PREPARE(recvcounts, displs, i, size);
     err = comm->c_coll->coll_allgatherv(sendbuf, sendcount, sendtype,
                                        recvbuf, OMPI_TEMP_ARRAY_NAME_CONVERT(recvcounts),
