@@ -381,8 +381,8 @@ static int exchange_len_info(void *my_info, size_t my_info_len, char **recv_info
     int comm_size = ompi_comm_size(comm);
     int *lens = calloc(comm_size, sizeof(int));
     int total_len, i;
-    ompi_count_array lens_desc;
-    ompi_disp_array disps_desc;
+    ompi_count_array_t lens_desc;
+    ompi_disp_array_t disps_desc;
 
     ret = comm->c_coll->coll_allgather(&my_info_len, 1, MPI_INT,
                                        lens, 1, MPI_INT, comm,

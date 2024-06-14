@@ -51,8 +51,8 @@ int MPI_Allgatherv_init(const void *sendbuf, int sendcount, MPI_Datatype sendtyp
                         MPI_Info info, MPI_Request *request)
 {
     int i, size, err;
-    ompi_count_array recvcounts_desc;
-    ompi_disp_array displs_desc;
+    ompi_count_array_t recvcounts_desc;
+    ompi_disp_array_t displs_desc;
 
     SPC_RECORD(OMPI_SPC_ALLGATHERV_INIT, 1);
 

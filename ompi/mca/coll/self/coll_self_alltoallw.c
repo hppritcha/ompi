@@ -33,9 +33,9 @@
  *	Accepts:	- same as MPI_Alltoallw()
  *	Returns:	- MPI_SUCCESS or an MPI error code
  */
-int mca_coll_self_alltoallw_intra(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+int mca_coll_self_alltoallw_intra(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                   struct ompi_datatype_t * const *sdtypes,
-                                  void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                  void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                   struct ompi_datatype_t * const *rdtypes,
                                   struct ompi_communicator_t *comm,
                                   mca_coll_base_module_t *module)

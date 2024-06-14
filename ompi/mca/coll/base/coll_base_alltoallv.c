@@ -50,7 +50,7 @@
  * and count) to send the data to the other.
  */
 int
-mca_coll_base_alltoallv_intra_basic_inplace(const void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+mca_coll_base_alltoallv_intra_basic_inplace(const void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                             struct ompi_datatype_t *rdtype,
                                             struct ompi_communicator_t *comm,
                                             mca_coll_base_module_t *module)
@@ -194,9 +194,9 @@ mca_coll_base_alltoallv_intra_basic_inplace(const void *rbuf, ompi_count_array *
 }
 
 int
-ompi_coll_base_alltoallv_intra_pairwise(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+ompi_coll_base_alltoallv_intra_pairwise(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                          struct ompi_datatype_t *sdtype,
-                                         void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                         void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                          struct ompi_datatype_t *rdtype,
                                          struct ompi_communicator_t *comm,
                                          mca_coll_base_module_t *module)
@@ -283,9 +283,9 @@ ompi_coll_base_alltoallv_intra_pairwise(const void *sbuf, ompi_count_array *scou
  * differently and so will not have to duplicate code.
  */
 int
-ompi_coll_base_alltoallv_intra_basic_linear(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+ompi_coll_base_alltoallv_intra_basic_linear(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                             struct ompi_datatype_t *sdtype,
-                                            void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                            void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                             struct ompi_datatype_t *rdtype,
                                             struct ompi_communicator_t *comm,
                                             mca_coll_base_module_t *module)

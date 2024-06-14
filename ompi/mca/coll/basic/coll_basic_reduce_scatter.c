@@ -64,7 +64,7 @@
  * so this should be investigated further.
  */
 int
-mca_coll_basic_reduce_scatter_intra(const void *sbuf, void *rbuf, ompi_count_array *rcounts,
+mca_coll_basic_reduce_scatter_intra(const void *sbuf, void *rbuf, ompi_count_array_t *rcounts,
                                     struct ompi_datatype_t *dtype,
                                     struct ompi_op_t *op,
                                     struct ompi_communicator_t *comm,
@@ -73,7 +73,7 @@ mca_coll_basic_reduce_scatter_intra(const void *sbuf, void *rbuf, ompi_count_arr
     int i, rank, size, count, err = OMPI_SUCCESS;
     ptrdiff_t extent, buf_size, gap;
     ptrdiff_t *disps = NULL;
-    ompi_disp_array disps_desc;
+    ompi_disp_array_t disps_desc;
     char *recv_buf = NULL, *recv_buf_free = NULL;
     char *result_buf = NULL, *result_buf_free = NULL;
     /* Initialize */
@@ -362,7 +362,7 @@ mca_coll_basic_reduce_scatter_intra(const void *sbuf, void *rbuf, ompi_count_arr
  *	Returns:	- MPI_SUCCESS or error code
  */
 int
-mca_coll_basic_reduce_scatter_inter(const void *sbuf, void *rbuf, ompi_count_array *rcounts,
+mca_coll_basic_reduce_scatter_inter(const void *sbuf, void *rbuf, ompi_count_array_t *rcounts,
                                     struct ompi_datatype_t *dtype,
                                     struct ompi_op_t *op,
                                     struct ompi_communicator_t *comm,
@@ -373,7 +373,7 @@ mca_coll_basic_reduce_scatter_inter(const void *sbuf, void *rbuf, ompi_count_arr
     ptrdiff_t gap, span;
     ompi_request_t *req;
     ptrdiff_t *disps = NULL;
-    ompi_disp_array disps_desc;
+    ompi_disp_array_t disps_desc;
 
     rank = ompi_comm_rank(comm);
     rsize = ompi_comm_remote_size(comm);

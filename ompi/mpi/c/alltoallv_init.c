@@ -50,8 +50,8 @@ int MPI_Alltoallv_init(const void *sendbuf, const int sendcounts[], const int sd
                        MPI_Info info, MPI_Request *request)
 {
     int i, size, err;
-    ompi_count_array sendcounts_desc, recvcounts_desc;
-    ompi_disp_array sdispls_desc, rdispls_desc;
+    ompi_count_array_t sendcounts_desc, recvcounts_desc;
+    ompi_disp_array_t sdispls_desc, rdispls_desc;
 
     SPC_RECORD(OMPI_SPC_ALLTOALLV_INIT, 1);
 

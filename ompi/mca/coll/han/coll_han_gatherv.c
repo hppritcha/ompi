@@ -60,7 +60,7 @@
  *    buffer - it is ok if data from different nodes has gap.
  */
 int mca_coll_han_gatherv_intra(const void *sbuf, size_t scount, struct ompi_datatype_t *sdtype,
-                               void *rbuf, ompi_count_array *rcounts, ompi_disp_array *displs,
+                               void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *displs,
                                struct ompi_datatype_t *rdtype, int root,
                                struct ompi_communicator_t *comm, mca_coll_base_module_t *module)
 {
@@ -70,8 +70,8 @@ int mca_coll_han_gatherv_intra(const void *sbuf, size_t scount, struct ompi_data
     int err, *vranks, low_rank, low_size, up_rank, up_size, *topo;
     size_t *low_rcounts = NULL;
     ptrdiff_t *low_displs = NULL;
-    ompi_count_array low_rcounts_desc;
-    ompi_disp_array low_displs_desc;
+    ompi_count_array_t low_rcounts_desc;
+    ompi_disp_array_t low_displs_desc;
 
     /* Create the subcommunicators */
     err = mca_coll_han_comm_create(comm, han_module);
@@ -130,8 +130,8 @@ int mca_coll_han_gatherv_intra(const void *sbuf, size_t scount, struct ompi_data
         size_t total_up_rcounts = 0;
         ptrdiff_t *up_displs = NULL;
         size_t *up_rcounts = NULL, *up_peer_lb = NULL, *up_peer_ub = NULL;
-        ompi_count_array up_rcounts_desc;
-        ompi_disp_array up_displs_desc;
+        ompi_count_array_t up_rcounts_desc;
+        ompi_disp_array_t up_displs_desc;
         char *bounce_buf = NULL;
 
         low_rcounts = malloc(low_size * sizeof(size_t));

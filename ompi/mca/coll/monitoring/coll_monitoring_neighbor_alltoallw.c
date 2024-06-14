@@ -16,11 +16,11 @@
 #include "ompi/mca/topo/base/base.h"
 #include "coll_monitoring.h"
 
-int mca_coll_monitoring_neighbor_alltoallw(const void *sbuf, ompi_count_array *scounts,
-                                           ompi_disp_array *sdisps,
+int mca_coll_monitoring_neighbor_alltoallw(const void *sbuf, ompi_count_array_t *scounts,
+                                           ompi_disp_array_t *sdisps,
                                            struct ompi_datatype_t * const *sdtypes,
-                                           void *rbuf, ompi_count_array *rcounts,
-                                           ompi_disp_array *rdisps,
+                                           void *rbuf, ompi_count_array_t *rcounts,
+                                           ompi_disp_array_t *rdisps,
                                            struct ompi_datatype_t * const *rdtypes,
                                            struct ompi_communicator_t *comm,
                                            mca_coll_base_module_t *module)
@@ -74,11 +74,11 @@ int mca_coll_monitoring_neighbor_alltoallw(const void *sbuf, ompi_count_array *s
     return monitoring_module->real.coll_neighbor_alltoallw(sbuf, scounts, sdisps, sdtypes, rbuf, rcounts, rdisps, rdtypes, comm, monitoring_module->real.coll_neighbor_alltoallw_module);
 }
 
-int mca_coll_monitoring_ineighbor_alltoallw(const void *sbuf, ompi_count_array *scounts,
-                                            ompi_disp_array *sdisps,
+int mca_coll_monitoring_ineighbor_alltoallw(const void *sbuf, ompi_count_array_t *scounts,
+                                            ompi_disp_array_t *sdisps,
                                             struct ompi_datatype_t * const *sdtypes,
-                                            void *rbuf, ompi_count_array *rcounts,
-                                            ompi_disp_array *rdisps,
+                                            void *rbuf, ompi_count_array_t *rcounts,
+                                            ompi_disp_array_t *rdisps,
                                             struct ompi_datatype_t * const *rdtypes,
                                             struct ompi_communicator_t *comm,
                                             ompi_request_t ** request,

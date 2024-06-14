@@ -45,7 +45,7 @@
  * and count) to send the data to the other.
  */
 static int
-mca_coll_basic_alltoallw_intra_inplace(const void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+mca_coll_basic_alltoallw_intra_inplace(const void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                        struct ompi_datatype_t * const *rdtypes,
                                        struct ompi_communicator_t *comm,
                                        mca_coll_base_module_t *module)
@@ -166,9 +166,9 @@ mca_coll_basic_alltoallw_intra_inplace(const void *rbuf, ompi_count_array *rcoun
  *	Returns:	- MPI_SUCCESS or an MPI error code
  */
 int
-mca_coll_basic_alltoallw_intra(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+mca_coll_basic_alltoallw_intra(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                struct ompi_datatype_t * const *sdtypes,
-                               void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                               void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                struct ompi_datatype_t * const *rdtypes,
                                struct ompi_communicator_t *comm,
                                mca_coll_base_module_t *module)
@@ -280,9 +280,9 @@ mca_coll_basic_alltoallw_intra(const void *sbuf, ompi_count_array *scounts, ompi
  *	Returns:	- MPI_SUCCESS or an MPI error code
  */
 int
-mca_coll_basic_alltoallw_inter(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+mca_coll_basic_alltoallw_inter(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                struct ompi_datatype_t * const *sdtypes,
-                               void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                               void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                struct ompi_datatype_t * const *rdtypes,
                                struct ompi_communicator_t *comm,
                                mca_coll_base_module_t *module)

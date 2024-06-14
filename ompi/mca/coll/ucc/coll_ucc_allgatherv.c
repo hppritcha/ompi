@@ -11,7 +11,7 @@
 
 static inline ucc_status_t mca_coll_ucc_allgatherv_init(const void *sbuf, int scount,
                                                         struct ompi_datatype_t *sdtype,
-                                                        void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                                        void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                                         struct ompi_datatype_t *rdtype,
                                                         mca_coll_ucc_module_t *ucc_module,
                                                         ucc_coll_req_h *req,
@@ -63,7 +63,7 @@ fallback:
 
 int mca_coll_ucc_allgatherv(const void *sbuf, size_t scount,
                             struct ompi_datatype_t *sdtype,
-                            void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                            void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                             struct ompi_datatype_t *rdtype,
                             struct ompi_communicator_t *comm,
                             mca_coll_base_module_t *module)
@@ -88,7 +88,7 @@ fallback:
 
 int mca_coll_ucc_iallgatherv(const void *sbuf, size_t scount,
                              struct ompi_datatype_t *sdtype,
-                             void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                             void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                              struct ompi_datatype_t *rdtype,
                              struct ompi_communicator_t *comm,
                              ompi_request_t** request,

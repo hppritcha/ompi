@@ -49,7 +49,7 @@ int MPI_Ireduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts
                         MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
     int i, err, size, count;
-    ompi_count_array recvcounts_desc;
+    ompi_count_array_t recvcounts_desc;
 
     SPC_RECORD(OMPI_SPC_IREDUCE_SCATTER, 1);
 

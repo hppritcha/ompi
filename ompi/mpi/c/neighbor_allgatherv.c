@@ -53,8 +53,8 @@ int MPI_Neighbor_allgatherv(const void *sendbuf, int sendcount, MPI_Datatype sen
                             MPI_Datatype recvtype, MPI_Comm comm)
 {
     int in_size, out_size, err;
-    ompi_count_array recvcounts_desc;
-    ompi_disp_array displs_desc;
+    ompi_count_array_t recvcounts_desc;
+    ompi_disp_array_t displs_desc;
 
     SPC_RECORD(OMPI_SPC_NEIGHBOR_ALLGATHERV, 1);
 

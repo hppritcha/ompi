@@ -48,8 +48,8 @@ int MPI_Igatherv(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                  MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
 {
     int i, size, err;
-    ompi_count_array recvcounts_desc;
-    ompi_disp_array displs_desc;
+    ompi_count_array_t recvcounts_desc;
+    ompi_disp_array_t displs_desc;
 
     SPC_RECORD(OMPI_SPC_IGATHERV, 1);
 

@@ -48,8 +48,8 @@ int MPI_Scatterv(const void *sendbuf, const int sendcounts[], const int displs[]
                  MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     int i, size, err;
-    ompi_count_array sendcounts_desc;
-    ompi_disp_array displs_desc;
+    ompi_count_array_t sendcounts_desc;
+    ompi_disp_array_t displs_desc;
 
     SPC_RECORD(OMPI_SPC_SCATTERV, 1);
 

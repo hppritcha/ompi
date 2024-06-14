@@ -44,8 +44,8 @@ int mca_sharedfp_individual_collaborate_data(struct mca_sharedfp_base_data_t *sh
     OMPI_MPI_OFFSET_TYPE *offsetbuff = NULL;
     int *countbuff = NULL;
     int *displ = NULL;
-    ompi_count_array countbuff_desc;
-    ompi_disp_array displ_desc;
+    ompi_count_array_t countbuff_desc;
+    ompi_disp_array_t displ_desc;
     double *ind_ts = NULL;
     long *ind_recordlength = NULL;
     OMPI_MPI_OFFSET_TYPE *local_off = NULL;

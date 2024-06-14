@@ -10,8 +10,8 @@
 #include "coll_ucc_common.h"
 
 static inline
-ucc_status_t mca_coll_ucc_scatterv_init(const void *sbuf, ompi_count_array *scounts,
-                                        ompi_disp_array *disps, struct ompi_datatype_t *sdtype,
+ucc_status_t mca_coll_ucc_scatterv_init(const void *sbuf, ompi_count_array_t *scounts,
+                                        ompi_disp_array_t *disps, struct ompi_datatype_t *sdtype,
                                         void *rbuf, size_t rcount,
                                         struct ompi_datatype_t *rdtype, int root,
                                         mca_coll_ucc_module_t *ucc_module,
@@ -74,8 +74,8 @@ fallback:
     return UCC_ERR_NOT_SUPPORTED;
 }
 
-int mca_coll_ucc_scatterv(const void *sbuf, ompi_count_array *scounts,
-                          ompi_disp_array *disps, struct ompi_datatype_t *sdtype,
+int mca_coll_ucc_scatterv(const void *sbuf, ompi_count_array_t *scounts,
+                          ompi_disp_array_t *disps, struct ompi_datatype_t *sdtype,
                           void *rbuf, size_t rcount,
                           struct ompi_datatype_t *rdtype, int root,
                           struct ompi_communicator_t *comm,
@@ -98,8 +98,8 @@ fallback:
                                          ucc_module->previous_scatterv_module);
 }
 
-int mca_coll_ucc_iscatterv(const void *sbuf, ompi_count_array *scounts,
-                           ompi_disp_array *disps, struct ompi_datatype_t *sdtype,
+int mca_coll_ucc_iscatterv(const void *sbuf, ompi_count_array_t *scounts,
+                           ompi_disp_array_t *disps, struct ompi_datatype_t *sdtype,
                            void *rbuf, size_t rcount,
                            struct ompi_datatype_t *rdtype, int root,
                            struct ompi_communicator_t *comm,

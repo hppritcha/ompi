@@ -22,19 +22,19 @@
 #include "nbc_internal.h"
 
 static inline int a2av_sched_linear(int rank, int p, NBC_Schedule *schedule,
-                                    const void *sendbuf, ompi_count_array *sendcounts,
-                                    ompi_disp_array *sdispls, MPI_Aint sndext, MPI_Datatype sendtype, const size_t sdtype_size,
-                                    void *recvbuf, ompi_count_array *recvcounts,
-                                    ompi_disp_array *rdispls, MPI_Aint rcvext, MPI_Datatype recvtype, const size_t rdtype_size);
+                                    const void *sendbuf, ompi_count_array_t *sendcounts,
+                                    ompi_disp_array_t *sdispls, MPI_Aint sndext, MPI_Datatype sendtype, const size_t sdtype_size,
+                                    void *recvbuf, ompi_count_array_t *recvcounts,
+                                    ompi_disp_array_t *rdispls, MPI_Aint rcvext, MPI_Datatype recvtype, const size_t rdtype_size);
 
 static inline int a2av_sched_pairwise(int rank, int p, NBC_Schedule *schedule,
-                                      const void *sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
+                                      const void *sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
                                       MPI_Aint sndext, MPI_Datatype sendtype, const size_t sdtype_size,
-                                      void *recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+                                      void *recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                       MPI_Aint rcvext, MPI_Datatype recvtype, const size_t rdtype_size);
 
 static inline int a2av_sched_inplace(int rank, int p, NBC_Schedule *schedule,
-                                    void *buf, ompi_count_array *counts, ompi_disp_array *displs,
+                                    void *buf, ompi_count_array_t *counts, ompi_disp_array_t *displs,
                                     MPI_Aint ext, MPI_Datatype type, const size_t dtype_size, ptrdiff_t gap);
 
 /* an alltoallv schedule can not be cached easily because the contents
@@ -42,8 +42,8 @@ static inline int a2av_sched_inplace(int rank, int p, NBC_Schedule *schedule,
  * would not be sufficient ... we simply do not cache it */
 
 /* simple linear Alltoallv */
-static int nbc_alltoallv_init(const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-                              MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+static int nbc_alltoallv_init(const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+                              MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                               MPI_Datatype recvtype, struct ompi_communicator_t *comm, ompi_request_t ** request,
                               mca_coll_base_module_t *module, bool persistent)
 {
@@ -152,8 +152,8 @@ static int nbc_alltoallv_init(const void* sendbuf, ompi_count_array *sendcounts,
   return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_ialltoallv(const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-                                MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+int ompi_coll_libnbc_ialltoallv(const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+                                MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                 MPI_Datatype recvtype, struct ompi_communicator_t *comm, ompi_request_t ** request,
                                 mca_coll_base_module_t *module) {
     int res = nbc_alltoallv_init(sendbuf, sendcounts, sdispls, sendtype,
@@ -174,8 +174,8 @@ int ompi_coll_libnbc_ialltoallv(const void* sendbuf, ompi_count_array *sendcount
 }
 
 /* simple linear Alltoallv */
-static int nbc_alltoallv_inter_init (const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-                                     MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+static int nbc_alltoallv_inter_init (const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+                                     MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                      MPI_Datatype recvtype, struct ompi_communicator_t *comm, ompi_request_t ** request,
                                      mca_coll_base_module_t *module, bool persistent)
 {
@@ -243,8 +243,8 @@ static int nbc_alltoallv_inter_init (const void* sendbuf, ompi_count_array *send
   return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_ialltoallv_inter (const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-				       MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+int ompi_coll_libnbc_ialltoallv_inter (const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+				       MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
 				       MPI_Datatype recvtype, struct ompi_communicator_t *comm, ompi_request_t ** request,
 				       mca_coll_base_module_t *module) {
     int res = nbc_alltoallv_inter_init(sendbuf, sendcounts, sdispls, sendtype,
@@ -266,9 +266,9 @@ int ompi_coll_libnbc_ialltoallv_inter (const void* sendbuf, ompi_count_array *se
 
 __opal_attribute_unused__
 static inline int a2av_sched_linear(int rank, int p, NBC_Schedule *schedule,
-                                    const void *sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
+                                    const void *sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
                                     MPI_Aint sndext, MPI_Datatype sendtype, const size_t sdtype_size,
-                                    void *recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+                                    void *recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                     MPI_Aint rcvext, MPI_Datatype recvtype, const size_t rdtype_size) {
   int res;
 
@@ -301,9 +301,9 @@ static inline int a2av_sched_linear(int rank, int p, NBC_Schedule *schedule,
 
 __opal_attribute_unused__
 static inline int a2av_sched_pairwise(int rank, int p, NBC_Schedule *schedule,
-                                      const void *sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
+                                      const void *sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
                                       MPI_Aint sndext, MPI_Datatype sendtype, const size_t sdtype_size,
-                                      void *recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+                                      void *recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                       MPI_Aint rcvext, MPI_Datatype recvtype, const size_t rdtype_size) {
   int res;
 
@@ -334,7 +334,7 @@ static inline int a2av_sched_pairwise(int rank, int p, NBC_Schedule *schedule,
 }
 
 static inline int a2av_sched_inplace(int rank, int p, NBC_Schedule *schedule,
-                                    void *buf, ompi_count_array *counts, ompi_disp_array *displs,
+                                    void *buf, ompi_count_array_t *counts, ompi_disp_array_t *displs,
                                     MPI_Aint ext, MPI_Datatype type, const size_t dtype_size, ptrdiff_t gap) {
   int res;
 
@@ -411,8 +411,8 @@ static inline int a2av_sched_inplace(int rank, int p, NBC_Schedule *schedule,
   return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_alltoallv_init(const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-                                    MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+int ompi_coll_libnbc_alltoallv_init(const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+                                    MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                     MPI_Datatype recvtype, struct ompi_communicator_t *comm, MPI_Info info, ompi_request_t ** request,
                                     mca_coll_base_module_t *module) {
     int res = nbc_alltoallv_init(sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype,
@@ -424,8 +424,8 @@ int ompi_coll_libnbc_alltoallv_init(const void* sendbuf, ompi_count_array *sendc
     return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_alltoallv_inter_init(const void* sendbuf, ompi_count_array *sendcounts, ompi_disp_array *sdispls,
-                                          MPI_Datatype sendtype, void* recvbuf, ompi_count_array *recvcounts, ompi_disp_array *rdispls,
+int ompi_coll_libnbc_alltoallv_inter_init(const void* sendbuf, ompi_count_array_t *sendcounts, ompi_disp_array_t *sdispls,
+                                          MPI_Datatype sendtype, void* recvbuf, ompi_count_array_t *recvcounts, ompi_disp_array_t *rdispls,
                                           MPI_Datatype recvtype, struct ompi_communicator_t *comm, MPI_Info info, ompi_request_t ** request,
                                           mca_coll_base_module_t *module) {
     int res = nbc_alltoallv_inter_init(sendbuf, sendcounts, sdispls, sendtype, recvbuf, recvcounts, rdispls, recvtype,

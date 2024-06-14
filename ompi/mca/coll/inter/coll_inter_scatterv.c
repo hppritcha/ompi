@@ -39,8 +39,8 @@
  *	Returns:	- MPI_SUCCESS or error code
  */
 int
-mca_coll_inter_scatterv_inter(const void *sbuf, ompi_count_array *scounts,
-                              ompi_disp_array *disps, struct ompi_datatype_t *sdtype,
+mca_coll_inter_scatterv_inter(const void *sbuf, ompi_count_array_t *scounts,
+                              ompi_disp_array_t *disps, struct ompi_datatype_t *sdtype,
                               void *rbuf, size_t rcount,
                               struct ompi_datatype_t *rdtype, int root,
                               struct ompi_communicator_t *comm,
@@ -50,8 +50,8 @@ mca_coll_inter_scatterv_inter(const void *sbuf, ompi_count_array *scounts,
     size_t total = 0;
     size_t *counts=NULL;
     ptrdiff_t *displace=NULL;
-    ompi_count_array counts_arg;
-    ompi_disp_array displace_arg;
+    ompi_count_array_t counts_arg;
+    ompi_disp_array_t displace_arg;
     char *ptmp_free=NULL, *ptmp=NULL;
     ompi_datatype_t *ndtype;
 

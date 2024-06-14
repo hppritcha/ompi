@@ -148,8 +148,8 @@ int mca_fcoll_dynamic_gen2_file_write_all (struct ompio_file_t *fh,
     int *aggregators=NULL;
     int *result_counts=NULL;
 
-    ompi_count_array fview_count_desc;
-    ompi_disp_array displs_desc;
+    ompi_count_array_t fview_count_desc;
+    ompi_disp_array_t displs_desc;
 
 #if OMPIO_FCOLL_WANT_TIME_BREAKDOWN
     double write_time = 0.0, start_write_time = 0.0, end_write_time = 0.0;

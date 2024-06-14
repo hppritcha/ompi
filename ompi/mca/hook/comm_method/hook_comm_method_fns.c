@@ -543,8 +543,8 @@ ompi_report_comm_methods(int called_from_location)
 // the sizes first and allocate the receiving string.
     {
         int len, *lens, *disps;
-        ompi_count_array lens_desc;
-        ompi_disp_array disps_desc;
+        ompi_count_array_t lens_desc;
+        ompi_disp_array_t disps_desc;
 
         // First get the array of host strings (host names and task lists) 
         // for all nodes.

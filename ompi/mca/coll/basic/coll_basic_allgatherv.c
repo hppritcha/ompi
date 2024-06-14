@@ -40,7 +40,7 @@
 int
 mca_coll_basic_allgatherv_inter(const void *sbuf, size_t scount,
                                 struct ompi_datatype_t *sdtype,
-                                void *rbuf, ompi_count_array *rcounts, ompi_disp_array *disps,
+                                void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *disps,
                                 struct ompi_datatype_t *rdtype,
                                 struct ompi_communicator_t *comm,
                                 mca_coll_base_module_t *module)
@@ -48,8 +48,8 @@ mca_coll_basic_allgatherv_inter(const void *sbuf, size_t scount,
     int rsize, err, i;
     size_t *scounts;
     ptrdiff_t *sdisps;
-    ompi_count_array scounts_desc;
-    ompi_disp_array sdisps_desc;
+    ompi_count_array_t scounts_desc;
+    ompi_disp_array_t sdisps_desc;
 
     rsize = ompi_comm_remote_size(comm);
 

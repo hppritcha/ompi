@@ -158,9 +158,9 @@ int ompi_coll_tuned_alltoall_intra_dec_dynamic(const void *sbuf, size_t scount,
  *    Returns:    - MPI_SUCCESS or error code
  */
 
-int ompi_coll_tuned_alltoallv_intra_dec_dynamic(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps,
+int ompi_coll_tuned_alltoallv_intra_dec_dynamic(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps,
                                                 struct ompi_datatype_t *sdtype,
-                                                void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                                void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                                 struct ompi_datatype_t *rdtype,
                                                 struct ompi_communicator_t *comm,
                                                 mca_coll_base_module_t *module)
@@ -357,7 +357,7 @@ int ompi_coll_tuned_reduce_intra_dec_dynamic( const void *sbuf, void *rbuf,
  *
  */
 int ompi_coll_tuned_reduce_scatter_intra_dec_dynamic(const void *sbuf, void *rbuf,
-                                                     ompi_count_array *rcounts,
+                                                     ompi_count_array_t *rcounts,
                                                      struct ompi_datatype_t *dtype,
                                                      struct ompi_op_t *op,
                                                      struct ompi_communicator_t *comm,
@@ -528,8 +528,8 @@ int ompi_coll_tuned_allgather_intra_dec_dynamic(const void *sbuf, size_t scount,
 
 int ompi_coll_tuned_allgatherv_intra_dec_dynamic(const void *sbuf, size_t scount,
                                                  struct ompi_datatype_t *sdtype,
-                                                 void* rbuf, ompi_count_array *rcounts,
-                                                 ompi_disp_array *rdispls,
+                                                 void* rbuf, ompi_count_array_t *rcounts,
+                                                 ompi_disp_array_t *rdispls,
                                                  struct ompi_datatype_t *rdtype,
                                                  struct ompi_communicator_t *comm,
                                                  mca_coll_base_module_t *module)

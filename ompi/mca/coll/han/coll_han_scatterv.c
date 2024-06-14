@@ -63,7 +63,7 @@
  * packed form of MPI_BYTE type. This works for Gatherv but NOT for Scatterv provided that the Root
  * has a different architecture, e.g. endianness, integer representation, etc.
  */
-int mca_coll_han_scatterv_intra(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *displs,
+int mca_coll_han_scatterv_intra(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *displs,
                                 struct ompi_datatype_t *sdtype, void *rbuf, size_t rcount,
                                 struct ompi_datatype_t *rdtype, int root,
                                 struct ompi_communicator_t *comm, mca_coll_base_module_t *module)
@@ -74,8 +74,8 @@ int mca_coll_han_scatterv_intra(const void *sbuf, ompi_count_array *scounts, omp
     int err, *vranks, low_rank, low_size, up_rank, up_size, *topo;
     size_t *low_scounts = NULL;
     ptrdiff_t *low_displs = NULL;
-    ompi_count_array low_scounts_desc;
-    ompi_disp_array low_displs_desc;
+    ompi_count_array_t low_scounts_desc;
+    ompi_disp_array_t low_displs_desc;
     ompi_request_t *iscatterv_req = NULL;
 
     /* Create the subcommunicators */
@@ -144,8 +144,8 @@ int mca_coll_han_scatterv_intra(const void *sbuf, ompi_count_array *scounts, omp
         size_t total_up_scounts = 0;
         ptrdiff_t *up_displs = NULL;
         size_t *up_scounts = NULL, *up_peer_lb = NULL, *up_peer_ub = NULL;
-        ompi_count_array up_scounts_desc;
-        ompi_disp_array up_displs_desc;
+        ompi_count_array_t up_scounts_desc;
+        ompi_disp_array_t up_displs_desc;
         char *reorder_sbuf = (char *) sbuf, *bounce_buf = NULL;
 
         low_scounts = malloc(low_size * sizeof(size_t));

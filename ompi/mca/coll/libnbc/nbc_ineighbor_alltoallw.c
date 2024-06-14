@@ -43,8 +43,8 @@ int NBC_Ineighbor_alltoallw_args_compare(NBC_Ineighbor_alltoallw_args *a, NBC_In
 }
 #endif
 
-static int nbc_neighbor_alltoallw_init(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps, struct ompi_datatype_t * const *stypes,
-                                       void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps, struct ompi_datatype_t * const *rtypes,
+static int nbc_neighbor_alltoallw_init(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps, struct ompi_datatype_t * const *stypes,
+                                       void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps, struct ompi_datatype_t * const *rtypes,
                                        struct ompi_communicator_t *comm, ompi_request_t ** request,
                                        mca_coll_base_module_t *module, bool persistent) {
   int res, indegree, outdegree, *srcs, *dsts;
@@ -158,8 +158,8 @@ static int nbc_neighbor_alltoallw_init(const void *sbuf, ompi_count_array *scoun
   return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_ineighbor_alltoallw(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps, struct ompi_datatype_t * const *stypes,
-                                         void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps, struct ompi_datatype_t * const *rtypes,
+int ompi_coll_libnbc_ineighbor_alltoallw(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps, struct ompi_datatype_t * const *stypes,
+                                         void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps, struct ompi_datatype_t * const *rtypes,
                                          struct ompi_communicator_t *comm, ompi_request_t ** request,
                                          mca_coll_base_module_t *module) {
     int res = nbc_neighbor_alltoallw_init(sbuf, scounts, sdisps, stypes, rbuf, rcounts, rdisps, rtypes,
@@ -177,8 +177,8 @@ int ompi_coll_libnbc_ineighbor_alltoallw(const void *sbuf, ompi_count_array *sco
     return OMPI_SUCCESS;
 }
 
-int ompi_coll_libnbc_neighbor_alltoallw_init(const void *sbuf, ompi_count_array *scounts, ompi_disp_array *sdisps, struct ompi_datatype_t * const *stypes,
-                                             void *rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps, struct ompi_datatype_t * const *rtypes,
+int ompi_coll_libnbc_neighbor_alltoallw_init(const void *sbuf, ompi_count_array_t *scounts, ompi_disp_array_t *sdisps, struct ompi_datatype_t * const *stypes,
+                                             void *rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps, struct ompi_datatype_t * const *rtypes,
                                              struct ompi_communicator_t *comm, MPI_Info info, ompi_request_t ** request,
                                              mca_coll_base_module_t *module) {
     int res = nbc_neighbor_alltoallw_init(sbuf, scounts, sdisps, stypes, rbuf, rcounts, rdisps, rtypes,

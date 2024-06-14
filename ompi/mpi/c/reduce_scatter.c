@@ -48,7 +48,7 @@ int MPI_Reduce_scatter(const void *sendbuf, void *recvbuf, const int recvcounts[
                        MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
     int i, err, size, count;
-    ompi_count_array recvcounts_desc;
+    ompi_count_array_t recvcounts_desc;
 
     SPC_RECORD(OMPI_SPC_REDUCE_SCATTER, 1);
 

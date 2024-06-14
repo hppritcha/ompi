@@ -94,8 +94,8 @@
  */
 int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, size_t scount,
                                            struct ompi_datatype_t *sdtype,
-                                           void *rbuf, ompi_count_array *rcounts,
-                                           ompi_disp_array *rdispls,
+                                           void *rbuf, ompi_count_array_t *rcounts,
+                                           ompi_disp_array_t *rdispls,
                                            struct ompi_datatype_t *rdtype,
                                            struct ompi_communicator_t *comm,
                                            mca_coll_base_module_t *module)
@@ -258,8 +258,8 @@ int ompi_coll_base_allgatherv_intra_bruck(const void *sbuf, size_t scount,
 
 int ompi_coll_base_allgatherv_intra_sparbit(const void *sbuf, size_t scount,
                                            struct ompi_datatype_t *sdtype,
-                                           void* rbuf, ompi_count_array *rcounts,
-                                           ompi_disp_array *rdispls,
+                                           void* rbuf, ompi_count_array_t *rcounts,
+                                           ompi_disp_array_t *rdispls,
                                            struct ompi_datatype_t *rdtype,
                                            struct ompi_communicator_t *comm,
                                            mca_coll_base_module_t *module)
@@ -377,7 +377,7 @@ err_hndl:
  */
 int ompi_coll_base_allgatherv_intra_ring(const void *sbuf, size_t scount,
                                           struct ompi_datatype_t *sdtype,
-                                          void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+                                          void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                           struct ompi_datatype_t *rdtype,
                                           struct ompi_communicator_t *comm,
                                           mca_coll_base_module_t *module)
@@ -504,7 +504,7 @@ int ompi_coll_base_allgatherv_intra_ring(const void *sbuf, size_t scount,
 int
 ompi_coll_base_allgatherv_intra_neighborexchange(const void *sbuf, size_t scount,
                                                   struct ompi_datatype_t *sdtype,
-                                                  void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdispls,
+                                                  void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdispls,
                                                   struct ompi_datatype_t *rdtype,
                                                   struct ompi_communicator_t *comm,
                                                   mca_coll_base_module_t *module)
@@ -661,8 +661,8 @@ ompi_coll_base_allgatherv_intra_neighborexchange(const void *sbuf, size_t scount
 
 int ompi_coll_base_allgatherv_intra_two_procs(const void *sbuf, size_t scount,
                                                struct ompi_datatype_t *sdtype,
-                                               void* rbuf, ompi_count_array *rcounts,
-                                               ompi_disp_array *rdispls,
+                                               void* rbuf, ompi_count_array_t *rcounts,
+                                               ompi_disp_array_t *rdispls,
                                                struct ompi_datatype_t *rdtype,
                                                struct ompi_communicator_t *comm,
                                                mca_coll_base_module_t *module)
@@ -747,8 +747,8 @@ int ompi_coll_base_allgatherv_intra_two_procs(const void *sbuf, size_t scount,
 int
 ompi_coll_base_allgatherv_intra_basic_default(const void *sbuf, size_t scount,
                                               struct ompi_datatype_t *sdtype,
-                                              void *rbuf, ompi_count_array *rcounts,
-                                              ompi_disp_array *disps,
+                                              void *rbuf, ompi_count_array_t *rcounts,
+                                              ompi_disp_array_t *disps,
                                               struct ompi_datatype_t *rdtype,
                                               struct ompi_communicator_t *comm,
                                               mca_coll_base_module_t *module)

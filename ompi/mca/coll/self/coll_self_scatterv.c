@@ -32,8 +32,8 @@
  *	Accepts:	- same arguments as MPI_Scatter()
  *	Returns:	- MPI_SUCCESS or error code
  */
-int mca_coll_self_scatterv_intra(const void *sbuf, ompi_count_array *scounts,
-                                 ompi_disp_array *disps, struct ompi_datatype_t *sdtype,
+int mca_coll_self_scatterv_intra(const void *sbuf, ompi_count_array_t *scounts,
+                                 ompi_disp_array_t *disps, struct ompi_datatype_t *sdtype,
                                  void *rbuf, size_t rcount,
                                  struct ompi_datatype_t *rdtype, int root,
                                  struct ompi_communicator_t *comm,

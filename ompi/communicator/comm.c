@@ -2402,8 +2402,8 @@ int ompi_comm_determine_first ( ompi_communicator_t *intercomm, int high )
     int rank, rsize;
     int *rcounts;
     int *rdisps;
-    ompi_count_array rcounts_desc;
-    ompi_disp_array rdisps_desc;
+    ompi_count_array_t rcounts_desc;
+    ompi_disp_array_t rdisps_desc;
     int scount=0;
     int rc;
 

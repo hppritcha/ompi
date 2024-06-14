@@ -45,7 +45,7 @@
  * appropriate scatterv call.
  */
 int ompi_coll_base_reduce_scatter_intra_nonoverlapping(const void *sbuf, void *rbuf,
-                                                        ompi_count_array *rcounts,
+                                                        ompi_count_array_t *rcounts,
                                                         struct ompi_datatype_t *dtype,
                                                         struct ompi_op_t *op,
                                                         struct ompi_communicator_t *comm,
@@ -53,7 +53,7 @@ int ompi_coll_base_reduce_scatter_intra_nonoverlapping(const void *sbuf, void *r
 {
     int err, i, rank, size, total_count;
     ptrdiff_t *displs = NULL;
-    ompi_disp_array displs_arg;
+    ompi_disp_array_t displs_arg;
     const int root = 0;
     char *tmprbuf = NULL, *tmprbuf_free = NULL;
 
@@ -134,7 +134,7 @@ int ompi_coll_base_reduce_scatter_intra_nonoverlapping(const void *sbuf, void *r
 int
 ompi_coll_base_reduce_scatter_intra_basic_recursivehalving( const void *sbuf,
                                                             void *rbuf,
-                                                            ompi_count_array *rcounts,
+                                                            ompi_count_array_t *rcounts,
                                                             struct ompi_datatype_t *dtype,
                                                             struct ompi_op_t *op,
                                                             struct ompi_communicator_t *comm,
@@ -460,7 +460,7 @@ ompi_coll_base_reduce_scatter_intra_basic_recursivehalving( const void *sbuf,
  *
  */
 int
-ompi_coll_base_reduce_scatter_intra_ring( const void *sbuf, void *rbuf, ompi_count_array *rcounts,
+ompi_coll_base_reduce_scatter_intra_ring( const void *sbuf, void *rbuf, ompi_count_array_t *rcounts,
                                           struct ompi_datatype_t *dtype,
                                           struct ompi_op_t *op,
                                           struct ompi_communicator_t *comm,
@@ -636,7 +636,7 @@ ompi_coll_base_reduce_scatter_intra_ring( const void *sbuf, void *rbuf, ompi_cou
  * ompi_sum_counts: Returns sum of counts [lo, hi]
  *                  lo, hi in {0, 1, ..., nprocs_pof2 - 1}
  */
-static size_t ompi_sum_counts(ompi_count_array *counts, ptrdiff_t *displs, int nprocs_rem, int lo, int hi)
+static size_t ompi_sum_counts(ompi_count_array_t *counts, ptrdiff_t *displs, int nprocs_rem, int lo, int hi)
 {
     /* Adjust lo and hi for taking into account blocks of excluded processes */
     lo = (lo < nprocs_rem) ? lo * 2 : lo + nprocs_rem;
@@ -699,7 +699,7 @@ static size_t ompi_sum_counts(ompi_count_array *counts, ptrdiff_t *displs, int n
  */
 int
 ompi_coll_base_reduce_scatter_intra_butterfly(
-    const void *sbuf, void *rbuf, ompi_count_array *rcounts, struct ompi_datatype_t *dtype,
+    const void *sbuf, void *rbuf, ompi_count_array_t *rcounts, struct ompi_datatype_t *dtype,
     struct ompi_op_t *op, struct ompi_communicator_t *comm,
     mca_coll_base_module_t *module)
 {

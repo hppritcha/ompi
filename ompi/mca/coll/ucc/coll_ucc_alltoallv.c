@@ -9,9 +9,9 @@
 
 #include "coll_ucc_common.h"
 
-static inline ucc_status_t mca_coll_ucc_alltoallv_init(const void *sbuf, ompi_count_array *scounts,
-                                                       ompi_disp_array *sdisps, struct ompi_datatype_t *sdtype,
-                                                       void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+static inline ucc_status_t mca_coll_ucc_alltoallv_init(const void *sbuf, ompi_count_array_t *scounts,
+                                                       ompi_disp_array_t *sdisps, struct ompi_datatype_t *sdtype,
+                                                       void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                                                        struct ompi_datatype_t *rdtype,
                                                        mca_coll_ucc_module_t *ucc_module,
                                                        ucc_coll_req_h *req,
@@ -63,9 +63,9 @@ fallback:
     return UCC_ERR_NOT_SUPPORTED;
 }
 
-int mca_coll_ucc_alltoallv(const void *sbuf, ompi_count_array *scounts,
-                           ompi_disp_array *sdisps, struct ompi_datatype_t *sdtype,
-                           void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+int mca_coll_ucc_alltoallv(const void *sbuf, ompi_count_array_t *scounts,
+                           ompi_disp_array_t *sdisps, struct ompi_datatype_t *sdtype,
+                           void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                            struct ompi_datatype_t *rdtype,
                            struct ompi_communicator_t *comm,
                            mca_coll_base_module_t *module)
@@ -88,9 +88,9 @@ fallback:
                                           comm, ucc_module->previous_alltoallv_module);
 }
 
-int mca_coll_ucc_ialltoallv(const void *sbuf, ompi_count_array *scounts,
-                            ompi_disp_array *sdisps, struct ompi_datatype_t *sdtype,
-                            void* rbuf, ompi_count_array *rcounts, ompi_disp_array *rdisps,
+int mca_coll_ucc_ialltoallv(const void *sbuf, ompi_count_array_t *scounts,
+                            ompi_disp_array_t *sdisps, struct ompi_datatype_t *sdtype,
+                            void* rbuf, ompi_count_array_t *rcounts, ompi_disp_array_t *rdisps,
                             struct ompi_datatype_t *rdtype,
                             struct ompi_communicator_t *comm,
                             ompi_request_t** request,

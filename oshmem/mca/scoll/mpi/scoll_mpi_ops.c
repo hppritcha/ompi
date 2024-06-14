@@ -115,8 +115,8 @@ int mca_scoll_mpi_collect(struct oshmem_group_t *group,
     int i;
     void *sbuf, *rbuf;
     int *disps, *recvcounts;
-    ompi_count_array recvcounts_desc;
-    ompi_disp_array disps_desc;
+    ompi_count_array_t recvcounts_desc;
+    ompi_disp_array_t disps_desc;
     MPI_COLL_VERBOSE(20,"RUNNING MPI ALLGATHER");
     mpi_module = (mca_scoll_mpi_module_t *) group->g_scoll.scoll_collect_module;
 
