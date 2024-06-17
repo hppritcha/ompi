@@ -119,7 +119,7 @@ static inline void ompi_disp_array_init_c(ompi_disp_array_t *array, const ptrdif
         if (sizeof(*(data)) == sizeof(int)) { \
             ompi_disp_array_init(array, (const int *) (data)); \
         } else if (sizeof(*(data)) == sizeof(ptrdiff_t)) { \
-            ompi_disp_array_init(array, (const ptrdiff_t *) (data)); \
+            ompi_disp_array_init_c(array, (const ptrdiff_t *) (data)); \
         } \
     } while(0)
 #endif
