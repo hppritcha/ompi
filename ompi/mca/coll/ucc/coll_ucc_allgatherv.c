@@ -52,7 +52,7 @@ static inline ucc_status_t mca_coll_ucc_allgatherv_init(const void *sbuf, int sc
     };
 
     if (MPI_IN_PLACE == sbuf) {
-        coll.mask  |= UCC_COLL_ARGS_FIELD_FLAGS;
+        coll.mask  = UCC_COLL_ARGS_FIELD_FLAGS;
         coll.flags |= UCC_COLL_ARGS_FLAG_IN_PLACE;
     }
     COLL_UCC_REQ_INIT(coll_req, req, coll, ucc_module);

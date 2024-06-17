@@ -101,8 +101,8 @@ mca_coll_inter_scatterv_inter(const void *sbuf, ompi_count_array_t *scounts,
 	    }
 	}
 	/* perform the scatterv locally */
-    OMPI_COUNT_ARRAY_INIT(&counts_arg, counts);
-    OMPI_DISP_ARRAY_INIT(&displace_arg, displace);
+	OMPI_COUNT_ARRAY_INIT(&counts_arg, counts);
+	OMPI_DISP_ARRAY_INIT(&displace_arg, displace);
 	err = comm->c_local_comm->c_coll->coll_scatterv(ptmp, &counts_arg, &displace_arg,
 						       rdtype, rbuf, rcount,
 						       rdtype, 0, comm->c_local_comm,
@@ -122,37 +122,37 @@ mca_coll_inter_scatterv_inter(const void *sbuf, ompi_count_array_t *scounts,
 	}
 
     } else {
-    /* We must ensure that rank 0 receives a size_t array */
-    size_t *tmp_scounts_root = malloc(sizeof(size_t) * size);
-    if (NULL == tmp_scounts_root) {
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
-    for (i = 0; i < size; ++i) {
-        tmp_scounts_root[i] = ompi_count_array_get(scounts, i);
-    }
+	/* We must ensure that rank 0 receives a size_t array */
+	size_t *tmp_scounts_root = malloc(sizeof(size_t) * size);
+	if (NULL == tmp_scounts_root) {
+	    return OMPI_ERR_OUT_OF_RESOURCE;
+	}
+	for (i = 0; i < size; ++i) {
+	    tmp_scounts_root[i] = ompi_count_array_get(scounts, i);
+	}
 	err = MCA_PML_CALL(send(tmp_scounts_root, sizeof(size_t) * size, MPI_BYTE, 0,
 				MCA_COLL_BASE_TAG_SCATTERV,
 				MCA_PML_BASE_SEND_STANDARD, comm));
-    free(tmp_scounts_root);
+	free(tmp_scounts_root);
 
 	if (OMPI_SUCCESS != err) {
 	    return err;
 	}
 
-    /* TODO:BIGCOUNT: Remove these temporaries once ompi_datatype is updated for bigcount */
-    int *tmp_scounts = malloc(sizeof(int) * size);
-    int *tmp_disps = malloc(sizeof(int) * size);
-    if (NULL == tmp_scounts || NULL == tmp_disps) {
-        return OMPI_ERR_OUT_OF_RESOURCE;
-    }
-    for (i = 0; i < size; ++i) {
-        tmp_scounts[i] = (int) ompi_count_array_get(scounts, i);
-        tmp_disps[i] = (int) ompi_disp_array_get(disps, i);
-    }
+	/* TODO:BIGCOUNT: Remove these temporaries once ompi_datatype is updated for bigcount */
+	int *tmp_scounts = malloc(sizeof(int) * size);
+	int *tmp_disps = malloc(sizeof(int) * size);
+	if (NULL == tmp_scounts || NULL == tmp_disps) {
+	    return OMPI_ERR_OUT_OF_RESOURCE;
+	}
+	for (i = 0; i < size; ++i) {
+	    tmp_scounts[i] = (int) ompi_count_array_get(scounts, i);
+	    tmp_disps[i] = (int) ompi_disp_array_get(disps, i);
+	}
 	ompi_datatype_create_indexed(size,tmp_scounts,tmp_disps,sdtype,&ndtype);
 	ompi_datatype_commit(&ndtype);
-    free(tmp_scounts);
-    free(tmp_disps);
+	free(tmp_scounts);
+	free(tmp_disps);
 
 	err = MCA_PML_CALL(send(sbuf, 1, ndtype, 0,
 				MCA_COLL_BASE_TAG_SCATTERV,
