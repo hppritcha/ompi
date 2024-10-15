@@ -48,7 +48,6 @@ PROTOTYPE ERROR_CLASS type_get_extent(DATATYPE type, AINT_COUNT_OUT lb, AINT_COU
     }
   }
 
-  /* TODO:BIGCOUNT: Does ompi_datatype_get_extent() need a bigcount variant? */
   rc = ompi_datatype_get_extent( type, &tmp_lb, &tmp_extent );
   *lb = tmp_lb;
   *extent = tmp_extent;
