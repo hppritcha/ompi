@@ -66,7 +66,7 @@ PROTOTYPE ERROR_CLASS win_create(BUFFER_OUT base, AINT size, DISP disp_unit,
     }
 
     /* create window and return */
-    /* TODO:BIGCOUNT: Need to update internal function with ptrdiff_t */
+    /* TODO:BIGCOUNT: Need to update internal function with ptrdiff_t for disp_unit argument */
     ret = ompi_win_create(base, (size_t)size, disp_unit, comm,
                           &(info->super), win);
     if (OMPI_SUCCESS != ret) {
