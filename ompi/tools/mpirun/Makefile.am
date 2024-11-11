@@ -21,7 +21,8 @@ mpirun_SOURCES = \
     main.c
 
 mpirun_LDADD = \
-	$(top_builddir)/opal/libopen-pal_core.la
+	$(top_builddir)/opal/libopen-pal_core.la \
+	$(top_builddir)/3rd-party/src/libprrte.la
 
 mpirun_CPPFLAGS = \
     -DMCA_oshmem_FRAMEWORKS="\"$(MCA_oshmem_FRAMEWORKS)\"" \
