@@ -59,17 +59,25 @@ OPAL_VAR_SCOPE_PUSH([prrte_setup_internal_happy target_rst_dir])
     AC_ARG_WITH([prrte],
        [AS_HELP_STRING([--with-prrte],
            [Enable/disable building with PRRTE. Supports 'yes' and 'no', defaulting to 'yes'])])
+    
+    AC_ARG_WITH([rte],
+       [AS_HELP_STRING([--with-rte],
+           [Enable/disable building with RTE. Supports 'yes' and 'no', defaulting to 'yes'])])
+    
+    # Checking if --with-prrte and --with-rte values differ. 
+    AS_IF([test -n "$with_prrte" -a -n "$with_rte" -a "$with_prrte" != "$with_rte"],
+         AC_MSG_ERROR(['--with-prrte' and '--with-rte' are both defined but have differing values. Please specify one or the other.]))
+
+    # Setting --with-prrte to --with-rte's value to avoid duplicate code
+    AS_IF([test -z "$with_prrte"],
+          [with_prrte="$with_rte"])
 
     # We only want to accept 'yes' or 'no' as args for --with-prrte. 
     # If user does not specify, it defaults to 'yes'.
     # We no longer support external prrte builds.
     prrte_setup_internal_happy=0
     AS_IF([test "$with_prrte" != "yes" -a "$with_prrte" != "no" -a "$with_prrte" != ""],
-         AC_MSG_ERROR(["--with-prrte option defaults to 'yes' and supports 'yes' or 'no'. External PRRTE builds are no longer supported.]))
-
-    AC_ARG_WITH([prrte-bindir],
-       [AS_HELP_STRING([--with-prrte-bindir=DIR],
-           [Search for PRRTE binaries in DIR.  Defaults to PRRTE_DIR/bin if not specified])])
+         AC_MSG_ERROR(['--with-prrte' option defaults to 'yes' and supports 'yes' or 'no'. External PRRTE builds are no longer supported.]))
     
     # Determines if user wants to build with PRRTE. 
     # Defaults to building with PRRTE if unspecified.
