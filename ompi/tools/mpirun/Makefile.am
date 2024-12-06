@@ -21,8 +21,8 @@ mpirun_SOURCES = \
     main.c
 
 #
-# TODO: replace hard-wired prrte prefix with something configurable
-# 
+# TODO: HPP replace hard-wired prrte prefix with something configurable
+#
 mpirun_LDADD = \
 	$(top_builddir)/opal/libopen-pal_core.la \
 	$(top_builddir)/3rd-party/prrte/src/libompi-prrte.la
