@@ -191,11 +191,19 @@ ompi_mtl_ofi_context_progress(int ctxt_id)
         }
 
         if (!error.op_context) {
-            opal_output(0, "%s:%d: Error returned from fi_cq_readerr with null context. "
-                           "Completion flags: %016lx\n"
+                opal_output(0, "%s:%d: Error returned from fi_cq_readerr with null context. "
+                               "Completion flags: %016lx %s\n"
                            "*** The Open MPI OFI MTL is aborting the MPI job (via exit(3)).\n",
                            __FILE__, __LINE__, error.flags);
             goto bail;
+        }
+
+        char errno_buf[1024];
+        if (fi_cq_strerror(ompi_mtl_ofi.ofi_ctxt[ctxt_id].cq,
+                           error.prov_errno, error.err_data, errno_buf, sizeof(errno_buf)) != NULL) {
+            opal_output(0, "%s:%d: fi_cq_readerr reports provider error : %s(%d).\n"
+                           "*** The Open MPI OFI MTL is aborting the MPI job (via exit(3)).\n",
+                           __FILE__, __LINE__, errno_buf, error.prov_errno);
         }
 
         ofi_req = TO_OFI_REQ(error.op_context);

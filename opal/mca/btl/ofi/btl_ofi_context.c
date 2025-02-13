@@ -384,7 +384,12 @@ int mca_btl_ofi_context_progress(mca_btl_ofi_context_t *context)
             BTL_ERROR(("%s:%d: Error returned from fi_cq_readerr: %s(%d)", __FILE__, __LINE__,
                        fi_strerror(-ret), ret));
         } else {
-            BTL_ERROR(("fi_cq_readerr: (provider err_code = %d)\n", cqerr.prov_errno));
+            char errno_buf[1024];
+            if (fi_cq_strerror(context->cq, cqerr.prov_errno, cqerr.err_data, errno_buf, sizeof(errno_buf)) != NULL) {
+                BTL_ERROR(("fi_cq_readerr: (provider err_code = %d - %s)\n", cqerr.prov_errno, errno_buf));
+            } else {
+                BTL_ERROR(("fi_cq_readerr: (provider err_code = %d)\n", cqerr.prov_errno));
+            }
         }
         MCA_BTL_OFI_ABORT();
     }
