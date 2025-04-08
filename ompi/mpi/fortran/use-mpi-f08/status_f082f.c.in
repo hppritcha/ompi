@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2020      Research Organization for Information Science
+ *                         and Technology (RIST).  All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID status_f082f(STATUS f08_status, INT_ARRAY_OUT f_status:MPI_STATUS_SIZE)
+{
+    int c_ierr;
+
+    c_ierr = @INNER_CALL@((MPI_F08_status *)f08_status, f_status);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+}

@@ -3,6 +3,12 @@
 #
 
 prototype_files = \
+        abort.c.in \
+        add_error_class.c.in \
+        add_error_code.c.in \
+        add_error_string.c.in \
+	alloc_mem.c.in \
+	alloc_mem_cptr.c.in \
         accumulate_ts.c.in \
         allgather_init_ts.c.in \
         allgather_ts.c.in \
@@ -16,16 +22,85 @@ prototype_files = \
         alltoallv_ts.c.in \
         alltoallw_init_ts.c.in \
         alltoallw_ts.c.in \
+	barrier.c.in \
+	barrier_init.c.in \
         bcast_init_ts.c.in \
         bcast_ts.c.in \
         bsend_init_ts.c.in \
         bsend_ts.c.in \
         buffer_attach_ts.c.in \
         buffer_detach.c.in \
+	cancel.c.in \
+	cart_coords.c.in\
+	cart_create.c.in\
+	cart_get.c.in\
+	cart_map.c.in\
+	cart_rank.c.in\
+	cart_shift.c.in\
+	cartdim_get.c.in\
+        close_port.c.in \
+        comm_accept.c.in \
+	comm_call_errhandler.c.in \
+	comm_compare.c.in \
+	comm_connect.c.in \
+	comm_create.c.in \
+	comm_create_errhandler.c.in \
+	comm_create_from_group.c.in \
+	comm_create_group.c.in \
+	comm_create_keyval.c.in \
+	comm_disconnect.c.in \
+	comm_delete_attr.c.in \
+	comm_dup.c.in \
+	comm_dup_with_info.c.in \
+	comm_free.c.in \
+	comm_free_keyval.c.in \
+	comm_get_attr.c.in \
+	comm_get_errhandler.c.in \
+	comm_get_info.c.in \
+	comm_get_name.c.in \
+	comm_get_parent.c.in \
+	comm_group.c.in \
+	comm_idup.c.in \
+	comm_idup_with_info.c.in \
+	comm_join.c.in \
+	comm_rank.c.in \
+	comm_remote_group.c.in \
+	comm_remote_size.c.in \
+	comm_set_attr.c.in \
+	comm_set_errhandler.c.in \
+	comm_set_info.c.in \
+	comm_set_name.c.in \
+	comm_size.c.in \
+	comm_split.c.in \
+	comm_split_type.c.in \
+	comm_test_inter.c.in \
         compare_and_swap_ts.c.in \
+	dims_create.c.in \
+	dist_graph_create.c.in \
+	dist_graph_create_adjacent.c.in \
+	dist_graph_neighbors.c.in \
+	dist_graph_neighbors_count.c.in \
+	errhandler_free.c.in \
+	error_class.c.in \
+	error_string.c.in \
         exscan_init_ts.c.in \
         exscan_ts.c.in \
         fetch_and_op_ts.c.in \
+	file_call_errhandler.c.in \
+	file_create_errhandler.c.in \
+	file_close.c.in \
+	file_delete.c.in \
+	file_get_amode.c.in \
+	file_get_atomicity.c.in \
+	file_get_byte_offset.c.in \
+	file_get_errhandler.c.in \
+	file_get_group.c.in \
+	file_get_info.c.in \
+	file_get_position.c.in \
+	file_get_position_shared.c.in \
+	file_get_size.c.in \
+	file_get_type_extent.c.in \
+	file_get_view.c.in \
         file_iread_all_ts.c.in \
         file_iread_at_all_ts.c.in \
         file_iread_at_ts.c.in \
@@ -36,6 +111,7 @@ prototype_files = \
         file_iwrite_at_ts.c.in \
         file_iwrite_shared_ts.c.in \
         file_iwrite_ts.c.in \
+	file_open.c.in \
         file_read_all_begin_ts.c.in \
         file_read_all_end_ts.c.in \
         file_read_all_ts.c.in \
@@ -48,6 +124,13 @@ prototype_files = \
         file_read_ordered_ts.c.in \
         file_read_shared_ts.c.in \
         file_read_ts.c.in \
+	file_seek.c.in \
+	file_seek_shared.c.in \
+	file_set_atomicity.c.in \
+	file_set_errhandler.c.in \
+	file_set_info.c.in \
+	file_set_size.c.in \
+	file_set_view.c.in \
         file_write_all_begin_ts.c.in \
         file_write_all_end_ts.c.in \
         file_write_all_ts.c.in \
@@ -60,6 +143,8 @@ prototype_files = \
         file_write_ordered_ts.c.in \
         file_write_shared_ts.c.in \
         file_write_ts.c.in \
+        finalize.c.in \
+        finalized.c.in \
         free_mem_ts.c.in \
 	f_sync_reg_ts.c.in \
         gather_init_ts.c.in \
@@ -70,24 +155,60 @@ prototype_files = \
         get_address_ts.c.in \
         get_count.c.in \
         get_elements.c.in \
+        get_library_version.c.in \
+        get_processor_name.c.in \
         get_ts.c.in \
+        get_version.c.in \
+	graph_create.c.in \
+	graphdims_get.c.in \
+	graph_get.c.in \
+	graph_map.c.in \
+	graph_neighbors_count.c.in \
+	graph_neighbors.c.in \
+	grequest_complete.c.in \
+	group_compare.c.in \
+	group_difference.c.in \
+	group_excl.c.in \
+	group_free.c.in \
+	group_from_session_pset.c.in \
+	group_incl.c.in \
+	group_rank.c.in \
+	group_size.c.in \
+	group_translate_ranks.c.in \
+	group_union.c.in \
         iallgather_ts.c.in \
         iallgatherv_ts.c.in \
         iallreduce_ts.c.in \
         ialltoall_ts.c.in \
         ialltoallv_ts.c.in \
         ialltoallw_ts.c.in \
+        ibarrier.c.in \
         ibcast_ts.c.in \
         ibsend_ts.c.in \
         iexscan_ts.c.in \
         igather_ts.c.in \
         igatherv_ts.c.in \
+        improbe.c.in \
         imrecv_ts.c.in \
         ineighbor_allgather_ts.c.in \
         ineighbor_allgatherv_ts.c.in \
         ineighbor_alltoall_ts.c.in \
         ineighbor_alltoallv_ts.c.in \
         ineighbor_alltoallw_ts.c.in \
+	info_create.c.in \
+	info_create_env.c.in \
+	info_delete.c.in \
+	info_dup.c.in \
+	info_free.c.in \
+	info_get_nkeys.c.in \
+	info_set.c.in \
+	init.c.in \
+	initialized.c.in \
+	init_thread.c.in \
+	intercomm_create.c.in \
+	intercomm_create_from_groups.c.in \
+	intercomm_merge.c.in \
+	iprobe.c.in \
         irecv_ts.c.in \
         ireduce_scatter_block_ts.c.in \
         ireduce_scatter_ts.c.in \
@@ -100,6 +221,9 @@ prototype_files = \
         isendrecv_ts.c.in \
         isend_ts.c.in \
         issend_ts.c.in \
+	is_thread_main.c.in \
+	lookup_name.c.in \
+	mprobe.c.in \
         mrecv_ts.c.in \
         neighbor_allgather_init_ts.c.in \
         neighbor_allgather_ts.c.in \
@@ -111,13 +235,23 @@ prototype_files = \
         neighbor_alltoallv_ts.c.in \
         neighbor_alltoallw_init_ts.c.in \
         neighbor_alltoallw_ts.c.in \
+	op_commutative.c.in \
+	op_free.c.in \
+	open_port.c.in \
         pack_external_size.c.in \
         pack_external_ts.c.in \
         pack_size.c.in \
         pack_ts.c.in \
+        parrived.c.in \
+        pready.c.in \
+        pready_list.c.in \
+        pready_range.c.in \
         precv_init_ts.c.in \
+	probe.c.in \
         psend_init_ts.c.in \
+        publish_name.c.in \
         put_ts.c.in \
+	query_thread.c.in \
         raccumulate_ts.c.in \
         recv_init_ts.c.in \
         recv_ts.c.in \
@@ -128,6 +262,7 @@ prototype_files = \
         reduce_scatter_init_ts.c.in \
         reduce_scatter_ts.c.in \
         reduce_ts.c.in \
+	request_free.c.in \
 	request_get_status.c.in \
         request_get_status_all.c.in \
         request_get_status_any.c.in \
@@ -147,27 +282,91 @@ prototype_files = \
         sendrecv_replace_ts.c.in \
         sendrecv_ts.c.in \
         send_ts.c.in \
+	session_call_errhandler.c.in \
+	session_create_errhandler.c.in \
+	session_finalize.c.in \
+	session_get_errhandler.c.in \
+	session_get_info.c.in \
+	session_get_num_psets.c.in \
+	session_init.c.in \
+	session_set_errhandler.c.in \
         ssend_init_ts.c.in \
         ssend_ts.c.in \
+	start.c.in \
+	startall.c.in \
+        status_f2f08.c.in \
+        status_f082f.c.in \
+        status_set_cancelled.c.in \
+        test.c.in \
+        testall.c.in \
         testany.c.in \
+        test_cancelled.c.in \
+	topo_test.c.in \
+	type_commit.c.in \
         type_contiguous.c.in \
         type_create_darray.c.in \
+	type_create_f90_complex.c.in \
+	type_create_f90_integer.c.in \
+	type_create_f90_real.c.in \
         type_create_hindexed_block.c.in \
         type_create_hindexed.c.in \
         type_create_hvector.c.in \
         type_create_indexed_block.c.in \
+        type_create_keyval.c.in \
+        type_create_resized.c.in \
         type_create_struct.c.in \
         type_create_subarray.c.in \
+	type_delete_attr.c.in \
+	type_dup.c.in \
+	type_free.c.in \
+	type_free_keyval.c.in \
+	type_get_attr.c.in \
         type_get_true_extent.c.in \
         type_indexed.c.in \
+	type_match_size.c.in \
+	type_set_attr.c.in \
         type_size.c.in \
         type_vector.c.in \
         unpack_external_ts.c.in \
         unpack_ts.c.in \
+        unpublish_name.c.in \
+	wait.c.in \
         waitall.c.in \
+        waitany.c.in \
+        waitsome.c.in \
         win_allocate.c.in \
         win_allocate_shared.c.in \
         win_attach_ts.c.in \
+        win_call_errhandler.c.in \
+        win_create_errhandler.c.in \
+        win_complete.c.in \
         win_create_ts.c.in \
+        win_create_dynamic.c.in \
+        win_create_keyval.c.in \
+        win_delete_attr.c.in \
         win_detach_ts.c.in \
-        win_shared_query.c.in
+	win_fence.c.in \
+	win_flush.c.in \
+	win_flush_all.c.in \
+	win_flush_local.c.in \
+	win_flush_local_all.c.in \
+	win_free.c.in \
+	win_free_keyval.c.in \
+	win_get_attr.c.in \
+	win_get_errhandler.c.in \
+	win_get_group.c.in \
+	win_get_info.c.in \
+	win_lock.c.in \
+	win_lock_all.c.in \
+	win_post.c.in \
+	win_set_attr.c.in \
+	win_set_errhandler.c.in \
+	win_set_info.c.in \
+	win_set_name.c.in \
+	win_start.c.in \
+        win_shared_query.c.in \
+	win_sync.c.in \
+	win_test.c.in \
+	win_unlock.c.in \
+	win_unlock_all.c.in \
+	win_wait.c.in

@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2020      Sandia National Laboratories. All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID pready_list(INT length, INT_ARRAY array_of_partitions:length, 
+                           REQUEST request)
+{
+   int c_ierr;
+   MPI_Request c_req = PMPI_Request_f2c(*request);
+   int *c_partitions = (int*)malloc(sizeof(int)*OMPI_FINT_2_INT(*length));
+   for(int i = 0; i < OMPI_FINT_2_INT(*length); i++)
+   {
+       c_partitions[i] = OMPI_FINT_2_INT(array_of_partitions[i]);
+   }
+
+   c_ierr = @INNER_CALL@(OMPI_FINT_2_INT(*length), c_partitions, c_req);
+  
+   free(c_partitions);
+
+   if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+   if (MPI_SUCCESS == c_ierr) {
+      *request = PMPI_Request_c2f(c_req);
+   }
+}

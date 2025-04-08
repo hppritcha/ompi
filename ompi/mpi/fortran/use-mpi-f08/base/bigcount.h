@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024      Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -32,7 +32,6 @@
             } \
         } \
     } while (0)
-
 
 #define OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(array, tmp_array) \
     do { \

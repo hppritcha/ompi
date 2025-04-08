@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID win_get_info(WIN win, INFO_OUT info)
+{
+    int c_ierr;
+    MPI_Win c_win;
+    MPI_Info c_info;
+
+    c_win = PMPI_Win_f2c(*win);
+    c_ierr = @INNER_CALL@(c_win, &c_info);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+    *info = PMPI_Info_c2f(c_info);
+}

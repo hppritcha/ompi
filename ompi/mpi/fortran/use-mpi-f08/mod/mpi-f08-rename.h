@@ -5,12 +5,8 @@
 
 #if OMPI_BUILD_MPI_PROFILING
 
-#define MPI_Abort_f08 PMPI_Abort_f08
-#define MPI_Abort PMPI_Abort
 #define MPI_Accumulate_f08 PMPI_Accumulate_f08
 #define MPI_Accumulate PMPI_Accumulate
-#define MPI_Add_error_class_f08 PMPI_Add_error_class_f08
-#define MPI_Add_error_class PMPI_Add_error_class
 #define MPI_Add_error_code_f08 PMPI_Add_error_code_f08
 #define MPI_Add_error_code PMPI_Add_error_code
 #define MPI_Add_error_string_f08 PMPI_Add_error_string_f08
@@ -27,8 +23,6 @@
 #define MPI_Allgatherv_init_f08 PMPI_Allgatherv_init_f08
 #define MPI_Allgatherv_init PMPI_Allgatherv_init
 #define MPI_Allgatherv PMPI_Allgatherv
-#define MPI_Alloc_mem_f08 PMPI_Alloc_mem_f08
-#define MPI_Alloc_mem PMPI_Alloc_mem
 #define MPI_Allreduce_f08 PMPI_Allreduce_f08
 #define MPI_Allreduce_init_f08 PMPI_Allreduce_init_f08
 #define MPI_Allreduce_init PMPI_Allreduce_init

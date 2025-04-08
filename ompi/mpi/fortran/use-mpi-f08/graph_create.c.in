@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID graph_create(COMM comm_old, INT nnodes,
+                            INT_ARRAY index:nnodes, INT_ARRAY edges,
+                            LOGICAL reorder, COMM_OUT comm_graph)
+{
+    int c_ierr;
+    MPI_Comm c_comm_old, c_comm_graph;
+    int *tmp_index = NULL;
+    int *tmp_edges = NULL;
+
+    c_comm_old = PMPI_Comm_f2c(*comm_old);
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(index, tmp_index, *nnodes);
+
+    /* Number of edges is equal to the last entry in the index array */
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(edges, tmp_edges, index[*nnodes-1]);
+
+    c_ierr = @INNER_CALL@(c_comm_old,
+                          OMPI_FINT_2_INT(*nnodes),
+                          tmp_index,
+                          tmp_edges,
+                          *reorder,
+                          &c_comm_graph);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (OMPI_SUCCESS == c_ierr) {
+        *comm_graph = PMPI_Comm_c2f(c_comm_graph);
+    }
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(index, tmp_index);
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(edges, tmp_edges);
+}
