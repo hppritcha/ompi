@@ -5,8 +5,6 @@
 
 #if OMPI_BUILD_MPI_PROFILING
 
-#define MPI_Abort_f08 PMPI_Abort_f08
-#define MPI_Abort PMPI_Abort
 #define MPI_Accumulate_f08 PMPI_Accumulate_f08
 #define MPI_Accumulate PMPI_Accumulate
 #define MPI_Add_error_class_f08 PMPI_Add_error_class_f08

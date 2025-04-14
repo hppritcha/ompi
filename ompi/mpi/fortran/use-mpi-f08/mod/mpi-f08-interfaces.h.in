@@ -1372,16 +1372,6 @@ function  MPI_Aint_diff_f08(addr1,addr2)
 end function  MPI_Aint_diff_f08
 end interface MPI_Aint_diff
 
-interface  MPI_Abort
-subroutine MPI_Abort_f08(comm,errorcode,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Abort_f08
-end interface  MPI_Abort
-
 interface  MPI_Add_error_class
 subroutine MPI_Add_error_class_f08(errorclass,ierror)
    implicit none
