@@ -3,6 +3,7 @@
 #
 
 prototype_files = \
+        abort.c.in \
         accumulate_ts.c.in \
         allgather_init_ts.c.in \
         allgather_ts.c.in \
