@@ -1,0 +1,4 @@
+PROTOTYPE AINT aint_add(AINT base, AINT diff)
+{
+    return @INNER_CALL@(*base, *diff);
+}

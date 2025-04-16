@@ -125,17 +125,8 @@ psizeof_f08.f90:
 CLEANFILES += sizeof_f08.h sizeof_f08.f90 psizeof_f08.f90
 
 mpi_api_files = \
-        add_error_class_f08.F90 \
-        add_error_code_f08.F90 \
-        add_error_string_f08.F90 \
         aint_add_f08.F90 \
         aint_diff_f08.F90 \
-        alloc_mem_f08.F90 \
-        barrier_f08.F90 \
-        barrier_init_f08.F90 \
-        cancel_f08.F90 \
-        cart_coords_f08.F90 \
-        cart_create_f08.F90 \
         cartdim_get_f08.F90 \
         cart_get_f08.F90 \
         cart_map_f08.F90 \

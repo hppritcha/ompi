@@ -1,0 +1,4 @@
+PROTOTYPE AINT aint_diff(AINT addr1, AINT *addr2)
+{
+    return @INNER_CALL@(*addr1, *addr2);
+}

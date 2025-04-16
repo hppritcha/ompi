@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024      Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -20,6 +20,15 @@
             (tmp_array) = malloc(sizeof(*tmp_array) * n); \
             for (int bigcount_array_i = 0; bigcount_array_i < n; ++bigcount_array_i) { \
                 (tmp_array)[bigcount_array_i] = (array)[bigcount_array_i]; \
+            } \
+        } \
+    } while (0)
+
+#define OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(array, tmp_array, n) \
+    do { \
+        if ((array) != (tmp_array) && NULL != (tmp_array)) { \
+            for (int bigcount_array_i = 0; bigcount_array_i < n; ++bigcount_array_i) { \
+                (array)[bigcount_array_i] = (tmp_array)[bigcount_array_i]; \
             } \
         } \
     } while (0)

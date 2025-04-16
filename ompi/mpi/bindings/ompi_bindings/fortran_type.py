@@ -95,6 +95,10 @@ class FortranType(ABC):
         """Return post-processing code to be run after the call."""
         return ''
 
+    def pre_c_call(self):
+        """Return pre-processing code to be run before the call the c interface."""
+        return ''
+
     @abstractmethod
     def c_parameter(self):
         """Return the parameter expression to be used in the C function."""
@@ -320,6 +324,61 @@ class IndexOutType(IntType):
         return f'INTEGER, INTENT(OUT) :: {self.name}'
 
 
+@FortranType.add('LOGICAL')
+class LogicalType(IntType):
+    """Logical type.
+
+    NOTE: Since the logical type causes difficulties when passed to C code,
+    this code uses a temporary integer in Fortran to pass to the C code. The 
+    logical type is set based on C's true/false rules prior.
+    """ 
+        
+    def declare(self):
+        return f'LOGICAL, INTENT(IN) :: {self.name}'
+            
+    def declare_tmp(self):
+        return f'INTEGER :: {self.tmp_name} = 0'
+    
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
+
+    def argument(self):
+        return self.tmp_name
+        
+    def pre_c_call(self):
+        return f'{self.tmp_name} = merge(1,0,{self.name})'
+    
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
+@FortranType.add('LOGICAL_ARRAY')
+class LogicalArrayType(IntType):
+    """Logical array type.
+
+    NOTE: Since the logical type causes difficulties when passed to C code,
+    this code uses a temporary integer array in Fortran to pass to the C code. The 
+    logical type is set based on C's true/false rules prior using fortran merge intrinsic
+    procedure.
+    """ 
+        
+    def declare(self):
+        return f'LOGICAL, INTENT(IN) :: {self.name}({self.count_param})'
+            
+    def declare_tmp(self):
+        return f'INTEGER :: {self.tmp_name}({self.count_param})'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}({self.count_param})'
+
+    def argument(self):
+        return self.tmp_name
+
+    def pre_c_call(self):
+        return f'{self.tmp_name} = merge(1,0,{self.name})'
+    
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
 @FortranType.add('LOGICAL_OUT')
 class LogicalOutType(IntType):
     """Logical type.
@@ -365,6 +424,23 @@ class CommType(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('COMM_OUT')
+class CommOutType(FortranType):
+    def declare(self):
+        return f'TYPE(MPI_Comm), INTENT(OUT) :: {self.name}'
+    
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+        
+    def argument(self):
+        return f'{self.name}%MPI_VAL'
+    
+    def use(self):
+        return [('mpi_f08_types', 'MPI_Comm')]
+
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
 
 @FortranType.add('STATUS')
 class StatusType(FortranType):
@@ -391,8 +467,25 @@ class StatusOutType(FortranType):
         return f'MPI_Fint *{self.name}'
 
 
-@FortranType.add('REQUEST_OUT')
+@FortranType.add('REQUEST')
 class RequestType(FortranType):
+    def declare(self):
+        return f'TYPE(MPI_Request), INTENT(IN) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
+
+    def argument(self):
+        return f'{self.name}%MPI_VAL'
+
+    def use(self):
+        return [('mpi_f08_types', 'MPI_Request')]
+
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
+@FortranType.add('REQUEST_OUT')
+class RequestTypeOut(FortranType):
     def declare(self):
         return f'TYPE(MPI_Request), INTENT(OUT) :: {self.name}'
 
@@ -444,8 +537,20 @@ class IntArray(FortranType):
     """Integer array as used for MPI_*v() variable length functions."""
 
     def declare(self):
-        return f'INTEGER, INTENT(IN) :: {self.name}(*)'
+        size = '*' if self.count_param == None else self.count_param
+        return f'INTEGER, INTENT(IN) :: {self.name}({size})'
 
+    def c_parameter(self):
+        return f'MPI_Fint *{self.name}'
+
+@FortranType.add('INT_ARRAY_OUT')
+class IntArrayOut(FortranType):
+    """Integer array as used for MPI_*v() variable length functions."""
+
+    def declare(self):
+        size = '*' if self.count_param == None else self.count_param
+        return f'INTEGER, INTENT(OUT) :: {self.name}({size})'
+        
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
@@ -456,7 +561,9 @@ class CountArray(IntArray):
 
     def declare(self):
         kind = '(KIND=MPI_COUNT_KIND)' if self.bigcount else ''
-        return f'INTEGER{kind}, INTENT(IN) :: {self.name}(*)'
+        size = '*' if self.count_param == None else self.count_param
+        print("size " + size + "count_param" + str(self.count_param))
+        return f'INTEGER{kind}, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
         if self.bigcount:
@@ -473,7 +580,8 @@ class CountArray(IntArray):
 
     def declare(self):
         kind = '(KIND=MPI_COUNT_KIND)' if self.bigcount else '(KIND=MPI_ADDRESS_KIND)'
-        return f'INTEGER{kind}, INTENT(IN) :: {self.name}(*)'
+        size = '*' if self.count_param == None else self.count_param
+        return f'INTEGER{kind}, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
         if self.bigcount:
@@ -581,7 +689,8 @@ class AintArrayType(FortranType):
 
     def declare(self):
         # TODO: Should there be a separate ASYNC version here, when the OMPI_ASYNCHRONOUS attr is required?
-        return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) OMPI_ASYNCHRONOUS :: {self.name}(*)'
+        size = '*' if self.count_param == None else self.count_param
+        return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) OMPI_ASYNCHRONOUS :: {self.name}({size})'
 
     def use(self):
         return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
@@ -631,7 +740,8 @@ class DispArray(IntArray):
 
     def declare(self):
         kind = '(KIND=MPI_ADDRESS_KIND)' if self.bigcount else ''
-        return f'INTEGER{kind}, INTENT(IN) :: {self.name}(*)'
+        size = '*' if self.count_param == None else self.count_param
+        return f'INTEGER{kind}, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
         if self.bigcount:

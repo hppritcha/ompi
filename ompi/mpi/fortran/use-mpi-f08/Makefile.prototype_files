@@ -4,6 +4,11 @@
 
 prototype_files = \
         abort.c.in \
+        add_error_class.c.in \
+        add_error_code.c.in \
+        add_error_string.c.in \
+	alloc_mem.c.in \
+	alloc_mem_cptr.c.in \
         accumulate_ts.c.in \
         allgather_init_ts.c.in \
         allgather_ts.c.in \
@@ -17,12 +22,17 @@ prototype_files = \
         alltoallv_ts.c.in \
         alltoallw_init_ts.c.in \
         alltoallw_ts.c.in \
+	barrier.c.in \
+	barrier_init.c.in \
         bcast_init_ts.c.in \
         bcast_ts.c.in \
         bsend_init_ts.c.in \
         bsend_ts.c.in \
         buffer_attach_ts.c.in \
         buffer_detach.c.in \
+	cancel.c.in \
+	cart_coords.c.in\
+	cart_create.c.in\
         compare_and_swap_ts.c.in \
         exscan_init_ts.c.in \
         exscan_ts.c.in \
