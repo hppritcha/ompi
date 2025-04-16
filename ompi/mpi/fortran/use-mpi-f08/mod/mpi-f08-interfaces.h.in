@@ -19,14 +19,25 @@
 ! and the name for tools ("MPI_Init_f08") and the back-end implementation
 ! name (e.g., "MPI_Init_f08").
 
-interface  MPI_Cancel
-subroutine MPI_Cancel_f08(request,ierror)
-   use :: mpi_f08_types, only : MPI_Request
+interface MPI_Aint_add
+function  MPI_Aint_add_f08(base,disp)
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
    implicit none
-   TYPE(MPI_Request), INTENT(IN) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cancel_f08
-end interface  MPI_Cancel
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: base
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: disp
+   INTEGER(MPI_ADDRESS_KIND) :: MPI_Aint_add_f08
+end function  MPI_Aint_add_f08
+end interface MPI_Aint_add
+
+interface MPI_Aint_diff
+function  MPI_Aint_diff_f08(addr1,addr2)
+   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
+   implicit none
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr1
+   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr2
+   INTEGER(MPI_ADDRESS_KIND) :: MPI_Aint_diff_f08
+end function  MPI_Aint_diff_f08
+end interface MPI_Aint_diff
 
 interface  MPI_Iprobe
 subroutine MPI_Iprobe_f08(source,tag,comm,flag,status,ierror)
@@ -458,15 +469,6 @@ subroutine MPI_Type_size_x_f08(datatype,size,ierror)
 end subroutine MPI_Type_size_x_f08
 end interface  MPI_Type_size_x
 
-interface  MPI_Barrier
-subroutine MPI_Barrier_f08(comm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Barrier_f08
-end interface  MPI_Barrier
-
 interface  MPI_Ibarrier
 subroutine MPI_Ibarrier_f08(comm,request,ierror)
    use :: mpi_f08_types, only : MPI_Comm, MPI_Request
@@ -476,17 +478,6 @@ subroutine MPI_Ibarrier_f08(comm,request,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Ibarrier_f08
 end interface  MPI_Ibarrier
-
-interface  MPI_Barrier_init
-subroutine MPI_Barrier_init_f08(comm,info,request,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info, MPI_Request
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Request), INTENT(OUT) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Barrier_init_f08
-end interface  MPI_Barrier_init
 
 interface  MPI_Op_commutative
 subroutine MPI_Op_commutative_f08(op,commute,ierror)
@@ -1132,29 +1123,6 @@ subroutine MPI_Cartdim_get_f08(comm,ndims,ierror)
 end subroutine MPI_Cartdim_get_f08
 end interface  MPI_Cartdim_get
 
-interface  MPI_Cart_coords
-subroutine MPI_Cart_coords_f08(comm,rank,maxdims,coords,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: rank, maxdims
-   INTEGER, INTENT(OUT) :: coords(maxdims)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_coords_f08
-end interface  MPI_Cart_coords
-
-interface  MPI_Cart_create
-subroutine MPI_Cart_create_f08(comm_old,ndims,dims,periods,reorder,comm_cart,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm_old
-   INTEGER, INTENT(IN) :: ndims, dims(ndims)
-   LOGICAL, INTENT(IN) :: periods(ndims), reorder
-   TYPE(MPI_Comm), INTENT(OUT) :: comm_cart
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_create_f08
-end interface  MPI_Cart_create
-
 interface  MPI_Cart_get
 subroutine MPI_Cart_get_f08(comm,maxdims,dims,periods,coords,ierror)
    use :: mpi_f08_types, only : MPI_Comm
@@ -1351,64 +1319,6 @@ subroutine MPI_Topo_test_f08(comm,status,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Topo_test_f08
 end interface  MPI_Topo_test
-
-interface MPI_Aint_add
-function  MPI_Aint_add_f08(base,disp)
-   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   implicit none
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: base
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: disp
-   INTEGER(MPI_ADDRESS_KIND) :: MPI_Aint_add_f08
-end function  MPI_Aint_add_f08
-end interface MPI_Aint_add
-
-interface MPI_Aint_diff
-function  MPI_Aint_diff_f08(addr1,addr2)
-   use :: mpi_f08_types, only : MPI_ADDRESS_KIND
-   implicit none
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr1
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: addr2
-   INTEGER(MPI_ADDRESS_KIND) :: MPI_Aint_diff_f08
-end function  MPI_Aint_diff_f08
-end interface MPI_Aint_diff
-
-interface  MPI_Add_error_class
-subroutine MPI_Add_error_class_f08(errorclass,ierror)
-   implicit none
-   INTEGER, INTENT(OUT) :: errorclass
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Add_error_class_f08
-end interface  MPI_Add_error_class
-
-interface  MPI_Add_error_code
-subroutine MPI_Add_error_code_f08(errorclass,errorcode,ierror)
-   implicit none
-   INTEGER, INTENT(IN) :: errorclass
-   INTEGER, INTENT(OUT) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Add_error_code_f08
-end interface  MPI_Add_error_code
-
-interface  MPI_Add_error_string
-subroutine MPI_Add_error_string_f08(errorcode,string,ierror)
-   implicit none
-   integer, intent(in) :: errorcode
-   character(len=*), intent(in) :: string
-   integer, optional, intent(out) :: ierror
-end subroutine MPI_Add_error_string_f08
-end interface  MPI_Add_error_string
-
-interface  MPI_Alloc_mem
-subroutine MPI_Alloc_mem_f08(size,info,baseptr,ierror)
-   use, intrinsic :: ISO_C_BINDING, only : C_PTR
-   use :: mpi_f08_types, only : MPI_Info, MPI_ADDRESS_KIND
-   implicit none
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: size
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(C_PTR), INTENT(OUT) :: baseptr
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Alloc_mem_f08
-end interface  MPI_Alloc_mem
 
 interface  MPI_Comm_call_errhandler
 subroutine MPI_Comm_call_errhandler_f08(comm,errorcode,ierror)

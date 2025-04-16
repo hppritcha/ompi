@@ -22,9 +22,9 @@
  */
 
 PROTOTYPE VOID  type_create_darray(INT size, RANK rank,
-			      INT ndims, COUNT_ARRAY gsize_array,
-			      INT_ARRAY distrib_array, INT_ARRAY darg_array,
-			      INT_ARRAY psize_array, INT order,
+			      INT ndims, COUNT_ARRAY gsize_array:ndims,
+			      INT_ARRAY distrib_array:ndims, INT_ARRAY darg_array:ndims,
+			      INT_ARRAY psize_array:ndims, INT order,
 			      DATATYPE oldtype, DATATYPE_OUT newtype)
 {
     int c_ierr;

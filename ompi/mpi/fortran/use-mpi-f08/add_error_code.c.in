@@ -1,0 +1,13 @@
+PROTOTYPE void  add_error_code(INT errorclass, INT errorcode)
+{
+    int ierr_c;
+    int c_errorcode, c_errorclass;
+
+    c_errorclass = (int)*errorclass;
+    ierr_c = @INNER_CALL@(c_errorclass, &c_errorcode);
+
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(ierr_c);
+    if (MPI_SUCCESS == ierr_c) {
+        *errorcode = (MPI_Fint)c_errorclass;
+    }
+}

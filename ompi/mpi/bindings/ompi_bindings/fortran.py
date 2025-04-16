@@ -151,6 +151,11 @@ class FortranBinding:
         self._print_fortran_interface()
         self.dump()
 
+        # Output in pre C function call methods
+
+        for param in self.parameters:
+            self.dump_lines(param.pre_c_call())
+
         # Call into the C function
         call_start = f'    call {self.c_func_name}('
         params = [param.argument() for param in self.parameters]
@@ -183,7 +188,8 @@ class FortranBinding:
         self.template.print_body(c_func, out=self.out,
                                  replacements={'INNER_CALL': self.inner_call,
                                                'COUNT_TYPE': count_type,
-                                               'DISP_TYPE': disp_type})
+                                               'DISP_TYPE': disp_type,
+                                               'LOGICAL_TYPE': 'int'})
 
     def print_interface(self):
         """Output just the Fortran interface for this binding."""
