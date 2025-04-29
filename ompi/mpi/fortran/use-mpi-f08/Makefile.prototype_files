@@ -33,7 +33,51 @@ prototype_files = \
 	cancel.c.in \
 	cart_coords.c.in\
 	cart_create.c.in\
+	cart_get.c.in\
+	cart_map.c.in\
+	cart_rank.c.in\
+	cart_shift.c.in\
+	cartdim_get.c.in\
+        close_port.c.in \
+        comm_accept.c.in \
+	comm_call_errhandler.c.in \
+	comm_compare.c.in \
+	comm_connect.c.in \
+	comm_create.c.in \
+	comm_create_from_group.c.in \
+	comm_create_group.c.in \
+	comm_disconnect.c.in \
+	comm_delete_attr.c.in \
+	comm_dup.c.in \
+	comm_dup_with_info.c.in \
+	comm_free.c.in \
+	comm_free_keyval.c.in \
+	comm_get_attr.c.in \
+	comm_get_errhandler.c.in \
+	comm_get_info.c.in \
+	comm_get_name.c.in \
+	comm_get_parent.c.in \
+	comm_group.c.in \
+	comm_idup.c.in \
+	comm_idup_with_info.c.in \
+	comm_join.c.in \
+	comm_rank.c.in \
+	comm_remote_group.c.in \
+	comm_remote_size.c.in \
+	comm_set_attr.c.in \
+	comm_set_errhandler.c.in \
+	comm_set_info.c.in \
+	comm_set_name.c.in \
+	comm_size.c.in \
+	comm_split.c.in \
+	comm_split_type.c.in \
+	comm_test_inter.c.in \
         compare_and_swap_ts.c.in \
+	dims_create.c.in \
+	dist_graph_create.c.in \
+	dist_graph_create_adjacent.c.in \
+	dist_graph_neighbors.c.in \
+	dist_graph_neighbors_count.c.in \
         exscan_init_ts.c.in \
         exscan_ts.c.in \
         fetch_and_op_ts.c.in \
@@ -122,6 +166,7 @@ prototype_files = \
         neighbor_alltoallv_ts.c.in \
         neighbor_alltoallw_init_ts.c.in \
         neighbor_alltoallw_ts.c.in \
+	open_port.c.in \
         pack_external_size.c.in \
         pack_external_ts.c.in \
         pack_size.c.in \

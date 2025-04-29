@@ -510,54 +510,6 @@ subroutine MPI_Op_free_f08(op,ierror)
 end subroutine MPI_Op_free_f08
 end interface  MPI_Op_free
 
-interface  MPI_Comm_compare
-subroutine MPI_Comm_compare_f08(comm1,comm2,result,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm1
-   TYPE(MPI_Comm), INTENT(IN) :: comm2
-   INTEGER, INTENT(OUT) :: result
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_compare_f08
-end interface  MPI_Comm_compare
-
-interface  MPI_Comm_create
-subroutine MPI_Comm_create_f08(comm,group,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Group
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Group), INTENT(IN) :: group
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_create_f08
-end interface  MPI_Comm_create
-
-interface  MPI_Comm_create_from_group
-subroutine MPI_Comm_create_from_group_f08(group, stringtag, info, errhandler, newcomm, ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Group, MPI_Info, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   CHARACTER(LEN=*), INTENT(IN) :: stringtag
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-
-end subroutine MPI_Comm_create_from_group_f08
-end interface  MPI_Comm_create_from_group
-
-interface  MPI_Comm_create_group
-subroutine MPI_Comm_create_group_f08(comm,group,tag,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Group
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(IN) :: tag
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_create_group_f08
-end interface  MPI_Comm_create_group
-
 interface  MPI_Comm_create_keyval
 subroutine MPI_Comm_create_keyval_f08(comm_copy_attr_fn,comm_delete_attr_fn,comm_keyval, &
                                       extra_state,ierror)
@@ -572,213 +524,6 @@ subroutine MPI_Comm_create_keyval_f08(comm_copy_attr_fn,comm_delete_attr_fn,comm
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Comm_create_keyval_f08
 end interface  MPI_Comm_create_keyval
-
-interface  MPI_Comm_delete_attr
-subroutine MPI_Comm_delete_attr_f08(comm,comm_keyval,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: comm_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_delete_attr_f08
-end interface  MPI_Comm_delete_attr
-
-interface  MPI_Comm_dup
-subroutine MPI_Comm_dup_f08(comm,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_dup_f08
-end interface  MPI_Comm_dup
-
-interface  MPI_Comm_dup_with_info
-subroutine MPI_Comm_dup_with_info_f08(comm,info,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_dup_with_info_f08
-end interface  MPI_Comm_dup_with_info
-
-interface  MPI_Comm_idup
-subroutine MPI_Comm_idup_f08(comm,newcomm,request,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Request
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Comm), INTENT(OUT) OMPI_ASYNCHRONOUS :: newcomm
-   TYPE(MPI_Request), INTENT(OUT) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_idup_f08
-end interface  MPI_Comm_idup
-
-interface  MPI_Comm_idup_with_info
-subroutine MPI_Comm_idup_with_info_f08(comm,info,newcomm,request,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Request, MPI_info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   TYPE(MPI_Request), INTENT(OUT) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_idup_with_info_f08
-end interface  MPI_Comm_idup_with_info
-
-
-interface  MPI_Comm_free
-subroutine MPI_Comm_free_f08(comm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(INOUT) :: comm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_free_f08
-end interface  MPI_Comm_free
-
-interface  MPI_Comm_free_keyval
-subroutine MPI_Comm_free_keyval_f08(comm_keyval,ierror)
-   implicit none
-   INTEGER, INTENT(INOUT) :: comm_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_free_keyval_f08
-end interface  MPI_Comm_free_keyval
-
-interface  MPI_Comm_get_attr
-subroutine MPI_Comm_get_attr_f08(comm,comm_keyval,attribute_val,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: comm_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(OUT) :: attribute_val
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_get_attr_f08
-end interface  MPI_Comm_get_attr
-
-interface  MPI_Comm_get_info
-subroutine MPI_Comm_get_info_f08(comm,info_used,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Info), INTENT(OUT) :: info_used
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_get_info_f08
-end interface  MPI_Comm_get_info
-
-interface  MPI_Comm_get_name
-subroutine MPI_Comm_get_name_f08(comm,comm_name,resultlen,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_MAX_OBJECT_NAME
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   CHARACTER(LEN=MPI_MAX_OBJECT_NAME), INTENT(OUT) :: comm_name
-   INTEGER, INTENT(OUT) :: resultlen
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_get_name_f08
-end interface  MPI_Comm_get_name
-
-interface  MPI_Comm_group
-subroutine MPI_Comm_group_f08(comm,group,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Group
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Group), INTENT(OUT) :: group
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_group_f08
-end interface  MPI_Comm_group
-
-interface  MPI_Comm_rank
-subroutine MPI_Comm_rank_f08(comm,rank,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: rank
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_rank_f08
-end interface  MPI_Comm_rank
-
-interface  MPI_Comm_remote_group
-subroutine MPI_Comm_remote_group_f08(comm,group,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Group
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Group), INTENT(OUT) :: group
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_remote_group_f08
-end interface  MPI_Comm_remote_group
-
-interface  MPI_Comm_remote_size
-subroutine MPI_Comm_remote_size_f08(comm,size,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_remote_size_f08
-end interface  MPI_Comm_remote_size
-
-interface  MPI_Comm_set_attr
-subroutine MPI_Comm_set_attr_f08(comm,comm_keyval,attribute_val,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: comm_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: attribute_val
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_set_attr_f08
-end interface  MPI_Comm_set_attr
-
-interface  MPI_Comm_set_info
-subroutine MPI_Comm_set_info_f08(comm,info,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_set_info_f08
-end interface  MPI_Comm_set_info
-
-interface  MPI_Comm_set_name
-subroutine MPI_Comm_set_name_f08(comm,comm_name,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   CHARACTER(LEN=*), INTENT(IN) :: comm_name
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_set_name_f08
-end interface  MPI_Comm_set_name
-
-interface  MPI_Comm_size
-subroutine MPI_Comm_size_f08(comm,size,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_size_f08
-end interface  MPI_Comm_size
-
-interface  MPI_Comm_split
-subroutine MPI_Comm_split_f08(comm,color,key,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: color, key
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_split_f08
-end interface  MPI_Comm_split
-
-interface  MPI_Comm_test_inter
-subroutine MPI_Comm_test_inter_f08(comm,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_test_inter_f08
-end interface  MPI_Comm_test_inter
 
 interface  MPI_Group_compare
 subroutine MPI_Group_compare_f08(group1,group2,result,ierror)
@@ -1113,62 +858,6 @@ subroutine MPI_Win_set_name_f08(win,win_name,ierror)
 end subroutine MPI_Win_set_name_f08
 end interface  MPI_Win_set_name
 
-interface  MPI_Cartdim_get
-subroutine MPI_Cartdim_get_f08(comm,ndims,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: ndims
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cartdim_get_f08
-end interface  MPI_Cartdim_get
-
-interface  MPI_Cart_get
-subroutine MPI_Cart_get_f08(comm,maxdims,dims,periods,coords,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: maxdims
-   INTEGER, INTENT(OUT) :: dims(maxdims), coords(maxdims)
-   LOGICAL, INTENT(OUT) :: periods(maxdims)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_get_f08
-end interface  MPI_Cart_get
-
-interface  MPI_Cart_map
-subroutine MPI_Cart_map_f08(comm,ndims,dims,periods,newrank,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: ndims, dims(ndims)
-   LOGICAL, INTENT(IN) :: periods(ndims)
-   INTEGER, INTENT(OUT) :: newrank
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_map_f08
-end interface  MPI_Cart_map
-
-interface  MPI_Cart_rank
-subroutine MPI_Cart_rank_f08(comm,coords,rank,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: coords(*)
-   INTEGER, INTENT(OUT) :: rank
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_rank_f08
-end interface  MPI_Cart_rank
-
-interface  MPI_Cart_shift
-subroutine MPI_Cart_shift_f08(comm,direction,disp,rank_source,rank_dest,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: direction, disp
-   INTEGER, INTENT(OUT) :: rank_source, rank_dest
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Cart_shift_f08
-end interface  MPI_Cart_shift
-
 interface  MPI_Cart_sub
 subroutine MPI_Cart_sub_f08(comm,remain_dims,newcomm,ierror)
    use :: mpi_f08_types, only : MPI_Comm
@@ -1179,69 +868,6 @@ subroutine MPI_Cart_sub_f08(comm,remain_dims,newcomm,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Cart_sub_f08
 end interface  MPI_Cart_sub
-
-interface  MPI_Dims_create
-subroutine MPI_Dims_create_f08(nnodes,ndims,dims,ierror)
-   implicit none
-   INTEGER, INTENT(IN) :: nnodes, ndims
-   INTEGER, INTENT(INOUT) :: dims(ndims)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Dims_create_f08
-end interface  MPI_Dims_create
-
-interface  MPI_Dist_graph_create
-subroutine MPI_Dist_graph_create_f08(comm_old,n,sources,degrees,destinations,weights, &
-                                     info,reorder,comm_dist_graph,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm_old
-   INTEGER, INTENT(IN) :: n, sources(n), degrees(n), destinations(*), weights(*)
-   TYPE(MPI_Info), INTENT(IN) :: info
-   LOGICAL, INTENT(IN) :: reorder
-   TYPE(MPI_Comm), INTENT(OUT) :: comm_dist_graph
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Dist_graph_create_f08
-end interface  MPI_Dist_graph_create
-
-interface  MPI_Dist_graph_create_adjacent
-subroutine MPI_Dist_graph_create_adjacent_f08(comm_old,indegree,sources,sourceweights, &
-                                              outdegree,destinations,destweights,info,reorder, &
-                                              comm_dist_graph,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm_old
-   INTEGER, INTENT(IN) :: indegree, sources(indegree), outdegree, destinations(outdegree)
-   INTEGER, INTENT(IN) :: sourceweights(indegree), destweights(outdegree)
-   TYPE(MPI_Info), INTENT(IN) :: info
-   LOGICAL, INTENT(IN) :: reorder
-   TYPE(MPI_Comm), INTENT(OUT) :: comm_dist_graph
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Dist_graph_create_adjacent_f08
-end interface  MPI_Dist_graph_create_adjacent
-
-interface  MPI_Dist_graph_neighbors
-subroutine MPI_Dist_graph_neighbors_f08(comm,maxindegree,sources,sourceweights, &
-                                        maxoutdegree,destinations,destweights,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: maxindegree, maxoutdegree
-   INTEGER, INTENT(OUT) :: sources(maxindegree), destinations(maxoutdegree)
-   INTEGER, INTENT(OUT) :: sourceweights(maxindegree), destweights(maxoutdegree)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Dist_graph_neighbors_f08
-end interface  MPI_Dist_graph_neighbors
-
-interface  MPI_Dist_graph_neighbors_count
-subroutine MPI_Dist_graph_neighbors_count_f08(comm,indegree,outdegree,weighted,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: indegree, outdegree
-   LOGICAL, INTENT(OUT) :: weighted
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Dist_graph_neighbors_count_f08
-end interface  MPI_Dist_graph_neighbors_count
 
 interface  MPI_Graphdims_get
 subroutine MPI_Graphdims_get_f08(comm,nnodes,nedges,ierror)
@@ -1320,16 +946,6 @@ subroutine MPI_Topo_test_f08(comm,status,ierror)
 end subroutine MPI_Topo_test_f08
 end interface  MPI_Topo_test
 
-interface  MPI_Comm_call_errhandler
-subroutine MPI_Comm_call_errhandler_f08(comm,errorcode,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_call_errhandler_f08
-end interface  MPI_Comm_call_errhandler
-
 interface  MPI_Comm_create_errhandler
 subroutine MPI_Comm_create_errhandler_f08(comm_errhandler_fn,errhandler,ierror)
    use :: mpi_f08_types, only : MPI_Errhandler
@@ -1340,26 +956,6 @@ subroutine MPI_Comm_create_errhandler_f08(comm_errhandler_fn,errhandler,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Comm_create_errhandler_f08
 end interface  MPI_Comm_create_errhandler
-
-interface  MPI_Comm_get_errhandler
-subroutine MPI_Comm_get_errhandler_f08(comm,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Errhandler), INTENT(OUT) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_get_errhandler_f08
-end interface  MPI_Comm_get_errhandler
-
-interface  MPI_Comm_set_errhandler
-subroutine MPI_Comm_set_errhandler_f08(comm,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_set_errhandler_f08
-end interface  MPI_Comm_set_errhandler
 
 interface  MPI_Errhandler_free
 subroutine MPI_Errhandler_free_f08(errhandler,ierror)
@@ -1636,68 +1232,6 @@ subroutine MPI_Info_get_string_f08(info,key,buflen,value,flag,ierror)
 end subroutine MPI_Info_get_string_f08
 end interface  MPI_Info_get_string
 
-interface  MPI_Close_port
-subroutine MPI_Close_port_f08(port_name,ierror)
-   implicit none
-   CHARACTER(LEN=*), INTENT(IN) :: port_name
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Close_port_f08
-end interface  MPI_Close_port
-
-interface  MPI_Comm_accept
-subroutine MPI_Comm_accept_f08(port_name,info,root,comm,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Info, MPI_Comm
-   implicit none
-   CHARACTER(LEN=*), INTENT(IN) :: port_name
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, INTENT(IN) :: root
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_accept_f08
-end interface  MPI_Comm_accept
-
-interface  MPI_Comm_connect
-subroutine MPI_Comm_connect_f08(port_name,info,root,comm,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Info, MPI_Comm
-   implicit none
-   CHARACTER(LEN=*), INTENT(IN) :: port_name
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, INTENT(IN) :: root
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_connect_f08
-end interface  MPI_Comm_connect
-
-interface  MPI_Comm_disconnect
-subroutine MPI_Comm_disconnect_f08(comm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(INOUT) :: comm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_disconnect_f08
-end interface  MPI_Comm_disconnect
-
-interface  MPI_Comm_get_parent
-subroutine MPI_Comm_get_parent_f08(parent,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(OUT) :: parent
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_get_parent_f08
-end interface  MPI_Comm_get_parent
-
-interface  MPI_Comm_join
-subroutine MPI_Comm_join_f08(fd,intercomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   INTEGER, INTENT(IN) :: fd
-   TYPE(MPI_Comm), INTENT(OUT) :: intercomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_join_f08
-end interface  MPI_Comm_join
-
 interface  MPI_Comm_spawn
 subroutine MPI_Comm_spawn_f08(command,argv,maxprocs,info,root,comm,intercomm, &
                               array_of_errcodes,ierror)
@@ -1739,16 +1273,6 @@ subroutine MPI_Lookup_name_f08(service_name,info,port_name,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Lookup_name_f08
 end interface  MPI_Lookup_name
-
-interface  MPI_Open_port
-subroutine MPI_Open_port_f08(info,port_name,ierror)
-   use :: mpi_f08_types, only : MPI_Info, MPI_MAX_PORT_NAME
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   CHARACTER(LEN=MPI_MAX_PORT_NAME), INTENT(OUT) :: port_name
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Open_port_f08
-end interface  MPI_Open_port
 
 interface  MPI_Publish_name
 subroutine MPI_Publish_name_f08(service_name,info,port_name,ierror)
@@ -2320,19 +1844,6 @@ end interface  MPI_Pcontrol
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! New routines to MPI-3
 !
-
-interface  MPI_Comm_split_type
-subroutine MPI_Comm_split_type_f08(comm,split_type,key,info,newcomm,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: split_type
-   INTEGER, INTENT(IN) :: key
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Comm), INTENT(OUT) :: newcomm
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Comm_split_type_f08
-end interface  MPI_Comm_split_type
 
 interface  MPI_Get_library_version
 subroutine MPI_Get_library_version_f08(version,resultlen,ierror)

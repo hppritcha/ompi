@@ -127,55 +127,11 @@ CLEANFILES += sizeof_f08.h sizeof_f08.f90 psizeof_f08.f90
 mpi_api_files = \
         aint_add_f08.F90 \
         aint_diff_f08.F90 \
-        cartdim_get_f08.F90 \
-        cart_get_f08.F90 \
-        cart_map_f08.F90 \
-        cart_rank_f08.F90 \
-        cart_shift_f08.F90 \
         cart_sub_f08.F90 \
-        close_port_f08.F90 \
-        comm_accept_f08.F90 \
-        comm_call_errhandler_f08.F90 \
-        comm_compare_f08.F90 \
-        comm_connect_f08.F90 \
         comm_create_errhandler_f08.F90 \
-        comm_create_f08.F90 \
-        comm_create_from_group_f08.F90 \
-        comm_create_group_f08.F90 \
         comm_create_keyval_f08.F90 \
-        comm_delete_attr_f08.F90 \
-        comm_disconnect_f08.F90 \
-        comm_dup_f08.F90 \
-        comm_dup_with_info_f08.F90 \
-        comm_idup_f08.F90 \
-        comm_idup_with_info_f08.F90 \
-        comm_free_f08.F90 \
-        comm_free_keyval_f08.F90 \
-        comm_get_attr_f08.F90 \
-        comm_get_errhandler_f08.F90 \
-        comm_get_info_f08.F90 \
-        comm_get_name_f08.F90 \
-        comm_get_parent_f08.F90 \
-        comm_group_f08.F90 \
-        comm_join_f08.F90 \
-        comm_rank_f08.F90 \
-        comm_remote_group_f08.F90 \
-        comm_remote_size_f08.F90 \
-        comm_set_attr_f08.F90 \
-        comm_set_errhandler_f08.F90 \
-        comm_set_info_f08.F90 \
-        comm_set_name_f08.F90 \
-        comm_size_f08.F90 \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
-        comm_split_f08.F90 \
-        comm_split_type_f08.F90 \
-        comm_test_inter_f08.F90 \
-        dist_graph_create_adjacent_f08.F90 \
-        dist_graph_create_f08.F90 \
-        dist_graph_neighbors_count_f08.F90 \
-        dist_graph_neighbors_f08.F90 \
-        dims_create_f08.F90 \
         errhandler_free_f08.F90 \
         error_class_f08.F90 \
         error_string_f08.F90 \
@@ -256,7 +212,6 @@ mpi_api_files = \
         mprobe_f08.F90 \
         op_commutative_f08.F90 \
         op_create_f08.F90 \
-        open_port_f08.F90 \
         op_free_f08.F90 \
         parrived_f08.F90 \
         pcontrol_f08.F90 \

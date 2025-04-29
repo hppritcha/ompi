@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015-2017 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID comm_get_attr(COMM comm, INT comm_keyval,
+                             AINT_OUT attribute_val, LOGICAL_OUT flag)
+{
+    int c_ierr;
+    MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_flag;
+
+    /* This stuff is very confusing.  Be sure to see the comment at
+       the top of src/attributes/attributes.c. */
+
+    c_ierr = ompi_attr_get_aint(c_comm->c_keyhash,
+                                OMPI_FINT_2_INT(*comm_keyval),
+                                attribute_val,
+                                &c_flag);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (MPI_SUCCESS == c_ierr) {
+        *flag = OMPI_INT_2_FINT(c_flag);
+    }
+}
