@@ -132,46 +132,9 @@ mpi_api_files = \
         comm_create_keyval_f08.F90 \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
-        errhandler_free_f08.F90 \
-        error_class_f08.F90 \
-        error_string_f08.F90 \
-        file_call_errhandler_f08.F90 \
-        file_close_f08.F90 \
         file_create_errhandler_f08.F90 \
-        file_delete_f08.F90 \
-        file_get_amode_f08.F90 \
-        file_get_atomicity_f08.F90 \
-        file_get_byte_offset_f08.F90 \
-        file_get_errhandler_f08.F90 \
-        file_get_group_f08.F90 \
-        file_get_info_f08.F90 \
-        file_get_position_f08.F90 \
-        file_get_position_shared_f08.F90 \
-        file_get_size_f08.F90 \
-        file_get_type_extent_f08.F90 \
-        file_get_view_f08.F90 \
-        file_open_f08.F90 \
-        file_preallocate_f08.F90 \
-        file_seek_f08.F90 \
-        file_seek_shared_f08.F90 \
-        file_set_atomicity_f08.F90 \
         file_set_errhandler_f08.F90 \
-        file_set_info_f08.F90 \
-        file_set_size_f08.F90 \
-        file_set_view_f08.F90 \
-        file_sync_f08.F90 \
-        finalized_f08.F90 \
-        finalize_f08.F90 \
         get_elements_x_f08.F90 \
-        get_library_version_f08.F90 \
-        get_processor_name_f08.F90 \
-        get_version_f08.F90 \
-        graph_create_f08.F90 \
-        graphdims_get_f08.F90 \
-        graph_get_f08.F90 \
-        graph_map_f08.F90 \
-        graph_neighbors_count_f08.F90 \
-        graph_neighbors_f08.F90 \
         grequest_complete_f08.F90 \
         grequest_start_f08.F90 \
         group_compare_f08.F90 \
@@ -187,7 +150,6 @@ mpi_api_files = \
         group_size_f08.F90 \
         group_translate_ranks_f08.F90 \
         group_union_f08.F90 \
-        ibarrier_f08.F90 \
         improbe_f08.F90 \
         info_create_f08.F90 \
         info_create_env_f08.F90 \

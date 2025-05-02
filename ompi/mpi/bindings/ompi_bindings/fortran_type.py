@@ -915,6 +915,13 @@ class File(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('FILE_OUT')
+class FileOut(File):
+    """MPI_File OUT type."""
+        
+    def declare(self):
+        return f'TYPE(MPI_File), INTENT(OUT) :: {self.name}'
+
 @FortranType.add('INFO')
 class Info(FortranType):
     """MPI_Info type."""
@@ -954,6 +961,13 @@ class Offset(FortranType):
     def c_parameter(self):
         return f'MPI_Offset *{self.name}'
 
+@FortranType.add('OFFSET_OUT')
+class OffsetOut(Offset):
+    """MPI_Offset OUT type."""
+    
+    def declare(self):
+        return f'INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: {self.name}'
+        
 
 @FortranType.add('CHAR_ARRAY')
 class CharArray(FortranType):
@@ -985,6 +999,12 @@ class CharArrayOut(FortranType):
             return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_OBJECT_NAME')]
         elif self.count_param == 'MPI_MAX_PORT_NAME':
             return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_PORT_NAME')]
+        elif self.count_param == 'MPI_MAX_ERROR_STRING':
+            return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_ERROR_STRING')]
+        elif self.count_param == 'MPI_MAX_PROCESSOR_NAME':
+            return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_PROCESSOR_NAME')]
+        elif self.count_param == 'MPI_MAX_LIBRARY_VERSION_STRING':
+            return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_LIBRARY_VERSION_STRING')]
         else:
             return [('iso_c_binding', 'c_char')]
 
@@ -1042,6 +1062,14 @@ class ErrhandlerOutType(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('ERRHANDLER_INOUT')
+class ErrhandlerOutType(ErrhandlerOutType):
+    def declare(self):
+        return f'TYPE(MPI_Errhandler), INTENT(INOUT) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
+   
 @FortranType.add('COMM_ERRHANDLER_FN')
 class CommErrhandlerFnType(FortranType):
     def declare(self):

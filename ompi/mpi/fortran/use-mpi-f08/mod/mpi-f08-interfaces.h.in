@@ -469,16 +469,6 @@ subroutine MPI_Type_size_x_f08(datatype,size,ierror)
 end subroutine MPI_Type_size_x_f08
 end interface  MPI_Type_size_x
 
-interface  MPI_Ibarrier
-subroutine MPI_Ibarrier_f08(comm,request,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Request
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Request), INTENT(OUT) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Ibarrier_f08
-end interface  MPI_Ibarrier
-
 interface  MPI_Op_commutative
 subroutine MPI_Op_commutative_f08(op,commute,ierror)
    use :: mpi_f08_types, only : MPI_Op
@@ -869,73 +859,6 @@ subroutine MPI_Cart_sub_f08(comm,remain_dims,newcomm,ierror)
 end subroutine MPI_Cart_sub_f08
 end interface  MPI_Cart_sub
 
-interface  MPI_Graphdims_get
-subroutine MPI_Graphdims_get_f08(comm,nnodes,nedges,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: nnodes, nedges
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graphdims_get_f08
-end interface  MPI_Graphdims_get
-
-interface  MPI_Graph_create
-subroutine MPI_Graph_create_f08(comm_old,nnodes,index,edges,reorder,comm_graph, &
-                                ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm_old
-   INTEGER, INTENT(IN) :: nnodes, index(nnodes), edges(*)
-   LOGICAL, INTENT(IN) :: reorder
-   TYPE(MPI_Comm), INTENT(OUT) :: comm_graph
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graph_create_f08
-end interface  MPI_Graph_create
-
-interface  MPI_Graph_get
-subroutine MPI_Graph_get_f08(comm,maxindex,maxedges,index,edges,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: maxindex, maxedges
-   INTEGER, INTENT(OUT) :: index(maxindex), edges(maxedges)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graph_get_f08
-end interface  MPI_Graph_get
-
-interface  MPI_Graph_map
-subroutine MPI_Graph_map_f08(comm,nnodes,index,edges,newrank,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: nnodes, index(nnodes), edges(*)
-   INTEGER, INTENT(OUT) :: newrank
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graph_map_f08
-end interface  MPI_Graph_map
-
-interface  MPI_Graph_neighbors
-subroutine MPI_Graph_neighbors_f08(comm,rank,maxneighbors,neighbors,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: rank, maxneighbors
-   INTEGER, INTENT(OUT) :: neighbors(maxneighbors)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graph_neighbors_f08
-end interface  MPI_Graph_neighbors
-
-interface  MPI_Graph_neighbors_count
-subroutine MPI_Graph_neighbors_count_f08(comm,rank,nneighbors,ierror)
-   use :: mpi_f08_types, only : MPI_Comm
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(IN) :: rank
-   INTEGER, INTENT(OUT) :: nneighbors
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Graph_neighbors_count_f08
-end interface  MPI_Graph_neighbors_count
-
 interface  MPI_Topo_test
 subroutine MPI_Topo_test_f08(comm,status,ierror)
    use :: mpi_f08_types, only : MPI_Comm, MPI_Status
@@ -957,45 +880,6 @@ subroutine MPI_Comm_create_errhandler_f08(comm_errhandler_fn,errhandler,ierror)
 end subroutine MPI_Comm_create_errhandler_f08
 end interface  MPI_Comm_create_errhandler
 
-interface  MPI_Errhandler_free
-subroutine MPI_Errhandler_free_f08(errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Errhandler
-   implicit none
-   TYPE(MPI_Errhandler), INTENT(INOUT) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Errhandler_free_f08
-end interface  MPI_Errhandler_free
-
-interface  MPI_Error_class
-subroutine MPI_Error_class_f08(errorcode,errorclass,ierror)
-   implicit none
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, INTENT(OUT) :: errorclass
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Error_class_f08
-end interface  MPI_Error_class
-
-interface  MPI_Error_string
-subroutine MPI_Error_string_f08(errorcode,string,resultlen,ierror)
-   use :: mpi_f08_types, only : MPI_MAX_ERROR_STRING
-   implicit none
-   integer, intent(in) :: errorcode
-   character(len=MPI_MAX_ERROR_STRING), intent(out) :: string
-   integer, intent(out) :: resultlen
-   integer, optional, intent(out) :: ierror
-end subroutine MPI_Error_string_f08
-end interface  MPI_Error_string
-
-interface  MPI_File_call_errhandler
-subroutine MPI_File_call_errhandler_f08(fh,errorcode,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_call_errhandler_f08
-end interface  MPI_File_call_errhandler
-
 interface  MPI_File_create_errhandler
 subroutine MPI_File_create_errhandler_f08(file_errhandler_fn,errhandler,ierror)
    use :: mpi_f08_types, only : MPI_Errhandler
@@ -1007,16 +891,6 @@ subroutine MPI_File_create_errhandler_f08(file_errhandler_fn,errhandler,ierror)
 end subroutine MPI_File_create_errhandler_f08
 end interface  MPI_File_create_errhandler
 
-interface  MPI_File_get_errhandler
-subroutine MPI_File_get_errhandler_f08(file,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Errhandler
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: file
-   TYPE(MPI_Errhandler), INTENT(OUT) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_errhandler_f08
-end interface  MPI_File_get_errhandler
-
 interface  MPI_File_set_errhandler
 subroutine MPI_File_set_errhandler_f08(file,errhandler,ierror)
    use :: mpi_f08_types, only : MPI_File, MPI_Errhandler
@@ -1026,39 +900,6 @@ subroutine MPI_File_set_errhandler_f08(file,errhandler,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_File_set_errhandler_f08
 end interface  MPI_File_set_errhandler
-
-interface  MPI_Finalize
-subroutine MPI_Finalize_f08(ierror)
-   implicit none
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Finalize_f08
-end interface  MPI_Finalize
-
-interface  MPI_Finalized
-subroutine MPI_Finalized_f08(flag,ierror)
-   implicit none
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Finalized_f08
-end interface  MPI_Finalized
-
-interface  MPI_Get_processor_name
-subroutine MPI_Get_processor_name_f08(name,resultlen,ierror)
-   use :: mpi_f08_types, only : MPI_MAX_PROCESSOR_NAME
-   implicit none
-   character(len=MPI_MAX_PROCESSOR_NAME), intent(out) :: name
-   integer, intent(out) :: resultlen
-   integer, optional, intent(out) :: ierror
-end subroutine MPI_Get_processor_name_f08
-end interface  MPI_Get_processor_name
-
-interface  MPI_Get_version
-subroutine MPI_Get_version_f08(version,subversion,ierror)
-   implicit none
-   INTEGER, INTENT(OUT) :: version, subversion
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Get_version_f08
-end interface  MPI_Get_version
 
 interface  MPI_Init
 subroutine MPI_Init_f08(ierror)
@@ -1542,228 +1383,6 @@ subroutine MPI_Status_set_elements_x_f08(status,datatype,count,ierror)
 end subroutine MPI_Status_set_elements_x_f08
 end interface  MPI_Status_set_elements_x
 
-interface  MPI_File_close
-subroutine MPI_File_close_f08(fh,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(INOUT) :: fh
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_close_f08
-end interface  MPI_File_close
-
-interface  MPI_File_delete
-subroutine MPI_File_delete_f08(filename,info,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   CHARACTER(LEN=*), INTENT(IN) :: filename
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_delete_f08
-end interface  MPI_File_delete
-
-interface  MPI_File_get_amode
-subroutine MPI_File_get_amode_f08(fh,amode,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER, INTENT(OUT) :: amode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_amode_f08
-end interface  MPI_File_get_amode
-
-interface  MPI_File_get_atomicity
-subroutine MPI_File_get_atomicity_f08(fh,flag,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_atomicity_f08
-end interface  MPI_File_get_atomicity
-
-interface  MPI_File_get_byte_offset
-subroutine MPI_File_get_byte_offset_f08(fh,offset,disp,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: offset
-   INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: disp
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_byte_offset_f08
-end interface  MPI_File_get_byte_offset
-
-interface  MPI_File_get_group
-subroutine MPI_File_get_group_f08(fh,group,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Group
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   TYPE(MPI_Group), INTENT(OUT) :: group
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_group_f08
-end interface  MPI_File_get_group
-
-interface  MPI_File_get_info
-subroutine MPI_File_get_info_f08(fh,info_used,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Info
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   TYPE(MPI_Info), INTENT(OUT) :: info_used
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_info_f08
-end interface  MPI_File_get_info
-
-interface  MPI_File_get_position
-subroutine MPI_File_get_position_f08(fh,offset,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: offset
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_position_f08
-end interface  MPI_File_get_position
-
-interface  MPI_File_get_position_shared
-subroutine MPI_File_get_position_shared_f08(fh,offset,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: offset
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_position_shared_f08
-end interface  MPI_File_get_position_shared
-
-interface  MPI_File_get_size
-subroutine MPI_File_get_size_f08(fh,size,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_size_f08
-end interface  MPI_File_get_size
-
-interface  MPI_File_get_type_extent
-subroutine MPI_File_get_type_extent_f08(fh,datatype,extent,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Datatype, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER(MPI_ADDRESS_KIND), INTENT(OUT) :: extent
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_type_extent_f08
-end interface  MPI_File_get_type_extent
-
-interface  MPI_File_get_view
-subroutine MPI_File_get_view_f08(fh,disp,etype,filetype,datarep,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Datatype, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(OUT) :: disp
-   TYPE(MPI_Datatype), INTENT(OUT) :: etype
-   TYPE(MPI_Datatype), INTENT(OUT) :: filetype
-   CHARACTER(LEN=*), INTENT(OUT) :: datarep
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_get_view_f08
-end interface  MPI_File_get_view
-
-interface  MPI_File_open
-subroutine MPI_File_open_f08(comm,filename,amode,info,fh,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Info, MPI_File
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   CHARACTER(LEN=*), INTENT(IN) :: filename
-   INTEGER, INTENT(IN) :: amode
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_File), INTENT(OUT) :: fh
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_open_f08
-end interface  MPI_File_open
-
-interface  MPI_File_preallocate
-subroutine MPI_File_preallocate_f08(fh,size,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_preallocate_f08
-end interface  MPI_File_preallocate
-
-interface  MPI_File_seek
-subroutine MPI_File_seek_f08(fh,offset,whence,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: offset
-   INTEGER, INTENT(IN) :: whence
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_seek_f08
-end interface  MPI_File_seek
-
-interface  MPI_File_seek_shared
-subroutine MPI_File_seek_shared_f08(fh,offset,whence,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: offset
-   INTEGER, INTENT(IN) :: whence
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_seek_shared_f08
-end interface  MPI_File_seek_shared
-
-interface  MPI_File_set_atomicity
-subroutine MPI_File_set_atomicity_f08(fh,flag,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   LOGICAL, INTENT(IN) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_set_atomicity_f08
-end interface  MPI_File_set_atomicity
-
-interface  MPI_File_set_info
-subroutine MPI_File_set_info_f08(fh,info,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Info
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_set_info_f08
-end interface  MPI_File_set_info
-
-interface  MPI_File_set_size
-subroutine MPI_File_set_size_f08(fh,size,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_set_size_f08
-end interface  MPI_File_set_size
-
-interface  MPI_File_set_view
-subroutine MPI_File_set_view_f08(fh,disp,etype,filetype,datarep,info,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Datatype, MPI_Info, MPI_OFFSET_KIND
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER(MPI_OFFSET_KIND), INTENT(IN) :: disp
-   TYPE(MPI_Datatype), INTENT(IN) :: etype
-   TYPE(MPI_Datatype), INTENT(IN) :: filetype
-   CHARACTER(LEN=*), INTENT(IN) :: datarep
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_set_view_f08
-end interface  MPI_File_set_view
-
-interface  MPI_File_sync
-subroutine MPI_File_sync_f08(fh,ierror)
-   use :: mpi_f08_types, only : MPI_File
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: fh
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_sync_f08
-end interface  MPI_File_sync
-
 interface  MPI_Register_datarep
 subroutine MPI_Register_datarep_f08(datarep,read_conversion_fn,write_conversion_fn, &
                                             dtype_file_extent_fn,extra_state,ierror)
@@ -1844,16 +1463,6 @@ end interface  MPI_Pcontrol
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! New routines to MPI-3
 !
-
-interface  MPI_Get_library_version
-subroutine MPI_Get_library_version_f08(version,resultlen,ierror)
-   use :: mpi_f08_types, only : MPI_MAX_LIBRARY_VERSION_STRING
-   implicit none
-   character(len=MPI_MAX_LIBRARY_VERSION_STRING), intent(out) :: version
-   integer, intent(out) :: resultlen
-   integer, optional, intent(out) :: ierror
-end subroutine MPI_Get_library_version_f08
-end interface  MPI_Get_library_version
 
 interface  MPI_Mprobe
 subroutine MPI_Mprobe_f08(source,tag,comm,message,status,ierror)
