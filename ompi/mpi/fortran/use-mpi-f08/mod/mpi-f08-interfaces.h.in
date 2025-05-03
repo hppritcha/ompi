@@ -515,78 +515,6 @@ subroutine MPI_Comm_create_keyval_f08(comm_copy_attr_fn,comm_delete_attr_fn,comm
 end subroutine MPI_Comm_create_keyval_f08
 end interface  MPI_Comm_create_keyval
 
-interface  MPI_Group_compare
-subroutine MPI_Group_compare_f08(group1,group2,result,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group1, group2
-   INTEGER, INTENT(OUT) :: result
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_compare_f08
-end interface  MPI_Group_compare
-
-interface  MPI_Group_difference
-subroutine MPI_Group_difference_f08(group1,group2,newgroup,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group1, group2
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_difference_f08
-end interface  MPI_Group_difference
-
-interface  MPI_Group_excl
-subroutine MPI_Group_excl_f08(group,n,ranks,newgroup,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(IN) :: n, ranks(n)
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_excl_f08
-end interface  MPI_Group_excl
-
-interface  MPI_Group_free
-subroutine MPI_Group_free_f08(group,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(INOUT) :: group
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_free_f08
-end interface  MPI_Group_free
-
-interface MPI_Group_from_session_pset
-subroutine MPI_Group_from_session_pset_f08(session, pset_name, newgroup, ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Group
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   CHARACTER(LEN=*), INTENT(IN) :: pset_name
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_from_session_pset_f08
-end interface MPI_Group_from_session_pset
-
-interface  MPI_Group_incl
-subroutine MPI_Group_incl_f08(group,n,ranks,newgroup,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   INTEGER, INTENT(IN) :: n, ranks(n)
-   TYPE(MPI_Group), INTENT(IN) :: group
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_incl_f08
-end interface  MPI_Group_incl
-
-interface  MPI_Group_intersection
-subroutine MPI_Group_intersection_f08(group1,group2,newgroup,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group1, group2
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_intersection_f08
-end interface  MPI_Group_intersection
-
 interface  MPI_Group_range_excl
 subroutine MPI_Group_range_excl_f08(group,n,ranges,newgroup,ierror)
    use :: mpi_f08_types, only : MPI_Group
@@ -608,48 +536,6 @@ subroutine MPI_Group_range_incl_f08(group,n,ranges,newgroup,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Group_range_incl_f08
 end interface  MPI_Group_range_incl
-
-interface  MPI_Group_rank
-subroutine MPI_Group_rank_f08(group,rank,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(OUT) :: rank
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_rank_f08
-end interface  MPI_Group_rank
-
-interface  MPI_Group_size
-subroutine MPI_Group_size_f08(group,size,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(OUT) :: size
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_size_f08
-end interface  MPI_Group_size
-
-interface  MPI_Group_translate_ranks
-subroutine MPI_Group_translate_ranks_f08(group1,n,ranks1,group2,ranks2,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group1, group2
-   INTEGER, INTENT(IN) :: n
-   INTEGER, INTENT(IN) :: ranks1(n)
-   INTEGER, INTENT(OUT) :: ranks2(n)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_translate_ranks_f08
-end interface  MPI_Group_translate_ranks
-
-interface  MPI_Group_union
-subroutine MPI_Group_union_f08(group1,group2,newgroup,ierror)
-   use :: mpi_f08_types, only : MPI_Group
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group1, group2
-   TYPE(MPI_Group), INTENT(OUT) :: newgroup
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Group_union_f08
-end interface  MPI_Group_union
 
 interface  MPI_Intercomm_create
 subroutine MPI_Intercomm_create_f08(local_comm,local_leader,peer_comm,remote_leader, &

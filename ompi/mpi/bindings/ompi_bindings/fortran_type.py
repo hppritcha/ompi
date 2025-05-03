@@ -521,22 +521,54 @@ class GroupType(FortranType):
         return f'MPI_Fint *{self.name}'
     
 @FortranType.add('GROUP_OUT')
-class GroupOutType(FortranType):
+class GroupOutType(GroupType):
     def declare(self):
         return f'TYPE(MPI_Group), INTENT(OUT) :: {self.name}'
     
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(OUT) :: {self.name}'
             
+@FortranType.add('GROUP_INOUT')
+class GroupInOutType(GroupType):
+    def declare(self):
+        return f'TYPE(MPI_Group), INTENT(INOUT) :: {self.name}'
+    
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
+
+@FortranType.add('SESSION')
+class SessionType(FortranType):
+    def declare(self):
+        return f'TYPE(MPI_Session), INTENT(IN) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
+    
     def argument(self):
         return f'{self.name}%MPI_VAL'
-
-    def use(self):
-        return [('mpi_f08_types', 'MPI_Group')]
         
+    def use(self):
+        return [('mpi_f08_types', 'MPI_Session')]
+            
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('SESSION_OUT')
+class SessionOutType(SessionType):
+    def declare(self):
+        return f'TYPE(MPI_Session), INTENT(OUT) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+    
+@FortranType.add('SESSION_INOUT')
+class SessionInOutType(SessionType):
+    def declare(self):
+        return f'TYPE(MPI_Session), INTENT(INOUT) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
+    
 @FortranType.add('STATUS')
 class StatusType(FortranType):
     def declare(self):

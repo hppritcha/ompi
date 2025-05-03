@@ -161,6 +161,16 @@ prototype_files = \
 	graph_map.c.in \
 	graph_neighbors_count.c.in \
 	graph_neighbors.c.in \
+	group_compare.c.in \
+	group_difference.c.in \
+	group_excl.c.in \
+	group_free.c.in \
+	group_from_session_pset.c.in \
+	group_incl.c.in \
+	group_rank.c.in \
+	group_size.c.in \
+	group_translate_ranks.c.in \
+	group_union.c.in \
         iallgather_ts.c.in \
         iallgatherv_ts.c.in \
         iallreduce_ts.c.in \

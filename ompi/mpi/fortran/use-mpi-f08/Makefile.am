@@ -137,19 +137,8 @@ mpi_api_files = \
         get_elements_x_f08.F90 \
         grequest_complete_f08.F90 \
         grequest_start_f08.F90 \
-        group_compare_f08.F90 \
-        group_difference_f08.F90 \
-        group_excl_f08.F90 \
-        group_free_f08.F90 \
-        group_from_session_pset_f08.F90 \
-        group_incl_f08.F90 \
-        group_intersection_f08.F90 \
         group_range_excl_f08.F90 \
         group_range_incl_f08.F90 \
-        group_rank_f08.F90 \
-        group_size_f08.F90 \
-        group_translate_ranks_f08.F90 \
-        group_union_f08.F90 \
         improbe_f08.F90 \
         info_create_f08.F90 \
         info_create_env_f08.F90 \
