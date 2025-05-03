@@ -980,6 +980,13 @@ class InfoOut(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('INFO_INOUT')
+class InfoInOut(InfoOut):
+    """MPI_Info inout type."""
+
+    def declare(self):
+        return f'TYPE(MPI_Info), INTENT(INOUT) :: {self.name}'
+
 @FortranType.add('OFFSET')
 class Offset(FortranType):
     """MPI_Offset type."""

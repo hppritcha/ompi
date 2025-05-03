@@ -140,17 +140,10 @@ mpi_api_files = \
         group_range_excl_f08.F90 \
         group_range_incl_f08.F90 \
         improbe_f08.F90 \
-        info_create_f08.F90 \
-        info_create_env_f08.F90 \
-        info_delete_f08.F90 \
-        info_dup_f08.F90 \
-        info_free_f08.F90 \
         info_get_f08.F90 \
-        info_get_nkeys_f08.F90 \
         info_get_nthkey_f08.F90 \
         info_get_valuelen_f08.F90 \
         info_get_string_f08.F90 \
-        info_set_f08.F90 \
         init_f08.F90 \
         initialized_f08.F90 \
         init_thread_f08.F90 \

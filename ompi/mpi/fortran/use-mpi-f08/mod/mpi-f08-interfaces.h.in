@@ -843,53 +843,6 @@ subroutine MPI_Win_set_errhandler_f08(win,errhandler,ierror)
 end subroutine MPI_Win_set_errhandler_f08
 end interface  MPI_Win_set_errhandler
 
-interface  MPI_Info_create
-subroutine MPI_Info_create_f08(info,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(OUT) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_create_f08
-end interface  MPI_Info_create
-
-interface  MPI_Info_create_env
-subroutine MPI_Info_create_env_f08(info,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(OUT) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_create_env_f08
-end interface  MPI_Info_create_env
-
-interface  MPI_Info_delete
-subroutine MPI_Info_delete_f08(info,key,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   CHARACTER(LEN=*), INTENT(IN) :: key
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_delete_f08
-end interface  MPI_Info_delete
-
-interface  MPI_Info_dup
-subroutine MPI_Info_dup_f08(info,newinfo,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Info), INTENT(OUT) :: newinfo
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_dup_f08
-end interface  MPI_Info_dup
-
-interface  MPI_Info_free
-subroutine MPI_Info_free_f08(info,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(INOUT) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_free_f08
-end interface  MPI_Info_free
-
 interface  MPI_Info_get
 subroutine MPI_Info_get_f08(info,key,valuelen,value,flag,ierror)
    use :: mpi_f08_types, only : MPI_Info
@@ -902,16 +855,6 @@ subroutine MPI_Info_get_f08(info,key,valuelen,value,flag,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Info_get_f08
 end interface  MPI_Info_get
-
-interface  MPI_Info_get_nkeys
-subroutine MPI_Info_get_nkeys_f08(info,nkeys,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, INTENT(OUT) :: nkeys
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_get_nkeys_f08
-end interface  MPI_Info_get_nkeys
 
 interface  MPI_Info_get_nthkey
 subroutine MPI_Info_get_nthkey_f08(info,n,key,ierror)
@@ -935,16 +878,6 @@ subroutine MPI_Info_get_valuelen_f08(info,key,valuelen,flag,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Info_get_valuelen_f08
 end interface  MPI_Info_get_valuelen
-
-interface  MPI_Info_set
-subroutine MPI_Info_set_f08(info,key,value,ierror)
-   use :: mpi_f08_types, only : MPI_Info
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   CHARACTER(LEN=*), INTENT(IN) :: key, value
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Info_set_f08
-end interface  MPI_Info_set
 
 interface  MPI_Info_get_string
 subroutine MPI_Info_get_string_f08(info,key,buflen,value,flag,ierror)

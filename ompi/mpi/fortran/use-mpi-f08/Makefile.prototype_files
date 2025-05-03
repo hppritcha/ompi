@@ -189,6 +189,13 @@ prototype_files = \
         ineighbor_alltoall_ts.c.in \
         ineighbor_alltoallv_ts.c.in \
         ineighbor_alltoallw_ts.c.in \
+	info_create.c.in \
+	info_create_env.c.in \
+	info_delete.c.in \
+	info_dup.c.in \
+	info_free.c.in \
+	info_get_nkeys.c.in \
+	info_set.c.in \
         irecv_ts.c.in \
         ireduce_scatter_block_ts.c.in \
         ireduce_scatter_ts.c.in \
