@@ -628,6 +628,14 @@ class RequestTypeOut(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('REQUEST_INOUT')
+class RequestTypeInOut(RequestType):
+    def declare(self):
+        return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
+
 
 @FortranType.add('REQUEST_ARRAY')
 class RequestArrayType(FortranType):
@@ -894,13 +902,25 @@ class Op(FortranType):
     def declare(self):
         return f'TYPE(MPI_Op), INTENT(IN) :: {self.name}'
 
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
+
     def use(self):
         return [('mpi_f08_types', 'MPI_Op')]
+
+    def argument(self):
+        return f'{self.name}%MPI_VAL'
 
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
-
+@FortranType.add('OP_INOUT')
+class OpInOut(Op):
+    """MPI_Op INOUT type."""
+    
+    def declare(self):
+        return f'TYPE(MPI_Op), INTENT(INOUT) :: {self.name}'
+    
 @FortranType.add('WIN')
 class Win(FortranType):
     """MPI_Win type."""
@@ -908,8 +928,14 @@ class Win(FortranType):
     def declare(self):
         return f'TYPE(MPI_Win), INTENT(IN) :: {self.name}'
 
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
+
     def use(self):
         return [('mpi_f08_types', 'MPI_Win')]
+
+    def argument(self):
+        return f'{self.name}%MPI_VAL'
 
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
@@ -1054,18 +1080,27 @@ class CharArrayOut(FortranType):
         return f'char *{self.name}'
 
 
-@FortranType.add('MESSAGE_INOUT')
-class MessageInOut(FortranType):
-    """MPI_Message INOUT type."""
+@FortranType.add('MESSAGE_OUT')
+class MessageOut(FortranType):
+    """MPI_Message OUT type."""
 
     def declare(self):
-        return f'TYPE(MPI_Message), INTENT(INOUT) :: {self.name}'
+        return f'TYPE(MPI_Message), INTENT(OUT) :: {self.name}'
 
     def use(self):
         return [('mpi_f08_types', 'MPI_Message')]
 
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
+    
+
+@FortranType.add('MESSAGE_INOUT')
+class MessageInOut(MessageOut):
+    """MPI_Message INOUT type."""
+
+    def declare(self):
+        return f'TYPE(MPI_Message), INTENT(INOUT) :: {self.name}'
+
 
 @FortranType.add('ERRHANDLER')
 class ErrhandlerType(FortranType):

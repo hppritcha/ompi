@@ -183,6 +183,7 @@ prototype_files = \
         iexscan_ts.c.in \
         igather_ts.c.in \
         igatherv_ts.c.in \
+        improbe.c.in \
         imrecv_ts.c.in \
         ineighbor_allgather_ts.c.in \
         ineighbor_allgatherv_ts.c.in \
@@ -196,6 +197,13 @@ prototype_files = \
 	info_free.c.in \
 	info_get_nkeys.c.in \
 	info_set.c.in \
+	init.c.in \
+	initialized.c.in \
+	init_thread.c.in \
+	intercomm_create.c.in \
+	intercomm_create_from_groups.c.in \
+	intercomm_merge.c.in \
+	iprobe.c.in \
         irecv_ts.c.in \
         ireduce_scatter_block_ts.c.in \
         ireduce_scatter_ts.c.in \
@@ -208,6 +216,9 @@ prototype_files = \
         isendrecv_ts.c.in \
         isend_ts.c.in \
         issend_ts.c.in \
+	is_thread_main.c.in \
+	lookup_name.c.in \
+	mprobe.c.in \
         mrecv_ts.c.in \
         neighbor_allgather_init_ts.c.in \
         neighbor_allgather_ts.c.in \
@@ -219,14 +230,22 @@ prototype_files = \
         neighbor_alltoallv_ts.c.in \
         neighbor_alltoallw_init_ts.c.in \
         neighbor_alltoallw_ts.c.in \
+	op_commutative.c.in \
+	op_free.c.in \
 	open_port.c.in \
         pack_external_size.c.in \
         pack_external_ts.c.in \
         pack_size.c.in \
         pack_ts.c.in \
+        parrived.c.in \
+        pready.c.in \
+        pready_list.c.in \
+        pready_range.c.in \
         precv_init_ts.c.in \
+	probe.c.in \
         psend_init_ts.c.in \
         put_ts.c.in \
+	query_thread.c.in \
         raccumulate_ts.c.in \
         recv_init_ts.c.in \
         recv_ts.c.in \
@@ -237,6 +256,7 @@ prototype_files = \
         reduce_scatter_init_ts.c.in \
         reduce_scatter_ts.c.in \
         reduce_ts.c.in \
+	request_free.c.in \
         rget_accumulate_ts.c.in \
         rget_ts.c.in \
         rput_ts.c.in \

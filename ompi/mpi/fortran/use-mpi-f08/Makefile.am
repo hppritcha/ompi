@@ -139,35 +139,14 @@ mpi_api_files = \
         grequest_start_f08.F90 \
         group_range_excl_f08.F90 \
         group_range_incl_f08.F90 \
-        improbe_f08.F90 \
         info_get_f08.F90 \
         info_get_nthkey_f08.F90 \
         info_get_valuelen_f08.F90 \
         info_get_string_f08.F90 \
-        init_f08.F90 \
-        initialized_f08.F90 \
-        init_thread_f08.F90 \
-        intercomm_create_f08.F90 \
-        intercomm_create_from_groups_f08.F90 \
-        intercomm_merge_f08.F90 \
-        iprobe_f08.F90 \
-        is_thread_main_f08.F90 \
-        lookup_name_f08.F90 \
-        mprobe_f08.F90 \
-        op_commutative_f08.F90 \
         op_create_f08.F90 \
-        op_free_f08.F90 \
-        parrived_f08.F90 \
         pcontrol_f08.F90 \
-        pready_f08.F90 \
-        pready_range_f08.F90 \
-        pready_list_f08.F90 \
-        probe_f08.F90 \
         publish_name_f08.F90 \
-        query_thread_f08.F90 \
         register_datarep_f08.F90 \
-        request_free_f08.F90 \
-        request_get_status_f08.F90 \
         session_call_errhandler_f08.F90\
         session_create_errhandler_f08.F90\
         session_get_errhandler_f08.F90\
