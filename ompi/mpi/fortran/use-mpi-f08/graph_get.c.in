@@ -21,8 +21,8 @@
 
 
 PROTOTYPE VOID graph_get(COMM comm, INT maxindex,
-		         INT maxedges, INT_OUT index:maxindex,
-		         INT_OUT edges:maxedges)
+		         INT maxedges, INT_ARRAY_OUT index:maxindex,
+		         INT_ARRAY_OUT edges:maxedges)
 {
     int c_ierr;
     MPI_Comm c_comm;

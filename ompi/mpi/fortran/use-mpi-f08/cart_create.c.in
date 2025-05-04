@@ -20,7 +20,7 @@
  * $HEADER$
  */
 
-PROTOTYPE VOID cart_create(COMM old_comm, INT ndims, INT dims,
+PROTOTYPE VOID cart_create(COMM old_comm, INT ndims, INT_ARRAY dims:ndims,
                            LOGICAL_ARRAY periods:ndims, LOGICAL reorder,
                            COMM_OUT comm_cart)
 {
