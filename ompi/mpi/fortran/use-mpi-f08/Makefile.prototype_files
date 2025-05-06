@@ -162,6 +162,7 @@ prototype_files = \
 	graph_map.c.in \
 	graph_neighbors_count.c.in \
 	graph_neighbors.c.in \
+	grequest_complete.c.in \
 	group_compare.c.in \
 	group_difference.c.in \
 	group_excl.c.in \
@@ -327,6 +328,7 @@ prototype_files = \
         win_complete.c.in \
         win_create_ts.c.in \
         win_create_dynamic.c.in \
+        win_delete_attr.c.in \
         win_detach_ts.c.in \
 	win_fence.c.in \
 	win_flush.c.in \
@@ -334,11 +336,16 @@ prototype_files = \
 	win_flush_local.c.in \
 	win_flush_local_all.c.in \
 	win_free.c.in \
+	win_free_keyval.c.in \
+	win_get_attr.c.in \
+	win_get_errhandler.c.in \
 	win_get_group.c.in \
 	win_get_info.c.in \
 	win_lock.c.in \
 	win_lock_all.c.in \
 	win_post.c.in \
+	win_set_attr.c.in \
+	win_set_errhandler.c.in \
 	win_set_info.c.in \
 	win_start.c.in \
         win_shared_query.c.in \

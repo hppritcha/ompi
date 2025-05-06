@@ -134,7 +134,6 @@ mpi_api_files = \
         comm_spawn_multiple_f08.F90 \
         file_create_errhandler_f08.F90 \
         get_elements_x_f08.F90 \
-        grequest_complete_f08.F90 \
         grequest_start_f08.F90 \
         group_range_excl_f08.F90 \
         group_range_incl_f08.F90 \
@@ -165,13 +164,7 @@ mpi_api_files = \
         unpublish_name_f08.F90 \
         win_create_errhandler_f08.F90 \
         win_create_keyval_f08.F90 \
-        win_delete_attr_f08.F90 \
-        win_free_keyval_f08.F90 \
-        win_get_attr_f08.F90 \
-        win_get_errhandler_f08.F90 \
         win_get_name_f08.F90 \
-        win_set_attr_f08.F90 \
-        win_set_errhandler_f08.F90 \
         win_set_name_f08.F90 \
         api_f08_generated.F90
 

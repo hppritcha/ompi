@@ -264,36 +264,6 @@ subroutine MPI_Win_create_keyval_f08(win_copy_attr_fn,win_delete_attr_fn,win_key
 end subroutine MPI_Win_create_keyval_f08
 end interface  MPI_Win_create_keyval
 
-interface  MPI_Win_delete_attr
-subroutine MPI_Win_delete_attr_f08(win,win_keyval,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, INTENT(IN) :: win_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_delete_attr_f08
-end interface  MPI_Win_delete_attr
-
-interface  MPI_Win_free_keyval
-subroutine MPI_Win_free_keyval_f08(win_keyval,ierror)
-   implicit none
-   INTEGER, INTENT(INOUT) :: win_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_free_keyval_f08
-end interface  MPI_Win_free_keyval
-
-interface  MPI_Win_get_attr
-subroutine MPI_Win_get_attr_f08(win,win_keyval,attribute_val,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, INTENT(IN) :: win_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(OUT) :: attribute_val
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_get_attr_f08
-end interface  MPI_Win_get_attr
-
 interface  MPI_Win_get_name
 subroutine MPI_Win_get_name_f08(win,win_name,resultlen,ierror)
    use :: mpi_f08_types, only : MPI_Win, MPI_MAX_OBJECT_NAME
@@ -304,17 +274,6 @@ subroutine MPI_Win_get_name_f08(win,win_name,resultlen,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Win_get_name_f08
 end interface  MPI_Win_get_name
-
-interface  MPI_Win_set_attr
-subroutine MPI_Win_set_attr_f08(win,win_keyval,attribute_val,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, INTENT(IN) :: win_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: attribute_val
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_set_attr_f08
-end interface  MPI_Win_set_attr
 
 interface  MPI_Win_set_name
 subroutine MPI_Win_set_name_f08(win,win_name,ierror)
@@ -369,26 +328,6 @@ subroutine MPI_Win_create_errhandler_f08(win_errhandler_fn,errhandler,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Win_create_errhandler_f08
 end interface  MPI_Win_create_errhandler
-
-interface  MPI_Win_get_errhandler
-subroutine MPI_Win_get_errhandler_f08(win,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   TYPE(MPI_Errhandler), INTENT(OUT) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_get_errhandler_f08
-end interface  MPI_Win_get_errhandler
-
-interface  MPI_Win_set_errhandler
-subroutine MPI_Win_set_errhandler_f08(win,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_set_errhandler_f08
-end interface  MPI_Win_set_errhandler
 
 interface  MPI_Info_get
 subroutine MPI_Info_get_f08(info,key,valuelen,value,flag,ierror)
@@ -489,15 +428,6 @@ subroutine MPI_Unpublish_name_f08(service_name,info,port_name,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Unpublish_name_f08
 end interface  MPI_Unpublish_name
-
-interface  MPI_Grequest_complete
-subroutine MPI_Grequest_complete_f08(request,ierror)
-   use :: mpi_f08_types, only : MPI_Request
-   implicit none
-   TYPE(MPI_Request), INTENT(IN) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Grequest_complete_f08
-end interface  MPI_Grequest_complete
 
 interface  MPI_Grequest_start
 subroutine MPI_Grequest_start_f08(query_fn,free_fn,cancel_fn,extra_state,request, &
