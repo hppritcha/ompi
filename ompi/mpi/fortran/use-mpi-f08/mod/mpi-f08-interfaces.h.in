@@ -39,16 +39,6 @@ function  MPI_Aint_diff_f08(addr1,addr2)
 end function  MPI_Aint_diff_f08
 end interface MPI_Aint_diff
 
-interface MPI_Session_call_errhandler
-subroutine MPI_Session_call_errhandler_f08(session,errorcode,ierror)
-   use :: mpi_f08_types, only : MPI_Session
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_call_errhandler_f08
-end interface MPI_Session_call_errhandler
-
 interface  MPI_Session_create_errhandler
 subroutine MPI_Session_create_errhandler_f08(session_errhandler_fn,errhandler,ierror)
    use :: mpi_f08_types, only : MPI_Errhandler
@@ -59,26 +49,6 @@ subroutine MPI_Session_create_errhandler_f08(session_errhandler_fn,errhandler,ie
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Session_create_errhandler_f08
 end interface  MPI_Session_create_errhandler
-
-interface MPI_Session_get_errhandler
-subroutine MPI_Session_get_errhandler_f08(session,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   TYPE(MPI_Errhandler), INTENT(OUT) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_get_errhandler_f08
-end interface MPI_Session_get_errhandler
-
-interface MPI_Session_get_info
-subroutine MPI_Session_get_info_f08(session, info, ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Info
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   TYPE(MPI_Info), INTENT(OUT) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_get_info_f08
-end interface MPI_Session_get_info
 
 interface MPI_Session_get_nth_pset
 subroutine MPI_Session_get_nth_pset_f08(session, info, n, pset_len, pset_name, ierror)
@@ -93,17 +63,6 @@ subroutine MPI_Session_get_nth_pset_f08(session, info, n, pset_len, pset_name, i
 end subroutine MPI_Session_get_nth_pset_f08
 end interface MPI_Session_get_nth_pset
 
-interface MPI_Session_get_num_psets
-subroutine MPI_Session_get_num_psets_f08(session, info, npset_names, ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Info
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, INTENT(OUT) :: npset_names
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_get_num_psets_f08
-end interface  MPI_Session_get_num_psets
-
 interface MPI_Session_get_pset_info
 subroutine MPI_Session_get_pset_info_f08(session, pset_name, info, ierror)
    use :: mpi_f08_types, only : MPI_Session, MPI_Info
@@ -115,136 +74,6 @@ subroutine MPI_Session_get_pset_info_f08(session, pset_name, info, ierror)
 end subroutine MPI_Session_get_pset_info_f08
 end interface MPI_Session_get_pset_info
 
-interface  MPI_Session_init
-subroutine MPI_Session_init_f08(info,errhandler,session,ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Info, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   TYPE(MPI_Session), INTENT(OUT) :: session
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_init_f08
-end interface  MPI_Session_init
-
-interface  MPI_Session_finalize
-subroutine MPI_Session_finalize_f08(session,ierror)
-   use :: mpi_f08_types, only : MPI_Session
-   implicit none
-   TYPE(MPI_Session), INTENT(INOUT) :: session
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_finalize_f08
-end interface  MPI_Session_finalize
-
-interface MPI_Session_set_errhandler
-subroutine MPI_Session_set_errhandler_f08(session,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_Session, MPI_Errhandler
-   implicit none
-   TYPE(MPI_Session), INTENT(IN) :: session
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Session_set_errhandler_f08
-end interface MPI_Session_set_errhandler
-
-interface  MPI_Start
-subroutine MPI_Start_f08(request,ierror)
-   use :: mpi_f08_types, only : MPI_Request
-   implicit none
-   TYPE(MPI_Request), INTENT(INOUT) :: request
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Start_f08
-end interface  MPI_Start
-
-interface  MPI_Startall
-subroutine MPI_Startall_f08(count,array_of_requests,ierror)
-   use :: mpi_f08_types, only : MPI_Request
-   implicit none
-   INTEGER, INTENT(IN) :: count
-   TYPE(MPI_Request), INTENT(INOUT) :: array_of_requests(count)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Startall_f08
-end interface  MPI_Startall
-
-interface  MPI_Test
-subroutine MPI_Test_f08(request,flag,status,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   TYPE(MPI_Request), INTENT(INOUT) :: request
-   LOGICAL, INTENT(OUT) :: flag
-   TYPE(MPI_Status) :: status
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Test_f08
-end interface  MPI_Test
-
-interface  MPI_Testall
-subroutine MPI_Testall_f08(count,array_of_requests,flag,array_of_statuses,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   INTEGER, INTENT(IN) :: count
-   TYPE(MPI_Request), INTENT(INOUT) :: array_of_requests(count)
-   LOGICAL, INTENT(OUT) :: flag
-   TYPE(MPI_Status) :: array_of_statuses(*)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Testall_f08
-end interface  MPI_Testall
-
-interface  MPI_Testsome
-subroutine MPI_Testsome_f08(incount,array_of_requests,outcount, &
-                        array_of_indices,array_of_statuses,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   INTEGER, INTENT(IN) :: incount
-   TYPE(MPI_Request), INTENT(INOUT) :: array_of_requests(incount)
-   INTEGER, INTENT(OUT) :: outcount, array_of_indices(*)
-   TYPE(MPI_Status) :: array_of_statuses(*)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Testsome_f08
-end interface  MPI_Testsome
-
-interface  MPI_Test_cancelled
-subroutine MPI_Test_cancelled_f08(status,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Status
-   implicit none
-   TYPE(MPI_Status), INTENT(IN) :: status
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Test_cancelled_f08
-end interface  MPI_Test_cancelled
-
-interface  MPI_Wait
-subroutine MPI_Wait_f08(request,status,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   TYPE(MPI_Request), INTENT(INOUT) :: request
-   TYPE(MPI_Status) :: status
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Wait_f08
-end interface  MPI_Wait
-
-interface  MPI_Waitany
-subroutine MPI_Waitany_f08(count,array_of_requests,index,status,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   INTEGER, INTENT(IN) :: count
-   TYPE(MPI_Request), INTENT(INOUT) :: array_of_requests(count)
-   INTEGER, INTENT(OUT) :: index
-   TYPE(MPI_Status) :: status
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Waitany_f08
-end interface  MPI_Waitany
-
-interface  MPI_Waitsome
-subroutine MPI_Waitsome_f08(incount,array_of_requests,outcount, &
-                        array_of_indices,array_of_statuses,ierror)
-   use :: mpi_f08_types, only : MPI_Request, MPI_Status
-   implicit none
-   INTEGER, INTENT(IN) :: incount
-   TYPE(MPI_Request), INTENT(INOUT) :: array_of_requests(incount)
-   INTEGER, INTENT(OUT) :: outcount, array_of_indices(*)
-   TYPE(MPI_Status) :: array_of_statuses(*)
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Waitsome_f08
-end interface  MPI_Waitsome
-
 interface  MPI_Get_elements_x
 subroutine MPI_Get_elements_x_f08(status,datatype,count,ierror)
    use :: mpi_f08_types, only : MPI_Status, MPI_Datatype, MPI_COUNT_KIND
@@ -255,45 +84,6 @@ subroutine MPI_Get_elements_x_f08(status,datatype,count,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Get_elements_x_f08
 end interface  MPI_Get_elements_x
-
-interface  MPI_Type_commit
-subroutine MPI_Type_commit_f08(datatype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   TYPE(MPI_Datatype), INTENT(INOUT) :: datatype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_commit_f08
-end interface  MPI_Type_commit
-
-interface  MPI_Type_create_resized
-subroutine MPI_Type_create_resized_f08(oldtype,lb,extent,newtype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype, MPI_ADDRESS_KIND
-   implicit none
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: lb, extent
-   TYPE(MPI_Datatype), INTENT(IN) :: oldtype
-   TYPE(MPI_Datatype), INTENT(OUT) :: newtype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_create_resized_f08
-end interface  MPI_Type_create_resized
-
-interface  MPI_Type_dup
-subroutine MPI_Type_dup_f08(oldtype,newtype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   TYPE(MPI_Datatype), INTENT(IN) :: oldtype
-   TYPE(MPI_Datatype), INTENT(OUT) :: newtype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_dup_f08
-end interface  MPI_Type_dup
-
-interface  MPI_Type_free
-subroutine MPI_Type_free_f08(datatype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   TYPE(MPI_Datatype), INTENT(INOUT) :: datatype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_free_f08
-end interface  MPI_Type_free
 
 interface  MPI_Type_get_contents
 subroutine MPI_Type_get_contents_f08(datatype,max_integers,max_addresses,max_datatypes, &
@@ -343,16 +133,6 @@ subroutine MPI_Type_get_envelope_f08_c(datatype,num_integers,num_addresses,num_l
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Type_get_envelope_f08_c
 end interface  MPI_Type_get_envelope
-
-interface  MPI_Type_get_extent
-subroutine MPI_Type_get_extent_f08(datatype,lb,extent,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER(MPI_ADDRESS_KIND), INTENT(OUT) :: lb, extent
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_get_extent_f08
-end interface  MPI_Type_get_extent
 
 interface  MPI_Type_get_extent_x
 subroutine MPI_Type_get_extent_x_f08(datatype,lb,extent,ierror)
@@ -448,36 +228,6 @@ subroutine MPI_Type_create_keyval_f08(type_copy_attr_fn,type_delete_attr_fn,type
 end subroutine MPI_Type_create_keyval_f08
 end interface  MPI_Type_create_keyval
 
-interface  MPI_Type_delete_attr
-subroutine MPI_Type_delete_attr_f08(datatype,type_keyval,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER, INTENT(IN) :: type_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_delete_attr_f08
-end interface  MPI_Type_delete_attr
-
-interface  MPI_Type_free_keyval
-subroutine MPI_Type_free_keyval_f08(type_keyval,ierror)
-   implicit none
-   INTEGER, INTENT(INOUT) :: type_keyval
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_free_keyval_f08
-end interface  MPI_Type_free_keyval
-
-interface  MPI_Type_get_attr
-subroutine MPI_Type_get_attr_f08(datatype,type_keyval,attribute_val,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER, INTENT(IN) :: type_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(OUT) :: attribute_val
-   LOGICAL, INTENT(OUT) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_get_attr_f08
-end interface  MPI_Type_get_attr
-
 interface  MPI_Type_get_name
 subroutine MPI_Type_get_name_f08(datatype,type_name,resultlen,ierror)
    use :: mpi_f08_types, only : MPI_Datatype, MPI_MAX_OBJECT_NAME
@@ -488,17 +238,6 @@ subroutine MPI_Type_get_name_f08(datatype,type_name,resultlen,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Type_get_name_f08
 end interface  MPI_Type_get_name
-
-interface  MPI_Type_set_attr
-subroutine MPI_Type_set_attr_f08(datatype,type_keyval,attribute_val,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER, INTENT(IN) :: type_keyval
-   INTEGER(MPI_ADDRESS_KIND), INTENT(IN) :: attribute_val
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_set_attr_f08
-end interface  MPI_Type_set_attr
 
 interface  MPI_Type_set_name
 subroutine MPI_Type_set_name_f08(datatype,type_name,ierror)
@@ -555,16 +294,6 @@ subroutine MPI_Win_get_attr_f08(win,win_keyval,attribute_val,flag,ierror)
 end subroutine MPI_Win_get_attr_f08
 end interface  MPI_Win_get_attr
 
-interface  MPI_Win_get_info
-subroutine MPI_Win_get_info_f08(win,info_used,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_Info
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   TYPE(MPI_Info), INTENT(OUT) :: info_used
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_get_info_f08
-end interface  MPI_Win_get_info
-
 interface  MPI_Win_get_name
 subroutine MPI_Win_get_name_f08(win,win_name,resultlen,ierror)
    use :: mpi_f08_types, only : MPI_Win, MPI_MAX_OBJECT_NAME
@@ -587,16 +316,6 @@ subroutine MPI_Win_set_attr_f08(win,win_keyval,attribute_val,ierror)
 end subroutine MPI_Win_set_attr_f08
 end interface  MPI_Win_set_attr
 
-interface  MPI_Win_set_info
-subroutine MPI_Win_set_info_f08(win,info,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_Info
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   TYPE(MPI_Info), INTENT(IN) :: info
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_set_info_f08
-end interface  MPI_Win_set_info
-
 interface  MPI_Win_set_name
 subroutine MPI_Win_set_name_f08(win,win_name,ierror)
    use :: mpi_f08_types, only : MPI_Win
@@ -617,16 +336,6 @@ subroutine MPI_Cart_sub_f08(comm,remain_dims,newcomm,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Cart_sub_f08
 end interface  MPI_Cart_sub
-
-interface  MPI_Topo_test
-subroutine MPI_Topo_test_f08(comm,status,ierror)
-   use :: mpi_f08_types, only : MPI_Comm, MPI_Status
-   implicit none
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   INTEGER, INTENT(OUT) :: status
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Topo_test_f08
-end interface  MPI_Topo_test
 
 interface  MPI_Comm_create_errhandler
 subroutine MPI_Comm_create_errhandler_f08(comm_errhandler_fn,errhandler,ierror)
@@ -649,26 +358,6 @@ subroutine MPI_File_create_errhandler_f08(file_errhandler_fn,errhandler,ierror)
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_File_create_errhandler_f08
 end interface  MPI_File_create_errhandler
-
-interface  MPI_File_set_errhandler
-subroutine MPI_File_set_errhandler_f08(file,errhandler,ierror)
-   use :: mpi_f08_types, only : MPI_File, MPI_Errhandler
-   implicit none
-   TYPE(MPI_File), INTENT(IN) :: file
-   TYPE(MPI_Errhandler), INTENT(IN) :: errhandler
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_File_set_errhandler_f08
-end interface  MPI_File_set_errhandler
-
-interface  MPI_Win_call_errhandler
-subroutine MPI_Win_call_errhandler_f08(win,errorcode,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, INTENT(IN) :: errorcode
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_call_errhandler_f08
-end interface  MPI_Win_call_errhandler
 
 interface  MPI_Win_create_errhandler
 subroutine MPI_Win_create_errhandler_f08(win_errhandler_fn,errhandler,ierror)
@@ -801,182 +490,6 @@ subroutine MPI_Unpublish_name_f08(service_name,info,port_name,ierror)
 end subroutine MPI_Unpublish_name_f08
 end interface  MPI_Unpublish_name
 
-interface  MPI_Win_complete
-subroutine MPI_Win_complete_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Info, MPI_Comm, MPI_Win, MPI_ADDRESS_KIND
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_complete_f08
-end interface  MPI_Win_complete
-
-interface  MPI_Win_create_dynamic
-subroutine MPI_Win_create_dynamic_f08(info,comm,win,ierror)
-   use :: mpi_f08_types, only : MPI_Info, MPI_Comm, MPI_Win
-   implicit none
-   TYPE(MPI_Info), INTENT(IN) :: info
-   TYPE(MPI_Comm), INTENT(IN) :: comm
-   TYPE(MPI_Win), INTENT(OUT) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_create_dynamic_f08
-end interface  MPI_Win_create_dynamic
-
-interface  MPI_Win_fence
-subroutine MPI_Win_fence_f08(assert,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: assert
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_fence_f08
-end interface  MPI_Win_fence
-
-interface  MPI_Win_free
-subroutine MPI_Win_free_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(INOUT) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_free_f08
-end interface  MPI_Win_free
-
-interface  MPI_Win_get_group
-subroutine MPI_Win_get_group_f08(win,group,ierror)
-   use :: mpi_f08_types, only : MPI_Win, MPI_Group
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   TYPE(MPI_Group), INTENT(OUT) :: group
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_get_group_f08
-end interface  MPI_Win_get_group
-
-interface  MPI_Win_lock
-subroutine MPI_Win_lock_f08(lock_type,rank,assert,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: lock_type, rank, assert
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_lock_f08
-end interface  MPI_Win_lock
-
-interface  MPI_Win_lock_all
-subroutine MPI_Win_lock_all_f08(assert,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: assert
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_lock_all_f08
-end interface  MPI_Win_lock_all
-
-interface  MPI_Win_post
-subroutine MPI_Win_post_f08(group,assert,win,ierror)
-   use :: mpi_f08_types, only : MPI_Group, MPI_Win
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(IN) :: assert
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_post_f08
-end interface  MPI_Win_post
-
-interface  MPI_Win_start
-subroutine MPI_Win_start_f08(group,assert,win,ierror)
-   use :: mpi_f08_types, only : MPI_Group, MPI_Win
-   implicit none
-   TYPE(MPI_Group), INTENT(IN) :: group
-   INTEGER, INTENT(IN) :: assert
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_start_f08
-end interface  MPI_Win_start
-
-interface  MPI_Win_sync
-subroutine MPI_Win_sync_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Group, MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_sync_f08
-end interface  MPI_Win_sync
-
-interface  MPI_Win_test
-subroutine MPI_Win_test_f08(win,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   LOGICAL, INTENT(OUT) :: flag
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_test_f08
-end interface  MPI_Win_test
-
-interface  MPI_Win_unlock
-subroutine MPI_Win_unlock_f08(rank,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: rank
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_unlock_f08
-end interface  MPI_Win_unlock
-
-interface  MPI_Win_unlock_all
-subroutine MPI_Win_unlock_all_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_unlock_all_f08
-end interface  MPI_Win_unlock_all
-
-interface  MPI_Win_wait
-subroutine MPI_Win_wait_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_wait_f08
-end interface  MPI_Win_wait
-
-interface  MPI_Win_flush
-subroutine MPI_Win_flush_f08(rank,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: rank
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_flush_f08
-end interface  MPI_Win_flush
-
-interface  MPI_Win_flush_local
-subroutine MPI_Win_flush_local_f08(rank,win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   INTEGER, INTENT(IN) :: rank
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_flush_local_f08
-end interface  MPI_Win_flush_local
-
-interface  MPI_Win_flush_local_all
-subroutine MPI_Win_flush_local_all_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_flush_local_all_f08
-end interface  MPI_Win_flush_local_all
-
-interface  MPI_Win_flush_all
-subroutine MPI_Win_flush_all_f08(win,ierror)
-   use :: mpi_f08_types, only : MPI_Win
-   implicit none
-   TYPE(MPI_Win), INTENT(IN) :: win
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Win_flush_all_f08
-end interface  MPI_Win_flush_all
-
 interface  MPI_Grequest_complete
 subroutine MPI_Grequest_complete_f08(request,ierror)
    use :: mpi_f08_types, only : MPI_Request
@@ -1002,16 +515,6 @@ subroutine MPI_Grequest_start_f08(query_fn,free_fn,cancel_fn,extra_state,request
    INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 end subroutine MPI_Grequest_start_f08
 end interface  MPI_Grequest_start
-
-interface  MPI_Status_set_cancelled
-subroutine MPI_Status_set_cancelled_f08(status,flag,ierror)
-   use :: mpi_f08_types, only : MPI_Status
-   implicit none
-   TYPE(MPI_Status), INTENT(INOUT) :: status
-   LOGICAL, INTENT(IN) :: flag
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Status_set_cancelled_f08
-end interface  MPI_Status_set_cancelled
 
 interface  MPI_Status_set_elements_x
 subroutine MPI_Status_set_elements_x_f08(status,datatype,count,ierror)
@@ -1052,46 +555,6 @@ end interface  MPI_Register_datarep
 !   INTEGER, INTENT(OUT) :: size
 !   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 !end subroutine MPI_Sizeof
-
-interface  MPI_Type_create_f90_complex
-subroutine MPI_Type_create_f90_complex_f08(p,r,newtype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   INTEGER, INTENT(IN) :: p, r
-   TYPE(MPI_Datatype), INTENT(OUT) :: newtype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_create_f90_complex_f08
-end interface  MPI_Type_create_f90_complex
-
-interface  MPI_Type_create_f90_integer
-subroutine MPI_Type_create_f90_integer_f08(r,newtype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   INTEGER, INTENT(IN) :: r
-   TYPE(MPI_Datatype), INTENT(OUT) :: newtype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_create_f90_integer_f08
-end interface  MPI_Type_create_f90_integer
-
-interface  MPI_Type_create_f90_real
-subroutine MPI_Type_create_f90_real_f08(p,r,newtype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   INTEGER, INTENT(IN) :: p, r
-   TYPE(MPI_Datatype), INTENT(OUT) :: newtype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_create_f90_real_f08
-end interface  MPI_Type_create_f90_real
-
-interface  MPI_Type_match_size
-subroutine MPI_Type_match_size_f08(typeclass,size,datatype,ierror)
-   use :: mpi_f08_types, only : MPI_Datatype
-   implicit none
-   INTEGER, INTENT(IN) :: typeclass, size
-   TYPE(MPI_Datatype), INTENT(OUT) :: datatype
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Type_match_size_f08
-end interface  MPI_Type_match_size
 
 interface  MPI_Pcontrol
 subroutine MPI_Pcontrol_f08(level)

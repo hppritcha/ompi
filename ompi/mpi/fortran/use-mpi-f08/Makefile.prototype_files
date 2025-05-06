@@ -124,6 +124,7 @@ prototype_files = \
 	file_seek.c.in \
 	file_seek_shared.c.in \
 	file_set_atomicity.c.in \
+	file_set_errhandler.c.in \
 	file_set_info.c.in \
 	file_set_size.c.in \
 	file_set_view.c.in \
@@ -272,27 +273,77 @@ prototype_files = \
         sendrecv_replace_ts.c.in \
         sendrecv_ts.c.in \
         send_ts.c.in \
+	session_call_errhandler.c.in \
+	session_finalize.c.in \
+	session_get_errhandler.c.in \
+	session_get_info.c.in \
+	session_get_num_psets.c.in \
+	session_init.c.in \
+	session_set_errhandler.c.in \
         ssend_init_ts.c.in \
         ssend_ts.c.in \
+	start.c.in \
+	startall.c.in \
+        status_set_cancelled.c.in \
+        test.c.in \
+        testall.c.in \
         testany.c.in \
+        test_cancelled.c.in \
+	topo_test.c.in \
+	type_commit.c.in \
         type_contiguous.c.in \
         type_create_darray.c.in \
+	type_create_f90_complex.c.in \
+	type_create_f90_integer.c.in \
+	type_create_f90_real.c.in \
         type_create_hindexed_block.c.in \
         type_create_hindexed.c.in \
         type_create_hvector.c.in \
         type_create_indexed_block.c.in \
+        type_create_resized.c.in \
         type_create_struct.c.in \
         type_create_subarray.c.in \
+	type_delete_attr.c.in \
+	type_dup.c.in \
+	type_free.c.in \
+	type_free_keyval.c.in \
+	type_get_attr.c.in \
         type_get_true_extent.c.in \
         type_indexed.c.in \
+	type_match_size.c.in \
+	type_set_attr.c.in \
         type_size.c.in \
         type_vector.c.in \
         unpack_external_ts.c.in \
         unpack_ts.c.in \
+	wait.c.in \
         waitall.c.in \
+        waitany.c.in \
+        waitsome.c.in \
         win_allocate.c.in \
         win_allocate_shared.c.in \
         win_attach_ts.c.in \
+        win_call_errhandler.c.in \
+        win_complete.c.in \
         win_create_ts.c.in \
+        win_create_dynamic.c.in \
         win_detach_ts.c.in \
-        win_shared_query.c.in
+	win_fence.c.in \
+	win_flush.c.in \
+	win_flush_all.c.in \
+	win_flush_local.c.in \
+	win_flush_local_all.c.in \
+	win_free.c.in \
+	win_get_group.c.in \
+	win_get_info.c.in \
+	win_lock.c.in \
+	win_lock_all.c.in \
+	win_post.c.in \
+	win_set_info.c.in \
+	win_start.c.in \
+        win_shared_query.c.in \
+	win_sync.c.in \
+	win_test.c.in \
+	win_unlock.c.in \
+	win_unlock_all.c.in \
+	win_wait.c.in

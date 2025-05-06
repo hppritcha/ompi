@@ -133,7 +133,6 @@ mpi_api_files = \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
         file_create_errhandler_f08.F90 \
-        file_set_errhandler_f08.F90 \
         get_elements_x_f08.F90 \
         grequest_complete_f08.F90 \
         grequest_start_f08.F90 \
@@ -147,85 +146,33 @@ mpi_api_files = \
         pcontrol_f08.F90 \
         publish_name_f08.F90 \
         register_datarep_f08.F90 \
-        session_call_errhandler_f08.F90\
         session_create_errhandler_f08.F90\
-        session_get_errhandler_f08.F90\
-	session_get_info_f08.F90 \
 	session_get_nth_pset_f08.F90 \
-	session_get_num_psets_f08.F90 \
 	session_get_pset_info_f08.F90 \
-	session_init_f08.F90 \
-	session_finalize_f08.F90 \
-        session_set_errhandler_f08.F90\
-        startall_f08.F90 \
-        start_f08.F90 \
         status_f082f_f08.F90 \
         status_f2f08_f08.F90 \
-        status_set_cancelled_f08.F90 \
         status_set_elements_x_f08.F90 \
-        testall_f08.F90 \
-        test_cancelled_f08.F90 \
-        test_f08.F90 \
-        testsome_f08.F90 \
-        topo_test_f08.F90 \
-        type_commit_f08.F90 \
-        type_create_f90_complex_f08.F90 \
-        type_create_f90_integer_f08.F90 \
-        type_create_f90_real_f08.F90 \
         type_create_keyval_f08.F90 \
-        type_create_resized_f08.F90 \
-        type_delete_attr_f08.F90 \
-        type_dup_f08.F90 \
-        type_free_f08.F90 \
-        type_free_keyval_f08.F90 \
-        type_get_attr_f08.F90 \
         type_get_contents_f08.F90 \
         type_get_contents_f08_c.F90 \
-        type_get_extent_f08.F90 \
         type_get_extent_x_f08.F90 \
         type_get_name_f08.F90 \
         type_get_true_extent_x_f08.F90 \
         type_get_envelope_f08.F90 \
         type_get_envelope_f08_c.F90 \
-        type_match_size_f08.F90 \
-        type_set_attr_f08.F90 \
         type_set_name_f08.F90 \
         type_size_x_f08.F90 \
         unpublish_name_f08.F90 \
-        waitany_f08.F90 \
-        wait_f08.F90 \
-        waitsome_f08.F90 \
-        win_call_errhandler_f08.F90 \
-        win_complete_f08.F90 \
-        win_create_dynamic_f08.F90 \
         win_create_errhandler_f08.F90 \
         win_create_keyval_f08.F90 \
         win_delete_attr_f08.F90 \
-        win_fence_f08.F90 \
-        win_flush_f08.F90 \
-        win_flush_all_f08.F90 \
-        win_flush_local_f08.F90 \
-        win_flush_local_all_f08.F90 \
-        win_free_f08.F90 \
         win_free_keyval_f08.F90 \
         win_get_attr_f08.F90 \
         win_get_errhandler_f08.F90 \
-        win_get_group_f08.F90 \
-        win_get_info_f08.F90 \
         win_get_name_f08.F90 \
-        win_lock_f08.F90 \
-        win_lock_all_f08.F90 \
-        win_post_f08.F90 \
         win_set_attr_f08.F90 \
         win_set_errhandler_f08.F90 \
-        win_set_info_f08.F90 \
         win_set_name_f08.F90 \
-        win_start_f08.F90 \
-        win_sync_f08.F90 \
-        win_test_f08.F90 \
-        win_unlock_f08.F90 \
-        win_unlock_all_f08.F90 \
-        win_wait_f08.F90 \
         api_f08_generated.F90
 
 lib@OMPI_LIBMPI_NAME@_usempif08_la_SOURCES = \

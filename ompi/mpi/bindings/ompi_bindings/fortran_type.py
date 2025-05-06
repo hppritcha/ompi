@@ -269,23 +269,20 @@ class DatatypeType(FortranType):
         return f'MPI_Fint *{self.name}'
 
 @FortranType.add('DATATYPE_OUT')
-class DatatypeTypeOut(FortranType):
+class DatatypeTypeOut(DatatypeType):
     def declare(self):
         return f'TYPE(MPI_Datatype), INTENT(OUT) :: {self.name}'
 
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(OUT) :: {self.name}'
 
-    def argument(self):
-        return f'{self.name}%MPI_VAL'
+@FortranType.add('DATATYPE_INOUT')
+class DatatypeTypeInOut(DatatypeType):
+    def declare(self):
+        return f'TYPE(MPI_Datatype), INTENT(INOUT) :: {self.name}'
 
-    def use(self):
-        return [('mpi_f08_types', 'MPI_Datatype')]
-
-    def c_parameter(self):
-        return f'MPI_Fint *{self.name}'
-
-
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
 
 @FortranType.add('DATATYPE_ARRAY')
 class DatatypeArrayType(FortranType):
@@ -582,17 +579,22 @@ class StatusType(FortranType):
 
 
 @FortranType.add('STATUS_OUT')
-class StatusOutType(FortranType):
+class StatusOutType(StatusType):
     def declare(self):
         return f'TYPE(MPI_Status), INTENT(OUT) :: {self.name}'
-
-    def use(self):
-        return [('mpi_f08_types', 'MPI_Status')]
 
     def c_parameter(self):
         # TODO: Is this correct? (I've listed it as TYPE(MPI_Status) in the binding)
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('STATUS_INOUT')
+class StatusInOutType(StatusType):
+    def declare(self):
+        return f'TYPE(MPI_Status), INTENT(INOUT) :: {self.name}'
+
+    def c_parameter(self):
+        # TODO: Is this correct? (I've listed it as TYPE(MPI_Status) in the binding)
+        return f'MPI_Fint *{self.name}'
 
 @FortranType.add('REQUEST')
 class RequestType(FortranType):
@@ -959,6 +961,15 @@ class WinOut(FortranType):
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
+@FortranType.add('WIN_INOUT')
+class WinInOut(Win):
+    """MPI_Win inout type."""
+
+    def declare(self):
+        return f'TYPE(MPI_Win), INTENT(INOUT) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
 
 @FortranType.add('FILE')
 class File(FortranType):
