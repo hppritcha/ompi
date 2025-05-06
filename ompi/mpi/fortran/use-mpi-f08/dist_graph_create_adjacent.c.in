@@ -24,7 +24,7 @@ PROTOTYPE VOID dist_graph_create_adjacent(COMM comm_old,
                                           INT_ARRAY sourceweights,
                                           INT outdegree,
                                           INT_ARRAY destinations:outdegree, 
-                                          INT destweights, 
+                                          INT_ARRAY  destweights,
                                           INFO info,
                                           LOGICAL reorder, 
                                           COMM_OUT comm_graph)
