@@ -19,7 +19,7 @@
  * $HEADER$
  */
 
-PROTOTYPE VOID win_sync(WIN win, MPI_Fint *ierr)
+PROTOTYPE VOID win_sync(WIN win)
 {
     int c_ierr;
     MPI_Win c_win = PMPI_Win_f2c(*win);
