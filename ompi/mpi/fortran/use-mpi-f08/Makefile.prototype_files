@@ -246,6 +246,7 @@ prototype_files = \
         precv_init_ts.c.in \
 	probe.c.in \
         psend_init_ts.c.in \
+        publish_name.c.in \
         put_ts.c.in \
 	query_thread.c.in \
         raccumulate_ts.c.in \
@@ -285,6 +286,8 @@ prototype_files = \
         ssend_ts.c.in \
 	start.c.in \
 	startall.c.in \
+        status_f2f08.c.in \
+        status_f082f.c.in \
         status_set_cancelled.c.in \
         test.c.in \
         testall.c.in \
@@ -317,6 +320,7 @@ prototype_files = \
         type_vector.c.in \
         unpack_external_ts.c.in \
         unpack_ts.c.in \
+        unpublish_name.c.in \
 	wait.c.in \
         waitall.c.in \
         waitany.c.in \
@@ -347,6 +351,7 @@ prototype_files = \
 	win_set_attr.c.in \
 	win_set_errhandler.c.in \
 	win_set_info.c.in \
+	win_set_name.c.in \
 	win_start.c.in \
         win_shared_query.c.in \
 	win_sync.c.in \

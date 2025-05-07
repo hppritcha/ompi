@@ -143,13 +143,10 @@ mpi_api_files = \
         info_get_string_f08.F90 \
         op_create_f08.F90 \
         pcontrol_f08.F90 \
-        publish_name_f08.F90 \
         register_datarep_f08.F90 \
         session_create_errhandler_f08.F90\
 	session_get_nth_pset_f08.F90 \
 	session_get_pset_info_f08.F90 \
-        status_f082f_f08.F90 \
-        status_f2f08_f08.F90 \
         status_set_elements_x_f08.F90 \
         type_create_keyval_f08.F90 \
         type_get_contents_f08.F90 \
@@ -161,11 +158,9 @@ mpi_api_files = \
         type_get_envelope_f08_c.F90 \
         type_set_name_f08.F90 \
         type_size_x_f08.F90 \
-        unpublish_name_f08.F90 \
         win_create_errhandler_f08.F90 \
         win_create_keyval_f08.F90 \
         win_get_name_f08.F90 \
-        win_set_name_f08.F90 \
         api_f08_generated.F90
 
 lib@OMPI_LIBMPI_NAME@_usempif08_la_SOURCES = \

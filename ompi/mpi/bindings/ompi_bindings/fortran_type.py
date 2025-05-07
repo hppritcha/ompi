@@ -677,6 +677,12 @@ class IntArray(FortranType):
         size = '*' if self.count_param == None else self.count_param
         return f'INTEGER, INTENT(IN) :: {self.name}({size})'
 
+    def use(self):
+        if self.count_param == 'MPI_STATUS_SIZE':
+            return [('mpi_f08_types', 'MPI_STATUS_SIZE')]
+        else:
+            return []
+
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
 
@@ -1053,10 +1059,13 @@ class CharArray(FortranType):
         return f'CHARACTER(LEN=*), INTENT(IN) :: {self.name}'
 
     def use(self):
-        return [('iso_c_binding', 'c_char')]
+        return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_null_char')]
 
     def declare_cbinding_fortran(self):
         return f'CHARACTER(KIND=C_CHAR), INTENT(IN) :: {self.name}(*)'
+
+    def argument(self):
+        return f'{self.name}//c_null_char'
 
     def c_parameter(self):
         return f'char *{self.name}'
@@ -1081,6 +1090,8 @@ class CharArrayOut(FortranType):
             return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_PROCESSOR_NAME')]
         elif self.count_param == 'MPI_MAX_LIBRARY_VERSION_STRING':
             return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_MAX_LIBRARY_VERSION_STRING')]
+        elif self.count_param == 'MPI_STATUS_SIZE':
+            return [('iso_c_binding', 'c_char'), ('mpi_f08_types', 'MPI_STATUS_SIZE')]
         else:
             return [('iso_c_binding', 'c_char')]
 
