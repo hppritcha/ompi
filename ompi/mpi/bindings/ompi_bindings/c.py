@@ -217,7 +217,7 @@ extern "C" {
         self.dump()
 
         self.define_all('MPI_Datatype', consts.PREDEFINED_DATATYPES)
-        self.define_all('MPI_Op', COLLECTIVE_OPERATIONS)
+        self.define_all('MPI_Op', consts.COLLECTIVE_OPERATIONS)
         self.define_all('MPI_Comm', consts.RESERVED_COMMUNICATORS)
         self.define_all('MPI_Request', consts.RESERVED_REQUESTS)
         self.define_all('MPI_Win', consts.RESERVED_WINDOWS)
