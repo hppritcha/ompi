@@ -460,6 +460,7 @@ prototype_sources = \
         win_flush_local.c.in \
 	win_free.c.in \
         win_free_keyval.c.in \
+	win_f2c.c.in \
 	win_get_attr.c.in \
 	win_get_errhandler.c.in \
 	win_get_group.c.in \
@@ -517,9 +518,8 @@ endif
 # generated from prototype_sources above).
 #
 #
-prototype_sources_generated = $(prototype_sources:.c.in=_generated.c)
-interface_profile_sources = $(prototype_sources_generated:%=ompi_%)
-abi_interface_profile_sources =${prototype_sources_generated:%=standard_%}
+interface_profile_sources = $(prototype_sources:.c.in=_ompi_generated.c)
+abi_interface_profile_sources = $(prototype_sources:.c.in=_abi_generated.c)
 
 
 # Conditionally install the header files
@@ -531,20 +531,19 @@ endif
 # The following are special case functions where we
 # have to deal manually
 #
-interface_profile_sources = \
+extra_interface_profile_sources = \
         pcontrol.c \
 	type_get_contents.c \
 	type_get_contents_c.c \
         type_get_envelope.c \
         type_get_envelope_c.c \
-        win_f2c.c \
         wtick.c
 
 # The following functions were removed from the MPI standard, but are
 # retained for ABI compliance reasons.  They are listed independently
 # of the other MPI functions in case we one day change behavior around
 # ABI compliance.
-interface_profile_sources += \
+deprecated_interface_profile_sources = \
         address.c \
         errhandler_create.c \
         errhandler_get.c \
@@ -556,10 +555,10 @@ interface_profile_sources += \
         type_struct.c \
         type_ub.c
 
-libmpi_c_profile_la_SOURCES = $(interface_profile_sources)
+libmpi_c_profile_la_SOURCES = $(interface_profile_sources) $(extra_interface_profile_sources) $(deprecated_interface_profile_sources)
 libmpi_c_profile_la_CPPFLAGS = -DOMPI_BUILD_MPI_PROFILING=1
 
-libmpi_c_noprofile_la_SOURCES = $(interface_profile_sources)
+libmpi_c_noprofile_la_SOURCES = $(interface_profile_sources) $(extra_interface_profile_sources)  $(deprecated_interface_profile_sources)
 libmpi_c_noprofile_la_CPPFLAGS = -DOMPI_BUILD_MPI_PROFILING=0
 
 libmpi_c_abi_profile_la_SOURCES = $(abi_interface_profile_sources)
@@ -570,7 +569,7 @@ libmpi_c_abi_noprofile_la_CPPFLAGS = -DOMPI_NO_MPI_PROTOTYPES -DOMPI_BUILD_MPI_P
 
 # ABI generation rules
 if OMPI_GENERATE_BINDINGS
-ompi_%_generated.c: %.c.in
+%_ompi_generated.c: %.c.in
 	$(OMPI_V_GEN) $(PYTHON) $(top_srcdir)/ompi/mpi/bindings/bindings.py \
 	    --builddir $(abs_top_builddir) \
 	    --srcdir $(abs_top_srcdir) \
@@ -580,7 +579,7 @@ ompi_%_generated.c: %.c.in
 	    ompi \
 	    $<
 
-standard_%_generated.c: %.c.in
+%_abi_generated.c: %.c.in
 	$(OMPI_V_GEN) $(PYTHON) $(top_srcdir)/ompi/mpi/bindings/bindings.py \
 	    --builddir $(abs_top_builddir) \
 	    --srcdir $(abs_top_srcdir) \
@@ -597,7 +596,7 @@ abi.h: $(prototype_sources)
 	    c \
 	    header \
             --srcdir $(srcdir) \
-            $<
+            $(prototype_sources)
 standard_abi/mpi.h: $(prototype_sources)
 	mkdir -p standard_abi
 	$(OMPI_V_GEN) $(PYTHON) $(top_srcdir)/ompi/mpi/bindings/bindings.py \
@@ -608,7 +607,7 @@ standard_abi/mpi.h: $(prototype_sources)
 	    header \
             --srcdir $(srcdir) \
 	    --external \
-            $<
+            $(prototype_sources)
 endif
 # Delete generated files on maintainer-clean
 MAINTAINERCLEANFILES = *_generated.c abi.h standard_abi/

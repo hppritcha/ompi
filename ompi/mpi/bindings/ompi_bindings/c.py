@@ -138,16 +138,37 @@ class ABIHeaderBuilder:
         self.generic_convert(ConvertFuncs.INFO, 'info', 'MPI_Info', consts.RESERVED_INFOS)
 
     def generate_file_convert_fn_intern_to_abi(self):
-        self.generic_convert_reverse(ConvertFuncs.FILE, 'file', 'MPI_File', consts.RESERVED_FILES)
+        self.generic_convert_reverse(ConvertOMPIToStandard.FILE, 'file', 'MPI_File', consts.RESERVED_FILES)
 
     def generate_datatype_convert_fn(self):
         self.generic_convert(ConvertFuncs.DATATYPE, 'datatype', 'MPI_Datatype', consts.PREDEFINED_DATATYPES)
 
+    def generate_datatype_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.DATATYPE, 'datatype', 'MPI_Datatype', consts.PREDEFINED_DATATYPES)
+
+    def generate_group_convert_fn(self):
+        self.generic_convert(ConvertFuncs.GROUP, 'group', 'MPI_Group', consts.RESERVED_GROUPS)
+
+    def generate_group_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.GROUP, 'group', 'MPI_Group', consts.RESERVED_GROUPS)
+
     def generate_op_convert_fn(self):
         self.generic_convert(ConvertFuncs.OP, 'op', 'MPI_Op', consts.COLLECTIVE_OPERATIONS)
 
+    def generate_op_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.OP, 'op', 'MPI_Op', consts.RESERVED_OPS)
+
+    def generate_session_convert_fn(self):
+        self.generic_convert(ConvertFuncs.SESSION, 'session', 'MPI_Session', consts.RESERVED_SESSIONS)
+
+    def generate_session_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.SESSION, 'session', 'MPI_Session', consts.RESERVED_SESSIONS)
+
     def generate_win_convert_fn(self):
         self.generic_convert(ConvertFuncs.WIN, 'win', 'MPI_Win', consts.RESERVED_WINDOWS)
+
+    def generate_win_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.WIN, 'win', 'MPI_Win', consts.RESERVED_WINDOWS)
 
     def generate_pointer_convert_fn(self, type_, fn_name, constants):
         abi_type = self.mangle_name(type_)
@@ -218,8 +239,11 @@ extern "C" {
 
         self.define_all('MPI_Datatype', consts.PREDEFINED_DATATYPES)
         self.define_all('MPI_Op', consts.COLLECTIVE_OPERATIONS)
+        self.define_all('MPI_Op', consts.RESERVED_OPS)
         self.define_all('MPI_Comm', consts.RESERVED_COMMUNICATORS)
+        self.define_all('MPI_Group', consts.RESERVED_GROUPS)
         self.define_all('MPI_Request', consts.RESERVED_REQUESTS)
+        self.define_all('MPI_Session', consts.RESERVED_SESSIONS)
         self.define_all('MPI_Win', consts.RESERVED_WINDOWS)
         self.define_all('MPI_Info', consts.RESERVED_INFOS)
         self.define_all('MPI_File', consts.RESERVED_FILES)
@@ -255,9 +279,13 @@ struct MPI_Status_ABI {
 };""")
         self.dump(f'typedef struct MPI_Status_ABI {self.mangle_name("MPI_Status")};')
         self.dump()
+        # user functions
+        self.dump('typedef int (MPI_Copy_function)(MPI_Comm_ABI_INTERNAL, int, void *, void *, void *, int *);')
+        self.dump('typedef int (MPI_Delete_function)(MPI_Comm_ABI_INTERNAL, int, void *, void *);')
         # Function signatures
         for sig in self.signatures:
             self.dump(f'{sig};')
+#           print("Working on signature " + str(sig))
         self.dump('int MPI_Abi_details(int *buflen, char *details, MPI_Info *info);')
         self.dump('int MPI_Abi_supported(int *flag);')
         self.dump('int MPI_Abi_version(int *abi_major, int *abi_minor);')
@@ -268,9 +296,17 @@ struct MPI_Status_ABI {
             self.generate_comm_convert_fn_intern_to_abi()
             self.generate_info_convert_fn()
             self.generate_file_convert_fn()
+            self.generate_file_convert_fn_intern_to_abi()
+            self.generate_group_convert_fn()
+            self.generate_group_convert_fn_intern_to_abi()
             self.generate_datatype_convert_fn()
+            self.generate_datatype_convert_fn_intern_to_abi()
             self.generate_op_convert_fn()
+            self.generate_op_convert_fn_intern_to_abi()
+            self.generate_session_convert_fn()
+            self.generate_session_convert_fn_intern_to_abi()
             self.generate_win_convert_fn()
+            self.generate_win_convert_fn_intern_to_abi()
             self.generate_request_convert_fn()
             self.generate_status_convert_fn()
 
@@ -327,14 +363,20 @@ def standard_abi(base_name, template, out):
     # Static internal function (add a random component to avoid conflicts)
     internal_name = f'ompi_abi_{template.prototype.name}'
     internal_sig = template.prototype.signature(internal_name, abi_type='ompi',
-                                                enable_count=True)
+                                                enable_count=False)
     out.dump(consts.INLINE_ATTRS, internal_sig)
     template.print_body(func_name=base_name, out=out)
+    if util.prototype_has_bigcount(template.prototype):
+        internal_name = f'ompi_abi_{template.prototype.name}_c'
+        internal_sig = template.prototype.signature(internal_name, abi_type='ompi',
+                                                    enable_count=True)
+        out.dump(consts.INLINE_ATTRS, internal_sig)
+        template.print_body(func_name=base_name, out=out)
 
-    def generate_function(prototype, fn_name, internal_fn, enable_count=False):
+    def generate_function(prototype, fn_name, internal_fn, out, enable_count=False):
         """Generate a function for the standard ABI."""
-        print_profiling_header(fn_name)
-        print_cdefs_for_bigcount(fn_name,enable_count)
+        print_profiling_header(fn_name,out)
+        print_cdefs_for_bigcount(fn_name, out, enable_count)
 
         # Handle type conversions and arguments
         params = [param.construct(abi_type='standard') for param in prototype.params]
@@ -344,6 +386,7 @@ def standard_abi(base_name, template, out):
         return_type = prototype.return_type.construct(abi_type='standard')
         lines.append(f'{return_type.tmp_type_text()} ret_value;')
         for param in params:
+#           print("param = " + str(param) + " " + str(param.argument))
             if param.init_code:
                 lines.extend(param.init_code)
         pass_args = ', '.join(param.argument for param in params)
@@ -359,10 +402,12 @@ def standard_abi(base_name, template, out):
             out.dump(line)
         out.dump('}')
 
-    generate_function(template.prototype, base_name, internal_name)
+    internal_name = f'ompi_abi_{template.prototype.name}'
+    generate_function(template.prototype, base_name, internal_name, out)
     if util.prototype_has_bigcount(template.prototype):
         base_name_c = f'{base_name}_c'
-        generate_function(template.prototype, base_name_c, internal_name,
+        internal_name = f'ompi_abi_{template.prototype.name}_c'
+        generate_function(template.prototype, base_name_c, internal_name, out,
                           enable_count=True)
 
 

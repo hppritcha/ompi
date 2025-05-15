@@ -34,6 +34,9 @@
 #include "ompi/proc/proc.h"
 #include "ompi/memchecker.h"
 #include "ompi/runtime/ompi_spc.h"
+#ifdef OMPI_NO_MPI_PROTOTYPES
+#include "ompi/mpi/c/abi.h"
+#endif
 
 struct ompi_isendrecv_replace_context_t {
     opal_object_t super;
