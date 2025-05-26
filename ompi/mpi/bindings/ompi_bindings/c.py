@@ -137,6 +137,12 @@ class ABIHeaderBuilder:
     def generate_info_convert_fn(self):
         self.generic_convert(ConvertFuncs.INFO, 'info', 'MPI_Info', consts.RESERVED_INFOS)
 
+    def generate_info_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.INFO, 'info', 'MPI_Info', consts.RESERVED_INFOS)
+
+    def generate_file_convert_fn(self):
+        self.generic_convert(ConvertFuncs.FILE, 'file', 'MPI_File', consts.RESERVED_FILES)
+
     def generate_file_convert_fn_intern_to_abi(self):
         self.generic_convert_reverse(ConvertOMPIToStandard.FILE, 'file', 'MPI_File', consts.RESERVED_FILES)
 
@@ -146,11 +152,23 @@ class ABIHeaderBuilder:
     def generate_datatype_convert_fn_intern_to_abi(self):
         self.generic_convert_reverse(ConvertOMPIToStandard.DATATYPE, 'datatype', 'MPI_Datatype', consts.PREDEFINED_DATATYPES)
 
+    def generate_errhandler_convert_fn(self):
+        self.generic_convert(ConvertFuncs.ERRHANDLER, 'errorhandler', 'MPI_Errhandler', consts.RESERVED_ERRHANDLERS)
+
+    def generate_errhandler_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.ERRHANDLER, 'errorhandler', 'MPI_Errhandler', consts.RESERVED_ERRHANDLERS)
+
     def generate_group_convert_fn(self):
         self.generic_convert(ConvertFuncs.GROUP, 'group', 'MPI_Group', consts.RESERVED_GROUPS)
 
     def generate_group_convert_fn_intern_to_abi(self):
         self.generic_convert_reverse(ConvertOMPIToStandard.GROUP, 'group', 'MPI_Group', consts.RESERVED_GROUPS)
+
+    def generate_message_convert_fn(self):
+        self.generic_convert(ConvertFuncs.MESSAGE, 'message', 'MPI_Message', consts.RESERVED_MESSAGES)
+
+    def generate_message_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.MESSAGE, 'message', 'MPI_Message', consts.RESERVED_MESSAGES)
 
     def generate_op_convert_fn(self):
         self.generic_convert(ConvertFuncs.OP, 'op', 'MPI_Op', consts.COLLECTIVE_OPERATIONS)
@@ -189,17 +207,31 @@ class ABIHeaderBuilder:
     def generate_request_convert_fn(self):
         self.generate_pointer_convert_fn('MPI_Request', ConvertFuncs.REQUEST, consts.RESERVED_REQUESTS)
 
-    def generate_file_convert_fn(self):
-        self.generate_pointer_convert_fn('MPI_File', ConvertFuncs.FILE, consts.RESERVED_FILES)
+    def generate_request_convert_fn_intern_to_abi(self):
+        self.generic_convert_reverse(ConvertOMPIToStandard.REQUEST, 'request', 'MPI_Request', consts.RESERVED_REQUESTS)
+
+#   def generate_file_convert_fn(self):
+#       self.generate_pointer_convert_fn('MPI_File', ConvertFuncs.FILE, consts.RESERVED_FILES)
 
     def generate_status_convert_fn(self):
         type_ = 'MPI_Status'
         abi_type = self.mangle_name(type_)
-        self.dump(f'{consts.INLINE_ATTRS} void {ConvertFuncs.STATUS}({abi_type} *out, {type_} *inp)')
+        self.dump(f'{consts.INLINE_ATTRS} void {ConvertFuncs.STATUS}({type_} *out, {abi_type} *inp)')
         self.dump('{')
         self.dump('    out->MPI_SOURCE = inp->MPI_SOURCE;')
         self.dump('    out->MPI_TAG = inp->MPI_TAG;')
         self.dump(f'    out->MPI_ERROR = {ConvertFuncs.ERROR_CLASS}(inp->MPI_ERROR);')
+        # Ignoring the private fields for now
+        self.dump('}')
+
+    def generate_status_convert_fn_intern_to_abi(self):
+        type_ = 'MPI_Status'
+        abi_type = self.mangle_name(type_)
+        self.dump(f'{consts.INLINE_ATTRS} void {ConvertOMPIToStandard.STATUS}({abi_type} *out, {type_} *inp)')
+        self.dump('{')
+        self.dump('    out->MPI_SOURCE = inp->MPI_SOURCE;')
+        self.dump('    out->MPI_TAG = inp->MPI_TAG;')
+#       self.dump(f'    out->MPI_ERROR = {ConvertOMPIToStandard.ERROR_CLASS}(inp->MPI_ERROR);')
         # Ignoring the private fields for now
         self.dump('}')
 
@@ -241,12 +273,14 @@ extern "C" {
         self.define_all('MPI_Op', consts.COLLECTIVE_OPERATIONS)
         self.define_all('MPI_Op', consts.RESERVED_OPS)
         self.define_all('MPI_Comm', consts.RESERVED_COMMUNICATORS)
+        self.define_all('MPI_Errhandler', consts.RESERVED_ERRHANDLERS)
         self.define_all('MPI_Group', consts.RESERVED_GROUPS)
         self.define_all('MPI_Request', consts.RESERVED_REQUESTS)
         self.define_all('MPI_Session', consts.RESERVED_SESSIONS)
         self.define_all('MPI_Win', consts.RESERVED_WINDOWS)
         self.define_all('MPI_Info', consts.RESERVED_INFOS)
         self.define_all('MPI_File', consts.RESERVED_FILES)
+        self.define_all('MPI_Message', consts.RESERVED_MESSAGES)
 
         for name, value in consts.VARIOUS_CONSTANTS.items():
             self.dump(f'#define {self.mangle_name(name)} {value}')
@@ -295,12 +329,17 @@ struct MPI_Status_ABI {
             self.generate_comm_convert_fn()
             self.generate_comm_convert_fn_intern_to_abi()
             self.generate_info_convert_fn()
+            self.generate_info_convert_fn_intern_to_abi()
             self.generate_file_convert_fn()
             self.generate_file_convert_fn_intern_to_abi()
             self.generate_group_convert_fn()
             self.generate_group_convert_fn_intern_to_abi()
             self.generate_datatype_convert_fn()
             self.generate_datatype_convert_fn_intern_to_abi()
+            self.generate_errhandler_convert_fn()
+            self.generate_errhandler_convert_fn_intern_to_abi()
+            self.generate_message_convert_fn()
+            self.generate_message_convert_fn_intern_to_abi()
             self.generate_op_convert_fn()
             self.generate_op_convert_fn_intern_to_abi()
             self.generate_session_convert_fn()
@@ -308,7 +347,9 @@ struct MPI_Status_ABI {
             self.generate_win_convert_fn()
             self.generate_win_convert_fn_intern_to_abi()
             self.generate_request_convert_fn()
+            self.generate_request_convert_fn_intern_to_abi()
             self.generate_status_convert_fn()
+            self.generate_status_convert_fn_intern_to_abi()
 
         self.dump("""
 #if defined(c_plusplus) || defined(__cplusplus)
@@ -328,7 +369,7 @@ def print_profiling_header(fn_name, out):
     out.dump('#endif')
 
 
-def print_cdefs_for_bigcount(fn_name, out, enable_count=False):
+def print_cdefs_for_bigcount(out, enable_count=False):
     if enable_count:
         out.dump('#undef OMPI_BIGCOUNT_SRC')
         out.dump('#define OMPI_BIGCOUNT_SRC 1')
@@ -340,14 +381,14 @@ def ompi_abi(base_name, template, out):
     """Generate the OMPI ABI functions."""
     template.print_header(out)
     print_profiling_header(base_name, out)
-    print_cdefs_for_bigcount(base_name, out)
+    print_cdefs_for_bigcount(out)
     out.dump(template.prototype.signature(base_name, abi_type='ompi'))
     template.print_body(func_name=base_name, out=out)
     # Check if we need to generate the bigcount interface
     if util.prototype_has_bigcount(template.prototype):
         base_name_c = f'{base_name}_c'
         print_profiling_header(base_name_c, out)
-        print_cdefs_for_bigcount(base_name_c, out, enable_count=True)
+        print_cdefs_for_bigcount(out, enable_count=True)
         out.dump(template.prototype.signature(base_name_c, abi_type='ompi', enable_count=True))
         template.print_body(func_name=base_name_c, out=out)
 
@@ -362,12 +403,14 @@ def standard_abi(base_name, template, out):
 
     # Static internal function (add a random component to avoid conflicts)
     internal_name = f'ompi_abi_{template.prototype.name}'
+    print_cdefs_for_bigcount(out)
     internal_sig = template.prototype.signature(internal_name, abi_type='ompi',
                                                 enable_count=False)
     out.dump(consts.INLINE_ATTRS, internal_sig)
     template.print_body(func_name=base_name, out=out)
     if util.prototype_has_bigcount(template.prototype):
         internal_name = f'ompi_abi_{template.prototype.name}_c'
+        print_cdefs_for_bigcount(out, enable_count=True)
         internal_sig = template.prototype.signature(internal_name, abi_type='ompi',
                                                     enable_count=True)
         out.dump(consts.INLINE_ATTRS, internal_sig)
@@ -376,7 +419,7 @@ def standard_abi(base_name, template, out):
     def generate_function(prototype, fn_name, internal_fn, out, enable_count=False):
         """Generate a function for the standard ABI."""
         print_profiling_header(fn_name,out)
-        print_cdefs_for_bigcount(fn_name, out, enable_count)
+#       print_cdefs_for_bigcount(out, enable_count)
 
         # Handle type conversions and arguments
         params = [param.construct(abi_type='standard') for param in prototype.params]
