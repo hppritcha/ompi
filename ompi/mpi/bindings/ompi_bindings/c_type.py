@@ -1152,7 +1152,8 @@ class TypeCommCopyAttrFunctionStandard(Type):
 #    pass
 
     def type_text(self, enable_count=False):
-        return 'MPI_Comm_copy_attr_function *'
+        type_name = self.mangle_name('MPI_Comm_copy_attr_function')
+        return f'{type_name} *'
 
 @Type.add_type('COMM_DELETE_ATTR_FUNCTION', abi_type=['ompi'])
 class TypeCommDeleteAttrFunction(Type):
@@ -1167,7 +1168,8 @@ class TypeCommDeleteAttrFunctionStandard(Type):
 #    pass
 
     def type_text(self, enable_count=False):
-        return 'MPI_Comm_delete_attr_function *'
+        type_name = self.mangle_name('MPI_Comm_delete_attr_function')
+        return f'{type_name} *'
 
 @Type.add_type('GREQUEST_QUERY_FUNCTION', abi_type=['ompi'])
 class TypeGrequestQueryFunction(Type):
