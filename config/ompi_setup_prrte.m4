@@ -58,7 +58,7 @@ OPAL_VAR_SCOPE_PUSH([prrte_setup_internal_happy target_rst_dir])
 
     AC_ARG_WITH([prrte],
        [AS_HELP_STRING([--with-prrte],
-           [Enable/disable building with PRRTE. Supports 'yes' and 'no', defaulting to 'yes'])])
+           [Enable/disable building with PRRTE. Supports 'yes', 'internal',  and 'no', defaulting to 'yes'])])
     
     AC_ARG_WITH([rte],
        [AS_HELP_STRING([--with-rte],
@@ -76,13 +76,15 @@ OPAL_VAR_SCOPE_PUSH([prrte_setup_internal_happy target_rst_dir])
     # If user does not specify, it defaults to 'yes'.
     # We no longer support external prrte builds.
     prrte_setup_internal_happy=0
-    AS_IF([test "$with_prrte" != "yes" -a "$with_prrte" != "no" -a "$with_prrte" != ""],
-         AC_MSG_ERROR(['--with-prrte' option defaults to 'yes' and supports 'yes' or 'no'. External PRRTE builds are no longer supported.]))
+    AS_IF([test "$with_prrte" != "yes" -a "$with_prrte" != "no" -a "$with_prrte" != "" -a "$with_prrte" != "internal"],
+         AC_MSG_ERROR(['--with-prrte' option defaults to 'yes' and supports 'yes', 'internal',  or 'no'. Internal is equivalent to yes. External PRRTE builds are no longer supported.]))
     
     # Determines if user wants to build with PRRTE. 
     # Defaults to building with PRRTE if unspecified.
     AS_CASE([$with_prrte],
             ["yes"],      [prrte_setup_internal_happy=1
+                           opal_prrte_mode="internal"],
+            ["internal"], [prrte_setup_internal_happy=1
                            opal_prrte_mode="internal"],
             ["no"],       [prrte_setup_internal_happy=0
                            opal_prrte_mode="disabled"],
