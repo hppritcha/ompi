@@ -44,8 +44,10 @@ prototype_files = \
 	comm_compare.c.in \
 	comm_connect.c.in \
 	comm_create.c.in \
+	comm_create_errhandler.c.in \
 	comm_create_from_group.c.in \
 	comm_create_group.c.in \
+	comm_create_keyval.c.in \
 	comm_disconnect.c.in \
 	comm_delete_attr.c.in \
 	comm_dup.c.in \
@@ -85,6 +87,7 @@ prototype_files = \
         exscan_ts.c.in \
         fetch_and_op_ts.c.in \
 	file_call_errhandler.c.in \
+	file_create_errhandler.c.in \
 	file_close.c.in \
 	file_delete.c.in \
 	file_get_amode.c.in \
@@ -276,6 +279,7 @@ prototype_files = \
         sendrecv_ts.c.in \
         send_ts.c.in \
 	session_call_errhandler.c.in \
+	session_create_errhandler.c.in \
 	session_finalize.c.in \
 	session_get_errhandler.c.in \
 	session_get_info.c.in \
@@ -304,6 +308,7 @@ prototype_files = \
         type_create_hindexed.c.in \
         type_create_hvector.c.in \
         type_create_indexed_block.c.in \
+        type_create_keyval.c.in \
         type_create_resized.c.in \
         type_create_struct.c.in \
         type_create_subarray.c.in \
@@ -329,9 +334,11 @@ prototype_files = \
         win_allocate_shared.c.in \
         win_attach_ts.c.in \
         win_call_errhandler.c.in \
+        win_create_errhandler.c.in \
         win_complete.c.in \
         win_create_ts.c.in \
         win_create_dynamic.c.in \
+        win_create_keyval.c.in \
         win_delete_attr.c.in \
         win_detach_ts.c.in \
 	win_fence.c.in \

@@ -128,11 +128,8 @@ mpi_api_files = \
         aint_add_f08.F90 \
         aint_diff_f08.F90 \
         cart_sub_f08.F90 \
-        comm_create_errhandler_f08.F90 \
-        comm_create_keyval_f08.F90 \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
-        file_create_errhandler_f08.F90 \
         get_elements_x_f08.F90 \
         grequest_start_f08.F90 \
         group_range_excl_f08.F90 \
@@ -144,11 +141,9 @@ mpi_api_files = \
         op_create_f08.F90 \
         pcontrol_f08.F90 \
         register_datarep_f08.F90 \
-        session_create_errhandler_f08.F90\
 	session_get_nth_pset_f08.F90 \
 	session_get_pset_info_f08.F90 \
         status_set_elements_x_f08.F90 \
-        type_create_keyval_f08.F90 \
         type_get_contents_f08.F90 \
         type_get_contents_f08_c.F90 \
         type_get_extent_x_f08.F90 \
@@ -158,8 +153,6 @@ mpi_api_files = \
         type_get_envelope_f08_c.F90 \
         type_set_name_f08.F90 \
         type_size_x_f08.F90 \
-        win_create_errhandler_f08.F90 \
-        win_create_keyval_f08.F90 \
         win_get_name_f08.F90 \
         api_f08_generated.F90
 

@@ -1178,13 +1178,13 @@ class CommErrhandlerFnType(FortranType):
         return f'{self.name}%MPI_VAL'
 
     def use(self):
-        return [('mpi_f08_interface_callbacks', 'MPI_Comm_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Comm_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
 
     def declare_tmp(self):
-        return f'type(c_funptr)::{self.tmp_name}'
+        return f'type(c_funptr) :: {self.tmp_name}'
 
     def c_parameter(self):
-        return f'type(c_funptr)::{self.tmp_name}'
+        return f'type(c_funptr) :: {self.tmp_name}'
 
     def pre_c_call(self): 
         return f'{self.tmp_name} = c_funloc({self.name})'
@@ -1195,33 +1195,55 @@ class CommCopyAttrFnType(FortranType):
         return f'PROCEDURE(MPI_Comm_copy_attr_function) :: {self.name}'
         
     def declare_cbinding_fortran(self):
-        return f'type(c_funcptr) :: {self.name}'
+        return f'type(c_funptr) :: {self.name}'
     
     def argument(self):
-        return f'{self.name}%MPI_VAL'
+        return f'{self.tmp_name}'
     
+    def declare_tmp(self):
+        return f'type(c_funptr)::{self.tmp_name}'
+
     def use(self):
-        return [('mpi_f08_interface_callbacks', 'MPI_Comm_copy_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Comm_copy_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
         
     def c_parameter(self):
-        return f'type(c_funptr)::{self.tmp_name}'
+        return f'ompi_aint_copy_attr_function {self.name}'
     
     def pre_c_call(self): 
         return f'{self.tmp_name} = c_funloc({self.name})'
 
+@FortranType.add('TYPE_COPY_ATTR_FN')
+class TypeCopyAttrFnType(CommCopyAttrFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Type_copy_attr_function) :: {self.name}'
+        
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Type_copy_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+@FortranType.add('WIN_COPY_ATTR_FN')
+class WinCopyAttrFnType(CommCopyAttrFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Win_copy_attr_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Win_copy_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
 @FortranType.add('COMM_DELETE_ATTR_FN')
-class CommCopyAttrFnType(FortranType):
+class CommDeleteAttrFnType(FortranType):
     def declare(self):
         return f'PROCEDURE(MPI_Comm_delete_attr_function) :: {self.name}'
 
     def declare_cbinding_fortran(self):
-        return f'type(c_funcptr) :: {self.name}'
+        return f'type(c_funptr) :: {self.name}'
 
     def argument(self):
-        return f'{self.name}%MPI_VAL'
+        return f'{self.tmp_name}'
+
+    def declare_tmp(self):
+        return f'type(c_funptr) :: {self.tmp_name}'
 
     def use(self):
-        return [('mpi_f08_interface_callbacks', 'MPI_Comm_copy_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Comm_delete_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
 
     def c_parameter(self):
         return f'ompi_aint_delete_attr_function {self.name}'
@@ -1229,3 +1251,102 @@ class CommCopyAttrFnType(FortranType):
     def pre_c_call(self):
         return f'{self.tmp_name} = c_funloc({self.name})'
 
+@FortranType.add('TYPE_DELETE_ATTR_FN')
+class TypeDeleteAttrFnType(CommDeleteAttrFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Type_delete_attr_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Type_delete_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+@FortranType.add('WIN_DELETE_ATTR_FN')
+class WinDeleteAttrFnType(CommDeleteAttrFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Win_delete_attr_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Win_delete_attr_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+
+@FortranType.add('COMM_ERRHANDLER_FN')
+class CommErrhandlerFnType(FortranType):
+    def declare(self): 
+        return f'PROCEDURE(MPI_Comm_errhandler_function) :: {self.name}'
+        
+    def declare_cbinding_fortran(self):
+        return f'type(c_funptr) :: {self.name}'
+
+    def argument(self):
+        return f'{self.tmp_name}'
+    
+    def declare_tmp(self):
+        return f'type(c_funptr) :: {self.tmp_name}'
+        
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Comm_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+        
+    def c_parameter(self):
+        return f'ompi_errhandler_fortran_handler_fn_t {self.name}'
+    
+    def pre_c_call(self):
+        return f'{self.tmp_name} = c_funloc({self.name})'
+
+
+@FortranType.add('FILE_ERRHANDLER_FN')
+class FileErrhandlerFnType(CommErrhandlerFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_File_errhandler_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_File_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+@FortranType.add('SESSION_ERRHANDLER_FN')
+class SessionErrhandlerFnType(CommErrhandlerFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Session_errhandler_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Session_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+@FortranType.add('WIN_ERRHANDLER_FN')
+class WinErrhandlerFnType(CommErrhandlerFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Win_errhandler_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Win_errhandler_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+
+@FortranType.add('DATAREP_CONVERSION_FN')
+class DataRepConversionFnType(FortranType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Datarep_conversion_function) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'type(c_funptr) :: {self.name}'
+
+    def argument(self):
+        return f'{self.tmp_name}'
+
+    def declare_tmp(self):
+        return f'type(c_funptr) :: {self.tmp_name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Datarep_conversion_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+    def c_parameter(self):
+        return f'ompi_mpi2_fortran_datarep_conversion_fn_t  {self.name}'
+
+    def pre_c_call(self):
+        return f'{self.tmp_name} = c_funloc({self.name})'
+
+@FortranType.add('DATAREP_EXTENT_FN')
+class DataRepExtentFnType(DataRepConversionFnType):
+    def declare(self):
+        return f'PROCEDURE(MPI_Datarep_extent_function) :: {self.name}'
+
+    def use(self):
+        return [('mpi_f08_interfaces_callbacks', 'MPI_Datarep_extent_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+
+    def c_parameter(self):
+        return f'ompi_mpi2_fortran_datarep_extent_fn_t  {self.name}'
