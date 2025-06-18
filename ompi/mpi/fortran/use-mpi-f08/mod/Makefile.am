@@ -98,6 +98,7 @@ mpi-f08-interfaces-generated.h: $(template_files) $(OMPI_BINDINGS_GENERATOR)
 	    --pympistd-dir $(abs_top_srcdir)/3rd-party/pympistandard \
 	    --fort-std f08 \
 	    interface \
+	    --fort-std f08 \
 	    --prototype-files $(template_files)
 
 # Delete generated file on maintainer-clean
