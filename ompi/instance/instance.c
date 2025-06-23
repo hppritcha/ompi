@@ -528,6 +528,14 @@ static int ompi_mpi_instance_init_common (int argc, char **argv)
 
     /* Select which MPI components to use */
 
+    /* 
+     * need to startup the bml even if ob1 is not used in order to initialize btl's
+     * possibly needed by smsc framework.
+     */
+    if (OMPI_SUCCESS != (ret = mca_bml_base_init (1, ompi_mpi_thread_multiple))) {
+        return ompi_instance_print_error ("mca_bml_base_init() failed", ret);
+    }
+
     if (OPAL_SUCCESS != (ret = mca_smsc_base_select())) {
         return ompi_instance_print_error ("mca_smsc_base_select() failed", ret);
     }
