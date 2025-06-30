@@ -624,8 +624,6 @@
 #define MPI_Status_set_cancelled PMPI_Status_set_cancelled
 #define MPI_Status_set_elements_f08 PMPI_Status_set_elements_f08
 #define MPI_Status_set_elements PMPI_Status_set_elements
-#define MPI_Status_set_elements_x_f08 PMPI_Status_set_elements_x_f08
-#define MPI_Status_set_elements_x PMPI_Status_set_elements_x
 #define MPI_Testall_f08 PMPI_Testall_f08
 #define MPI_Testall PMPI_Testall
 #define MPI_Testany_f08 PMPI_Testany_f08

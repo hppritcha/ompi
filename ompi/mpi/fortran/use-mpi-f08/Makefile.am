@@ -142,7 +142,6 @@ mpi_api_files = \
         register_datarep_f08.F90 \
 	session_get_nth_pset_f08.F90 \
 	session_get_pset_info_f08.F90 \
-        status_set_elements_x_f08.F90 \
         type_get_contents_f08.F90 \
         type_get_contents_f08_c.F90 \
         type_get_extent_x_f08.F90 \

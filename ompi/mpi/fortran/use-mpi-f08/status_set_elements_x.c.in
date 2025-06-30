@@ -2,14 +2,16 @@
  * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
  *                         University Research and Technology
  *                         Corporation.  All rights reserved.
- * Copyright (c) 2004-2020 The University of Tennessee and The University
+ * Copyright (c) 2004-2013 The University of Tennessee and The University
  *                         of Tennessee Research Foundation.  All rights
  *                         reserved.
  * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
  *                         University of Stuttgart.  All rights reserved.
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
- * Copyright (c) 2008-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2011-2013 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2013      Los Alamos National Security, LLC. All rights
+ *                         reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * $COPYRIGHT$
@@ -19,21 +21,27 @@
  * $HEADER$
  */
 
-PROTOTYPE VOID session_create_errhandler(SESSION_ERRHANDLER_FN function, ERRHANDLER_OUT errhandler)
+PROTOTYPE VOID status_set_elements_x(STATUS status, DATATYPE datatype,
+			             COUNT_ONLY count)
 {
     int c_ierr;
-    MPI_Errhandler c_errhandler;
+    MPI_Datatype c_type = PMPI_Type_f2c(*datatype);
+    MPI_Status c_status;
 
-    c_errhandler = ompi_errhandler_create(OMPI_ERRHANDLER_TYPE_INSTANCE,
-                               (ompi_errhandler_generic_handler_fn_t*) function,
-                               OMPI_ERRHANDLER_LANG_FORTRAN);
-    if (MPI_ERRHANDLER_NULL != c_errhandler) {
-        *errhandler = PMPI_Errhandler_c2f(c_errhandler);
+    /* This seems silly, but someone will do it */
+
+    if (OMPI_IS_FORTRAN_STATUS_IGNORE(status)) {
         c_ierr = MPI_SUCCESS;
     } else {
-        c_ierr = MPI_ERR_INTERN;
-        OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_INTERN, FUNC_NAME);
-    }
+        PMPI_Status_f2c( status, &c_status );
 
+        c_ierr = @INNER_CALL@(&c_status, c_type, *count);
+
+        /* If datatype is really being set, then that needs to be
+           converted.... */
+        if (MPI_SUCCESS == c_ierr) {
+            PMPI_Status_c2f(&c_status, status);
+        }
+    }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 }

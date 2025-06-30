@@ -19,7 +19,7 @@
  * $HEADER$
  */
 
-PROTOTYPE VOID file_create_errhandler(FILE_ERRHANDLER_FN function, INT_OUT errhandler)
+PROTOTYPE VOID file_create_errhandler(FILE_ERRHANDLER_FN function, ERRHANDLER_OUT errhandler)
 {
     int c_ierr;
     MPI_Errhandler c_errhandler;

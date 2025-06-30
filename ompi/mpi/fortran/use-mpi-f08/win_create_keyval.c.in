@@ -20,7 +20,7 @@
  */
 
 PROTOTYPE VOID win_create_keyval(WIN_COPY_ATTR_FN  win_copy_attr_fn,
-                                 WIN_COPY_ATTR_FN win_delete_attr_fn,
+                                 WIN_DELETE_ATTR_FN win_delete_attr_fn,
                                  INT_OUT win_keyval, AINT extra_state)
 {
     int ret, c_ierr;

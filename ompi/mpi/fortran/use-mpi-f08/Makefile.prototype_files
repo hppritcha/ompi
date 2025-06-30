@@ -299,6 +299,8 @@ prototype_files = \
         status_f2f08.c.in \
         status_f082f.c.in \
         status_set_cancelled.c.in \
+        status_set_elements.c.in \
+        status_set_elements_x.c.in \
         test.c.in \
         testall.c.in \
         testany.c.in \
