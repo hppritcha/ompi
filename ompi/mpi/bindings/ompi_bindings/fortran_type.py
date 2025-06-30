@@ -1059,9 +1059,6 @@ class Op(FortranType):
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(IN) :: {self.name}'
 
-    def declare_cbinding_fortran(self):
-        return f'INTEGER, INTENT(IN) :: {self.name}'
-
     def use(self):
         if self.gen_f90 == False:
             return [('mpi_f08_types', 'MPI_Op')]
@@ -1089,7 +1086,23 @@ class OpInOut(Op):
             return f'TYPE(MPI_Op), INTENT(INOUT) :: {self.name}'
         else:
             return f'INTEGER, INTENT(INOUT) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(INOUT) :: {self.name}'
     
+@FortranType.add('OP_OUT')
+class OpInOut(Op):
+    """MPI_Op OUT type."""
+
+    def declare(self):
+        if self.gen_f90 == False:
+            return f'TYPE(MPI_Op), INTENT(OUT) :: {self.name}'
+        else:
+            return f'INTEGER, INTENT(OUT) :: {self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(OUT) :: {self.name}'
+
 @FortranType.add('WIN')
 class Win(FortranType):
     """MPI_Win type."""
@@ -1661,3 +1674,18 @@ class DataRepExtentFnType(DataRepConversionFnType):
 
     def c_parameter(self):
         return f'ompi_mpi2_fortran_datarep_extent_fn_t  {self.name}'
+
+@FortranType.add('USER_FN')
+class UserFnType(CommErrhandlerFnType):
+    def declare(self):
+        if self.gen_f90 == False:
+            return f'PROCEDURE(MPI_User_function) :: {self.name}'
+        else:
+            return f'EXTERNAL {self.name}'
+
+    def use(self):
+        if self.gen_f90 == False:
+           return [('mpi_f08_interfaces_callbacks', 'MPI_User_function'), ('iso_c_binding', 'c_funloc'), ('iso_c_binding', 'c_funptr')]
+        else:
+           return []
+

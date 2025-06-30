@@ -138,7 +138,6 @@ mpi_api_files = \
         info_get_nthkey_f08.F90 \
         info_get_valuelen_f08.F90 \
         info_get_string_f08.F90 \
-        op_create_f08.F90 \
         register_datarep_f08.F90 \
 	session_get_nth_pset_f08.F90 \
 	session_get_pset_info_f08.F90 \

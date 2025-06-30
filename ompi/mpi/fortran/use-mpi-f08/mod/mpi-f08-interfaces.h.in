@@ -142,18 +142,6 @@ subroutine MPI_Type_size_x_f08(datatype,size,ierror)
 end subroutine MPI_Type_size_x_f08
 end interface  MPI_Type_size_x
 
-interface  MPI_Op_create
-subroutine MPI_Op_create_f08(user_fn,commute,op,ierror)
-   use :: mpi_f08_types, only : MPI_Op
-   use :: mpi_f08_interfaces_callbacks, only : MPI_User_function
-   implicit none
-   PROCEDURE(MPI_User_function) :: user_fn
-   LOGICAL, INTENT(IN) :: commute
-   TYPE(MPI_Op), INTENT(OUT) :: op
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Op_create_f08
-end interface  MPI_Op_create
-
 interface  MPI_Group_range_excl
 subroutine MPI_Group_range_excl_f08(group,n,ranges,newgroup,ierror)
    use :: mpi_f08_types, only : MPI_Group

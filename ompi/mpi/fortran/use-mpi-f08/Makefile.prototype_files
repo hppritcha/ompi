@@ -237,6 +237,7 @@ prototype_files = \
         neighbor_alltoallw_init_ts.c.in \
         neighbor_alltoallw_ts.c.in \
 	op_commutative.c.in \
+	op_create.c.in \
 	op_free.c.in \
 	open_port.c.in \
         pack_external_size.c.in \
