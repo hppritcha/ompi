@@ -131,7 +131,6 @@ mpi_api_files = \
         cart_sub_f08.F90 \
         comm_spawn_f08.F90 \
         comm_spawn_multiple_f08.F90 \
-        get_elements_x_f08.F90 \
         grequest_start_f08.F90 \
         group_range_excl_f08.F90 \
         group_range_incl_f08.F90 \
@@ -140,7 +139,6 @@ mpi_api_files = \
         info_get_valuelen_f08.F90 \
         info_get_string_f08.F90 \
         op_create_f08.F90 \
-        pcontrol_f08.F90 \
         register_datarep_f08.F90 \
 	session_get_nth_pset_f08.F90 \
 	session_get_pset_info_f08.F90 \

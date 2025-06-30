@@ -155,6 +155,7 @@ prototype_files = \
         get_address_ts.c.in \
         get_count.c.in \
         get_elements.c.in \
+        get_elements_x.c.in \
         get_library_version.c.in \
         get_processor_name.c.in \
         get_ts.c.in \
@@ -243,6 +244,7 @@ prototype_files = \
         pack_size.c.in \
         pack_ts.c.in \
         parrived.c.in \
+        pcontrol.c.in \
         pready.c.in \
         pready_list.c.in \
         pready_range.c.in \

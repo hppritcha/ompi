@@ -511,8 +511,6 @@
 #define MPI_Pack_size PMPI_Pack_size
 #define MPI_Parrived_f08 PMPI_Parrived_f08
 #define MPI_Parrived PMPI_Parrived
-#define MPI_Pcontrol_f08 PMPI_Pcontrol_f08
-#define MPI_Pcontrol PMPI_Pcontrol
 #define MPI_Pready_f08 PMPI_Pready_f08
 #define MPI_Pready_list_f08 PMPI_Pready_list_f08
 #define MPI_Pready_list PMPI_Pready_list

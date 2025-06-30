@@ -108,6 +108,17 @@ class FortranType(ABC):
     def c_parameter(self):
         """Return the parameter expression to be used in the C function."""
 
+    @property
+    def init_code(self):
+        """Return the initialization code needed for an ABI wrapper."""
+        return []
+        
+    @property
+    def final_code(self):
+        """Return the finalization code needed for an ABI wrapper."""
+        return []
+
+
 #
 # Definitions of generic types in Fortran and how these can be converted
 # to and from C.
@@ -239,20 +250,20 @@ class CountTypeInOut(CountType):
             return f'INTEGER, INTENT(IN) :: {self.name}'
 
 
-@FortranType.add('PARTITIONED_COUNT')
-class PartitionedCountType(FortranType):
+@FortranType.add('COUNT_ONLY')
+class CountTypeOnly(CountType):
+    """COUNT type only"""
     def declare(self):
             return f'INTEGER(KIND=MPI_COUNT_KIND), INTENT(IN) :: {self.name}'
-
-    def use(self):
-        if self.gen_f90 == False:
-            return [('mpi_f08_types', 'MPI_COUNT_KIND')]
-        else:
-            return []
 
     def c_parameter(self):
         return f'MPI_Count *{self.name}'
 
+@FortranType.add('COUNT_ONLY_OUT')
+class CountTypeOnlyOut(CountTypeOnly):
+    """COUNT type only with intent OUT"""
+    def declare(self):
+            return f'INTEGER(KIND=MPI_COUNT_KIND), INTENT(OUT) :: {self.name}'
 
 @FortranType.add('DATATYPE')
 class DatatypeType(FortranType):
@@ -657,6 +668,7 @@ class StatusOutType(StatusType):
 
 @FortranType.add('STATUS_INOUT')
 class StatusInOutType(StatusType):
+    def declare(self):
         if self.gen_f90 == False:
             return f'TYPE(MPI_Status), INTENT(INOUT) :: {self.name}'
         else:
@@ -670,28 +682,10 @@ class StatusInOutType(StatusType):
 @FortranType.add('REQUEST')
 class RequestType(FortranType):
     def declare(self):
-        return f'TYPE(MPI_Request), INTENT(IN) :: {self.name}'
-
-    def declare_cbinding_fortran(self):
-        return f'INTEGER, INTENT(IN) :: {self.name}'
-
-    def argument(self):
-        return f'{self.name}%MPI_VAL'
-
-    def use(self):
-        return [('mpi_f08_types', 'MPI_Request')]
-
-    def c_parameter(self):
-        return f'MPI_Fint *{self.name}'
-
-@FortranType.add('REQUEST_OUT')
-class RequestTypeOut(FortranType):
->>>>>>> a8ae2dab60 (F08: refactor templates)
-    def declare(self):
         if self.gen_f90 == False:
             return f'TYPE(MPI_Request), INTENT(IN) :: {self.name}'
         else:
-            return f'INTEGER, INTENT(IN) :: {self.name}'
+            return f'INTEGER, INTENT(OUT) :: {self.name}'
 
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(IN) :: {self.name}'
@@ -725,15 +719,10 @@ class RequestTypeOut(RequestType):
 @FortranType.add('REQUEST_INOUT')
 class RequestTypeInOut(RequestType):
     def declare(self):
-        return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}'
-        
-    def declare_cbinding_fortran(self):
-        return f'INTEGER, INTENT(INOUT) :: {self.name}'
-
-@FortranType.add('REQUEST_INOUT')
-class RequestTypeInOut(RequestType):
-    def declare(self):
-        return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}'
+        if self.gen_f90 == False:
+            return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}'
+        else:
+            return f'INTEGER, INTENT(INOUT) :: {self.name}'
         
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(INOUT) :: {self.name}'
@@ -1186,6 +1175,15 @@ class File(FortranType):
             return [('mpi_f08_types', 'MPI_File')]
         else:
             return []
+
+    def argument(self):
+        if self.gen_f90 == False:
+            return f'{self.name}%MPI_VAL'
+        else:
+            return f'{self.name}'
+
+    def declare_cbinding_fortran(self):
+        return f'INTEGER, INTENT(IN) :: {self.name}'
 
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'

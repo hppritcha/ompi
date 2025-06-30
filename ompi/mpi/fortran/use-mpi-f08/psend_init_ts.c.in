@@ -23,7 +23,7 @@
  * $HEADER$
  */
 
-PROTOTYPE VOID psend_init(BUFFER_ASYNC x, INT partitions, PARTITIONED_COUNT count, DATATYPE datatype, 
+PROTOTYPE VOID psend_init(BUFFER_ASYNC x, INT partitions, COUNT_ONLY count, DATATYPE datatype,
 		          RANK dest, TAG tag, COMM comm, INFO info, REQUEST_OUT request)
 {
     int c_ierr;

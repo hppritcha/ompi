@@ -63,17 +63,6 @@ subroutine MPI_Session_get_pset_info_f08(session, pset_name, info, ierror)
 end subroutine MPI_Session_get_pset_info_f08
 end interface MPI_Session_get_pset_info
 
-interface  MPI_Get_elements_x
-subroutine MPI_Get_elements_x_f08(status,datatype,count,ierror)
-   use :: mpi_f08_types, only : MPI_Status, MPI_Datatype, MPI_COUNT_KIND
-   implicit none
-   TYPE(MPI_Status), INTENT(IN) :: status
-   TYPE(MPI_Datatype), INTENT(IN) :: datatype
-   INTEGER(MPI_COUNT_KIND), INTENT(OUT) :: count
-   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
-end subroutine MPI_Get_elements_x_f08
-end interface  MPI_Get_elements_x
-
 interface  MPI_Type_get_contents
 subroutine MPI_Type_get_contents_f08(datatype,max_integers,max_addresses,max_datatypes, &
                                      array_of_integers,array_of_addresses,array_of_datatypes, &
@@ -366,11 +355,4 @@ end interface  MPI_Register_datarep
 !   INTEGER, INTENT(OUT) :: size
 !   INTEGER, OPTIONAL, INTENT(OUT) :: ierror
 !end subroutine MPI_Sizeof
-
-interface  MPI_Pcontrol
-subroutine MPI_Pcontrol_f08(level)
-   implicit none
-   INTEGER, INTENT(IN) :: level
-end subroutine MPI_Pcontrol_f08
-end interface  MPI_Pcontrol
 
