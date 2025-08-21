@@ -168,6 +168,7 @@ lib@OMPI_LIBMPI_NAME@_la_LIBADD = \
         $(c_pmpi_lib) \
         $(OMPI_MPIEXT_C_LIBS) \
         $(mpi_fortran_base_lib)
+lib@OMPI_LIBMPI_NAME@_la_DEPENDENCIES = $(lib@OMPI_LIBMPI_NAME@_la_LIBADD)
 
 lib@OMPI_LIBMPI_NAME@_la_LDFLAGS = \
        -version-info $(libmpi_so_version) \
@@ -177,7 +178,14 @@ lib@OMPI_LIBMPI_NAME@_la_LDFLAGS = \
 libmpi_abi_la_SOURCES =
 libmpi_abi_la_LIBADD = \
         libopen_mpi.la \
-	mpi/c/libmpi_c_abi.la
+	mpi/c/libmpi_c_abi.la \
+	mpi/tool/libmpi_mpit_abi.la \
+	$(OMPI_MPIEXT_C_LIBS)
+libmpi_abi_la_DEPENDENCIES = $(libmpi_abi_la_LIBADD)
+
+libmpi_abi_la_LDFLAGS = \
+       -version-info $(libmpi_abi_so_version) \
+        $(OMPI_LIBMPI_EXTRA_LDFLAGS)
 
 # included subdirectory Makefile.am's and appended-to variables
 headers =
