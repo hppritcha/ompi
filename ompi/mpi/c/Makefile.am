@@ -535,6 +535,7 @@ libmpi_c_la_LIBADD += libmpi_c_noprofile.la
 endif
 
 nobase_include_HEADERS = abi.h abi_converters.h standard_abi/mpi.h
+noinst_HEADERS = abi.h abi_converters.h
 
 #
 # List of all C files that have profile versions (*_generated.c files were
