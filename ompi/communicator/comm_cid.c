@@ -468,6 +468,58 @@ static int ompi_comm_ext_cid_new_block (ompi_communicator_t *newcomm, ompi_commu
         goto fn_exit;
     }
 
+
+/***********************************/
+
+    if (getenv("GET_LOCLAL_CID_NOW") != NULL) {
+    pmix_info_t ttinfo[2], *info_ptr;
+    pmix_value_t *val = NULL;
+    size_t remote_cid64 = 0;
+
+    PMIx_Info_construct(&ttinfo[1]);
+    PMIX_INFO_LOAD(&ttinfo[1], PMIX_TIMEOUT, &ompi_pmix_connect_timeout, PMIX_UINT32);
+
+    PMIX_INFO_CONSTRUCT(&ttinfo[0]);
+    PMIX_INFO_LOAD(&ttinfo[0], PMIX_GROUP_CONTEXT_ID, &cid_base, PMIX_SIZE);
+    PMIX_INFO_SET_QUALIFIER(&ttinfo[0]);
+
+    for (size_t i = 0; i<tproc_count;i++) {
+    if (PMIX_SUCCESS != (rc = PMIx_Get(&procs[i], PMIX_GROUP_LOCAL_CID, ttinfo, 2, &val))) {
+        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID cid_base %ld %s", cid_base, PMIx_Error_string(rc)));
+        rc = OMPI_ERR_NOT_FOUND;
+    }
+
+    if (NULL == val) {
+        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID val returned NULL"));
+        rc = OMPI_ERR_NOT_FOUND;
+    }
+
+    OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get for PMIX_GROUP_LOCAL_CID returned %ld %d %s", cid_base, val->type, PMIx_Value_string(val)));
+
+    switch (val->type) {
+    case PMIX_SIZE:
+        PMIX_VALUE_GET_NUMBER(rc, val, remote_cid64, size_t);
+        break;
+    case PMIX_DATA_ARRAY:
+        /* sometimes we get a darray of info objects back */
+        if (PMIX_INFO != val->data.darray->type) {
+            OPAL_OUTPUT_VERBOSE((10, ompi_comm_output,
+                                 "PMIx_Get failed for PMIX_GROUP_LOCAL_CID type mismatch for data array type %d %s", val->data.darray->type, PMIx_Value_string(val)));
+            rc = OMPI_ERR_TYPE_MISMATCH;
+        }
+        info_ptr = (pmix_info_t *)val->data.darray->array;
+        remote_cid64 = info_ptr[0].value.data.size;
+        break;
+    default:
+        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID type mismatch %d %s", val->type, PMIx_Value_string(val)));
+        rc = OMPI_ERR_TYPE_MISMATCH;
+        break;
+    }
+    }
+    }
+
+/***************************************/
+
     if (!cid_base_set) {
         opal_show_help("help-comm.txt", "cid-base-not-set", true);
         rc = OMPI_ERROR;
@@ -1062,27 +1114,29 @@ int ompi_comm_get_remote_cid_from_pmix (ompi_communicator_t *comm, int dest, uin
 {
     ompi_proc_t *ompi_proc;
     pmix_proc_t  pmix_proc;
-    pmix_info_t tinfo[2];
+    pmix_info_t tinfo[2], *info_ptr;
     pmix_value_t *val = NULL;
     ompi_comm_extended_cid_t excid;
     int rc = OMPI_SUCCESS;
     size_t remote_cid64 = 0;
+    size_t *u64;
 
     assert(NULL != remote_cid);
 
     ompi_proc = ompi_comm_peer_lookup(comm, dest);
     OPAL_PMIX_CONVERT_NAME(&pmix_proc, &ompi_proc->super.proc_name);
 
-    PMIx_Info_construct(&tinfo[0]);
-    PMIX_INFO_LOAD(&tinfo[0], PMIX_TIMEOUT, &ompi_pmix_connect_timeout, PMIX_UINT32);
+    PMIx_Info_construct(&tinfo[1]);
+    PMIX_INFO_LOAD(&tinfo[1], PMIX_TIMEOUT, &ompi_pmix_connect_timeout, PMIX_UINT32);
 
     excid = ompi_comm_get_extended_cid(comm);
 
-    PMIX_INFO_CONSTRUCT(&tinfo[1]);
-    PMIX_INFO_LOAD(&tinfo[1], PMIX_GROUP_CONTEXT_ID, &excid.cid_base, PMIX_SIZE);
-    PMIX_INFO_SET_QUALIFIER(&tinfo[1]);
+    PMIX_INFO_CONSTRUCT(&tinfo[0]);
+    PMIX_INFO_LOAD(&tinfo[0], PMIX_GROUP_CONTEXT_ID, &excid.cid_base, PMIX_SIZE);
+    PMIX_INFO_SET_QUALIFIER(&tinfo[0]);
+
     if (PMIX_SUCCESS != (rc = PMIx_Get(&pmix_proc, PMIX_GROUP_LOCAL_CID, tinfo, 2, &val))) {
-        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID cid_base %"PRIu64" %s", excid.cid_base, PMIx_Error_string(rc)));
+        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID cid_base %ld %s", excid.cid_base, PMIx_Error_string(rc)));
         rc = OMPI_ERR_NOT_FOUND;
         goto done;
     }
@@ -1093,15 +1147,31 @@ int ompi_comm_get_remote_cid_from_pmix (ompi_communicator_t *comm, int dest, uin
         goto done;
     }
 
-    if (val->type != PMIX_SIZE) {
-        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID type mismatch"));
+    OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get for PMIX_GROUP_LOCAL_CID returned %ld %d %s", excid.cid_base, val->type, PMIx_Value_string(val)));
+
+    switch (val->type) {
+    case PMIX_SIZE:
+        PMIX_VALUE_GET_NUMBER(rc, val, remote_cid64, size_t);
+        *remote_cid = (uint32_t)remote_cid64;
+        break;
+    case PMIX_DATA_ARRAY:
+        /* sometimes we get a darray of info objects back */
+        if (PMIX_INFO != val->data.darray->type) {
+            OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, 
+                                 "PMIx_Get failed for PMIX_GROUP_LOCAL_CID type mismatch for data array type %d %s", val->data.darray->type, PMIx_Value_string(val)));
+            rc = OMPI_ERR_TYPE_MISMATCH;
+            goto done;
+        }
+        info_ptr = (pmix_info_t *)val->data.darray->array;
+        remote_cid64 = info_ptr[0].value.data.size;
+        *remote_cid = (uint32_t)remote_cid64;
+        break;
+    default:
+        OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get failed for PMIX_GROUP_LOCAL_CID type mismatch %d %s", val->type, PMIx_Value_string(val)));
         rc = OMPI_ERR_TYPE_MISMATCH;
         goto done;
     }
 
-    PMIX_VALUE_GET_NUMBER(rc, val, remote_cid64, size_t);
-    rc = OMPI_SUCCESS;
-    *remote_cid = (uint32_t)remote_cid64;
     comm->c_index_vec[dest] = (uint32_t)remote_cid64;
     OPAL_OUTPUT_VERBOSE((10, ompi_comm_output, "PMIx_Get PMIX_GROUP_LOCAL_CID %d for cid_base %"PRIu64, *remote_cid, excid.cid_base));
 
