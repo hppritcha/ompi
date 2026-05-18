@@ -303,6 +303,7 @@ static int mca_pml_ob1_recv_request_ack(
 
     /* by default copy everything */
     recvreq->req_send_offset = bytes_received;
+    fprintf(stderr, "inside mca_pml_ob1_recv_request_ack\n");
     if(hdr->hdr_msg_length > bytes_received) {
         size_t rdma_num = mca_pml_ob1_rdma_pipeline_btls_count (bml_endpoint);
         /*
@@ -320,6 +321,7 @@ static int mca_pml_ob1_recv_request_ack(
             unsigned char *base;
             opal_convertor_get_current_pointer( &recvreq->req_recv.req_base.req_convertor, (void**)&(base) );
 
+                fprintf(stderr, "MCA_PML_OB1_HDR_FLAGS_PIN = %d\n", hdr->hdr_match.hdr_common.hdr_flags & MCA_PML_OB1_HDR_FLAGS_PIN);
             if(hdr->hdr_match.hdr_common.hdr_flags & MCA_PML_OB1_HDR_FLAGS_PIN)
                 recvreq->req_rdma_cnt = mca_pml_ob1_rdma_btls(bml_endpoint,
                         base, recvreq->req_recv.req_bytes_packed,

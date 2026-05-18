@@ -134,6 +134,7 @@ int mca_btl_ofi_send(mca_btl_base_module_t *btl, mca_btl_base_endpoint_t *endpoi
 
     /* send the frag. Note that we start sending from BTL header + payload
      * because we need the other side to have this header information. */
+    fprintf(stderr, "calling fi_send from mca_btl_ofi_send\n");
     rc = fi_send(context->tx_ctx, &frag->hdr, sizeof(mca_btl_ofi_header_t) + frag->hdr.len, NULL,
                  ofi_ep->peer_addr, &comp->comp_ctx);
 
