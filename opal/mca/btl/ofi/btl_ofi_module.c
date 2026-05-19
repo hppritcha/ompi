@@ -309,6 +309,7 @@ int mca_btl_ofi_reg_mem(void *reg_data, void *base, size_t size,
     }
 #endif
 
+    fprintf(stderr, "calling fi_mr_regattr base %p size %ld from %s\n", base, size, __FILE__);
     rc = fi_mr_regattr(btl->domain, &attr, mr_flags, &ur->ur_mr);
     if (0 != rc) {
         ur->ur_mr = NULL;

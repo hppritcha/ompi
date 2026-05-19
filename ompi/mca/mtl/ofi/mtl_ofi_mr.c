@@ -62,6 +62,7 @@ ompi_mtl_ofi_reg_mem(void *reg_data, void *base, size_t size,
 
 #endif
 
+    fprintf(stderr, "calling fi_mr_regattr base %p size %ld from %s\n", base, size, __FILE__);
     ret = fi_mr_regattr(ompi_mtl_ofi.domain, &attr, mr_flags, &mtl_reg->ofi_mr);
     if (0 != ret) {
         opal_show_help("help-mtl-ofi.txt", "Buffer Memory Registration Failed", true,
