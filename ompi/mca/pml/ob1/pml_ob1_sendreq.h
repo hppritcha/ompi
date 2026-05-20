@@ -440,19 +440,23 @@ mca_pml_ob1_send_request_start_btl( mca_pml_ob1_send_request_t* sendreq,
                                                                               base,
                                                                               sendreq->req_send.req_bytes_packed,
                                                                               sendreq->req_rdma))) {
+               OPAL_OUTPUT_VERBOSE((1, mca_pml_ob1_output, "using rgget path to send message"));
                 rc = mca_pml_ob1_send_request_start_rdma(sendreq, bml_btl,
                                                          sendreq->req_send.req_bytes_packed);
                 if( OPAL_UNLIKELY(OMPI_SUCCESS != rc) ) {
                     mca_pml_ob1_free_rdma_resources(sendreq);
                 }
             } else {
+                OPAL_OUTPUT_VERBOSE((1, mca_pml_ob1_output, "using rendezvous path to send message"));
                 rc = mca_pml_ob1_send_request_start_rndv(sendreq, bml_btl, size,
                                                          MCA_PML_OB1_HDR_FLAGS_CONTIG);
             }
         } else {
             if (sendreq->req_send.req_base.req_convertor.flags & CONVERTOR_ACCELERATOR) {
+                OPAL_OUTPUT_VERBOSE((1, mca_pml_ob1_output, "using accelerator rendezvous path to send message"));
                 return mca_pml_ob1_send_request_start_accelerator(sendreq, bml_btl, size);
             }
+            OPAL_OUTPUT_VERBOSE((1, mca_pml_ob1_output, "using rendezvous path to send message - fallback"));
             rc = mca_pml_ob1_send_request_start_rndv(sendreq, bml_btl, size, 0);
         }
     }
