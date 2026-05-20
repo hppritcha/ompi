@@ -290,6 +290,7 @@ int mca_btl_ofi_reg_mem(void *reg_data, void *base, size_t size,
                 opal_accelerator.get_device(&attr.device.cuda);
 #if OPAL_OFI_HAVE_FI_HMEM_ROCR
             } else if (0 == strcmp(opal_accelerator_base_selected_component.base_version.mca_component_name, "rocm")) {
+                fprintf(stderr, "preping attr for FI_HMEM_ROCR\n");
                 attr.iface = FI_HMEM_ROCR;
                 opal_accelerator.get_device(&attr.device.cuda);
 #endif
@@ -313,8 +314,10 @@ int mca_btl_ofi_reg_mem(void *reg_data, void *base, size_t size,
     rc = fi_mr_regattr(btl->domain, &attr, mr_flags, &ur->ur_mr);
     if (0 != rc) {
         ur->ur_mr = NULL;
+        fprintf(stderr, "fi_mr_regattr returned %s\n", fi_strerror(-rc));
         return OPAL_ERR_OUT_OF_RESOURCE;
     }
+    fprintf(stderr, "calledg fi_mr_regattr base %p size %ld from %s\n", base, size, __FILE__);
 
     if (btl->use_fi_mr_bind) {
         BTL_VERBOSE(("binding mr to endpoint"));
