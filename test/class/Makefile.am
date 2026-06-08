@@ -24,7 +24,7 @@
 AM_CPPFLAGS="-I$(top_srcdir)/test/support"
 
 if PROJECT_OMPI
-  REQUIRES_OMPI = ompi_rb_tree
+  REQUIRES_OMPI = ompi_rb_tree ompi_abi_fortran
 endif
 
 check_PROGRAMS = \
@@ -82,6 +82,13 @@ ompi_rb_tree_LDADD = \
         $(top_builddir)/opal/lib@OPAL_LIB_NAME@.la \
 	$(top_builddir)/test/support/libsupport.a
 ompi_rb_tree_DEPENDENCIES = $(ompi_rb_tree_LDADD)
+
+ompi_abi_fortran_SOURCES = ompi_abi_fortran.c
+ompi_abi_fortran_LDADD = \
+        $(top_builddir)/ompi/lib@OMPI_LIBMPI_NAME@.la \
+        $(top_builddir)/opal/lib@OPAL_LIB_NAME@.la \
+	$(top_builddir)/test/support/libsupport.a
+ompi_abi_fortran_DEPENDENCIES = $(ompi_abi_fortran_LDADD)
 
 opal_lifo_SOURCES = opal_lifo.c
 opal_lifo_LDADD = \

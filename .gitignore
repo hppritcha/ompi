@@ -434,6 +434,7 @@ test/asm/atomic_spinlock
 
 test/class/*.txt
 test/class/ompi_bitmap_test_out.txt
+test/class/ompi_abi_fortran
 test/class/ompi_circular_buffer_fifo
 test/class/ompi_fifo
 test/class/ompi_rb_tree

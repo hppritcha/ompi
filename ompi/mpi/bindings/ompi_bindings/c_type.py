@@ -1,5 +1,6 @@
 # Copyright (c) 2024-2026 Triad National Security, LLC. All rights
 #                         reserved.
+# Copyright (c) 2026      Jeffrey M. Squyres.  All rights reserved.
 #
 # $COPYRIGHT$
 #
@@ -530,7 +531,7 @@ class TypeDatatypeOut(Type):
         return 'MPI_Datatype *'
 
 @Type.add_type('DATATYPE_INOUT', abi_type=['ompi'])
-class TypeDatatypeOut(Type):
+class TypeDatatypeInOut(Type):
 
     def type_text(self, enable_count=False):
         return 'MPI_Datatype *'
@@ -562,7 +563,7 @@ class TypeDatatypeArrayOut(Type):
         return f'{self.type_text(enable_count=enable_count)} {self.name}[]'
 
 @Type.add_type('DATATYPE_ARRAY_ASYNC', abi_type=['ompi'])
-class TypeDatatypeArray(Type):
+class TypeDatatypeArrayAsync(Type):
 
     def type_text(self, enable_count=False):
         return 'MPI_Datatype'
@@ -678,9 +679,9 @@ class TypeDatatypeArrayAsyncStandard(TypeDatatypeArrayStandard):
         code.append(f'if (NULL != {self.tmpname})' + '{')
         code.append(f'ompi_coll_base_append_array_to_release({request_tmp_name}, (void *){self.tmpname});')
         code.append(f'ompi_coll_base_add_release_arrays_cb({request_tmp_name});')
+        code.append('}')
         code.append('} else {')
         code.append(f'if (NULL != {self.tmpname}) free({self.tmpname});')
-        code.append('}')
         code.append('}')
         return code
 
@@ -755,9 +756,9 @@ class TypeNeighborDatatypeArrayAsyncStandard(TypeNeighborDatatypeArrayStandard):
         code.append(f'if (NULL != {self.tmpname})' + '{')
         code.append(f'ompi_coll_base_append_array_to_release({request_tmp_name}, (void *){self.tmpname});')
         code.append(f'ompi_coll_base_add_release_arrays_cb({request_tmp_name});')
+        code.append('}')
         code.append('} else {')
         code.append(f'if (NULL != {self.tmpname}) free({self.tmpname});')
-        code.append('}')
         code.append('}')
         return code
 
@@ -1172,20 +1173,22 @@ class TypeConstRequestStandard(TypeRequestStandard):
     @property
     def init_code(self):
         if self.count_param is None:
-            code = [f'MPI_Request {self.tmpname} = {ConvertFuncs.REQUEST}({self.name});']
+            code = [f'MPI_Request {self.tmpname} = {ConvertFuncs.REQUEST}(*{self.name});']
         else:
             code = [f'int size_{self.tmpname} = {self.count_param};']
-        code.append(f'MPI_Request *{self.tmpname} = (MPI_Request *)ompi_abi_malloc(size_{self.tmpname}, sizeof(MPI_Request));')
-        code.append(f'if(NULL !={self.tmpname})' + '{')
-        code.append(f'for(int i=0;i<size_{self.tmpname};i++){{')
-        code.append(f'{self.tmpname}[i] = {ConvertFuncs.REQUEST}({self.name}[i]);')
-        code.append('}')
-        code.append('}')
+            code.append(f'MPI_Request *{self.tmpname} = (MPI_Request *)ompi_abi_malloc(size_{self.tmpname}, sizeof(MPI_Request));')
+            code.append(f'if(NULL !={self.tmpname})' + '{')
+            code.append(f'for(int i=0;i<size_{self.tmpname};i++){{')
+            code.append(f'{self.tmpname}[i] = {ConvertFuncs.REQUEST}({self.name}[i]);')
+            code.append('}')
+            code.append('}')
         return code
 
     @property
     def final_code(self):
-        if self.count_param is not None:
+        if self.count_param is None:
+            code = []
+        else:
             code = [f'if(NULL != {self.tmpname}) free({self.tmpname});']
         return code
 
@@ -1195,7 +1198,10 @@ class TypeConstRequestStandard(TypeRequestStandard):
 
     @property
     def argument(self):
-        return f'(MPI_Request *) {self.tmpname}'
+        if self.count_param is None:
+            return f'{self.tmpname}'
+        else:
+            return f'(MPI_Request *) {self.tmpname}'
 
     def tmp_type_text(self, enable_count=False):
         return 'MPI_Request'
@@ -1308,7 +1314,7 @@ class TypeStatusOut(Type):
 
 
 @Type.add_type('STATUS_OUT', abi_type=['standard'])
-class TypeStausOutStandard(StandardABIType):
+class TypeStatusOutStandard(StandardABIType):
 
     def if_should_set_status(self):
         """Generate the condition to check if the status(es) should be set."""
@@ -1330,11 +1336,13 @@ class TypeStausOutStandard(StandardABIType):
         code.append(self.if_should_set_status())
         if self.count_param is not None:
             code.append(f'{self.tmpname} = (MPI_Status *)ompi_abi_malloc({self.count_param}, sizeof(MPI_Status));')
+            code.append(f'if (NULL != {self.tmpname}) ' + '{')
             code.extend([
                 'for (int i = 0; i < %s; ++i) {' % (self.count_param,),
                 f'{ConvertFuncs.STATUS}(&{self.tmpname}[i], &{self.name}[i]);',
                 '}',
             ])
+            code.append('}')
             code.append(f'{self.status_argument} = {self.tmpname};')
         else:
             code.append(f'{ConvertFuncs.STATUS}(&{self.tmpname}, {self.name});')
@@ -1353,12 +1361,14 @@ class TypeStausOutStandard(StandardABIType):
         if self.count_param is None:
             code.append(f'{ConvertOMPIToStandard.STATUS}({self.name}, &{self.tmpname});')
         else:
+            code.append(f'if (NULL != {self.tmpname}) ' + '{')
             code.extend([
                 'for (int i = 0; i < %s; ++i) {' % (self.outcount_param,),
                 f'{ConvertOMPIToStandard.STATUS}(&{self.name}[i], &{self.tmpname}[i]);',
                 '}',
-                f'free({self.tmpname});',
             ])
+            code.append('}')
+            code.append(f'free({self.tmpname});')
         code.append('}')
         return code
 
@@ -1393,7 +1403,7 @@ class TypeStatusInOut(Type):
 # so far there are no vectors of statuses for inout in the the standard
 #
 @Type.add_type('STATUS_INOUT', abi_type=['standard'])
-class TypeStausInOutStandard(StandardABIType):
+class TypeStatusInOutStandard(StandardABIType):
 
     def if_should_set_status(self):
         """Generate the condition to check if the status(es) should be set."""
@@ -1678,7 +1688,7 @@ class TypeMessageStandard(StandardABIType):
 
     @property
     def init_code(self):
-        return [f'MPI_Comm {self.tmpname} = {ConvertFuncs.MESSAGE}({self.name});']
+        return [f'MPI_Message {self.tmpname} = {ConvertFuncs.MESSAGE}({self.name});']
 
 #   @property
 #   def argument(self):
@@ -2212,7 +2222,6 @@ class TypeWinCopyAttrFunctionStandard(StandardABIType):
         code.append('    MPI_Win_ABI_INTERNAL win_tmp = ompi_convert_win_ompi_to_standard(oldwin);')
         code.append('    int win_keyval_tmp = ompi_convert_attr_key_ompi_to_standard(win_keyval);')
         code.append('    return helper->user_delete_fn((MPI_Win_ABI_INTERNAL)win_tmp, win_keyval_tmp, attribute_val, helper->user_extra_state);')
-        code.append('    free(helper);')
         code.append('}')
         return code
 
@@ -2388,7 +2397,7 @@ class TypeGroupInOutStandard(StandardABIType):
         return f'(MPI_Group *) (NULL != {self.name} ? &{self.tmpname} : NULL)'
 
 @Type.add_type('SESSION_INOUT', abi_type=['ompi'])
-class TypeSessionOut(Type):
+class TypeSessionInOut(Type):
 
     def type_text(self, enable_count=False):
         return 'MPI_Session *'
@@ -2777,7 +2786,7 @@ class TypeTVerbosityStandard(StandardABIType):
 
     @property
     def argument(self):
-        return self.name
+        return self.tmpname
 
 @Type.add_type('T_VERBOSITY_OUT', abi_type=['ompi'])
 class TypeTVerbosityOut(Type):
@@ -2811,13 +2820,13 @@ class TypePvarClassStandard(StandardABIType):
     @property
     def init_code(self):
         return [f'int {self.tmpname} = {ConvertFuncs.PVAR_CLASS}({self.name});']
-        
+
     def type_text(self, enable_count=False):
         return 'int'
 
     @property
     def argument(self):
-        return self.name
+        return self.tmpname
 
 @Type.add_type('PVAR_CLASS_OUT', abi_type=['ompi'])
 class TypePvarClassOut(Type):
@@ -2876,7 +2885,7 @@ class TypeSourceOrderStandard(StandardABIType):
 
     @property
     def argument(self):
-        return self.name
+        return self.tmpname
 
 @Type.add_type('SOURCE_ORDER_OUT', abi_type=['ompi'])
 class TypeSourceOrderOut(Type):
@@ -2932,7 +2941,7 @@ class TypeEventDroppedCBFunctionStandard(StandardABIType):
         return self.name
 
 @Type.add_type('EVENT_CB_FUNCTION', abi_type=['ompi'])
-class TypeEventCBFunctionStandard(Type):
+class TypeEventCBFunction(Type):
 
     def type_text(self, enable_count=False):
         return 'MPI_T_event_cb_function'
@@ -2966,7 +2975,7 @@ class TypeAttrKey(Type):
         return 'int'
 
 @Type.add_type('ATTR_KEY', abi_type=['standard'])
-class TyperAttrKeyStandard(StandardABIType):
+class TypeAttrKeyStandard(StandardABIType):
 
     @property
     def init_code(self):
@@ -3026,7 +3035,7 @@ class TypeSplitType(Type):
         return 'int'
 
 @Type.add_type('SPLIT_TYPE', abi_type=['standard'])
-class TyperSplitTypeStandard(StandardABIType):
+class TypeSplitTypeStandard(StandardABIType):
 
     @property
     def init_code(self):
