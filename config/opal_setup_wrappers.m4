@@ -551,7 +551,7 @@ AC_DEFUN([OPAL_SETUP_WRAPPER_FINAL],[
        AC_SUBST([OMPI_WRAPPER_FCFLAGS_PREFIX])
        AC_MSG_RESULT([$OMPI_WRAPPER_FCFLAGS_PREFIX])
 
-       wrapper_finalize_ompi_libs="-l${OMPI_LIBMPI_NAME}"
+       wrapper_finalize_ompi_libs="-l${OMPI_LIBMPI_NAME} -lopen_mpi"
 
        dnl No matter the configuration (see the 5 cases above), the base
        dnl flags should contain a -L${libdir} and -lmpi, so that those
