@@ -185,7 +185,7 @@ end program]])],
                           [AC_MSG_WARN([Could not determine alignment of $1])
                            AC_MSG_WARN([See config.log for details])
                            AC_MSG_ERROR([Cannot continue])])
-         rm -rf conftest* *.mod 2> /dev/null
+         rm -rf conftest* *.$FC_MODEXT 2> /dev/null
          AC_LANG_POP([Fortran])])
 
     AS_VAR_COPY([$2], [type_var])
@@ -230,7 +230,7 @@ end program]])],
                           [AC_MSG_WARN([Could not determine common alignment])
                            AC_MSG_WARN([See config.log for details])
                            AC_MSG_ERROR([Cannot continue])])
-               rm -rf conftest* *.mod 2> /dev/null
+               rm -rf conftest* *.$FC_MODEXT 2> /dev/null
                AC_LANG_POP([Fortran])])
 
            AS_VAR_COPY([$1], [ompi_cv_fortran_common_alignment])],
