@@ -424,6 +424,19 @@ end program]])],
                [AC_MSG_WARN([*** Could not determine the fortran compiler flag to indicate where modules reside])
                 AC_MSG_ERROR([*** Cannot continue])])
 
+           # Use Autoconf 2.69 standard macro alongside custom implementation
+           # for validation. AC_FC_MODULE_FLAG sets FC_MODINC.
+           AC_FC_MODULE_FLAG
+
+           # For backward compatibility during transition, maintain OMPI_FC_MODULE_FLAG
+           # as an alias to FC_MODINC. This will be removed in a future phase.
+           OMPI_FC_MODULE_FLAG="$FC_MODINC"
+           AC_SUBST([OMPI_FC_MODULE_FLAG])
+
+           AS_IF([test -z "$FC_MODINC"],
+                 [AC_MSG_WARN([AC_FC_MODULE_FLAG could not determine module include flag])
+                  AC_MSG_ERROR([Cannot continue])])
+
            # Look for ignore TKR syntax
            OMPI_FORTRAN_CHECK_IGNORE_TKR([OMPI_FORTRAN_HAVE_IGNORE_TKR=1])
           ])
