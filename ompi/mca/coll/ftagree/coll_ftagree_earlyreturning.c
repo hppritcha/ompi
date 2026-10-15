@@ -2711,6 +2711,7 @@ static void era_cb_fn(struct mca_btl_base_module_t* btl,
             opal_mutex_lock(&era_incomplete_msg_mutex);
             opal_hash_table_remove_value_uint64(msg_table, frag->msg_seqnum);
             /** We leave msg_table into the global table, as we will receive more messages */
+            /* coverity[double_unlock] */
             opal_mutex_unlock(&era_incomplete_msg_mutex);
         } else {
             /** This message is incomplete */

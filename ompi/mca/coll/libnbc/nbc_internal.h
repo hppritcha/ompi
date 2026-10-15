@@ -279,6 +279,7 @@ int NBC_Create_fortran_handle(int *fhandle, NBC_Handle **handle);
 static inline void NBC_Error (char *format, ...) {
   va_list args;
 
+  /* coverity[uninit_use_in_call] */
   va_start (args, format);
   vfprintf (stderr, format, args);
   fprintf (stderr, "\n");

@@ -132,6 +132,7 @@ struct mca_sharedfp_base_module_2_0_0_t * mca_sharedfp_individual_component_file
     } else {
         wronly_flag=false;
 	if ( mca_sharedfp_individual_verbose ) {
+            /* coverity[printf_args] */
             opal_output(ompi_sharedfp_base_framework.framework_output,
 			"mca_sharedfp_individual_component_file_query: Can not run!, "
 			"MPI_MODE_WRONLY[true=%d,false=%d]=%d\n",true,false,wronly_flag);

@@ -201,6 +201,7 @@ int opal_asprintf(char **ptr, const char *fmt, ...)
     int length;
     va_list ap;
 
+    /* coverity[uninit_use_in_call] */
     va_start(ap, fmt);
     /* opal_vasprintf guarantees that *ptr is set to NULL on error */
     length = opal_vasprintf(ptr, fmt, ap);
@@ -268,6 +269,7 @@ int opal_snprintf(char *str, size_t size, const char *fmt, ...)
     int length;
     va_list ap;
 
+    /* coverity[uninit_use_in_call] */
     va_start(ap, fmt);
     length = opal_vsnprintf(str, size, fmt, ap);
     va_end(ap);

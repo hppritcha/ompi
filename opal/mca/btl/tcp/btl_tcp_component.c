@@ -191,6 +191,7 @@ void mca_btl_tcp_print_info_about_socket(int sd, char* fmt, ...)
 #endif
     }
     fprintf(stderr, "[%s] socket %d (peer %s) ", timestamp, sd, ip_str);
+    /* coverity[uninit_use_in_call] */
     va_start(list, fmt);
     vfprintf(stderr, fmt, list);
     va_end(list);

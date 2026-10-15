@@ -40,6 +40,7 @@ char *opal_os_path(int relative, ...)
     char *element, *path;
     size_t num_elements, total_length;
 
+    /* coverity[uninit_use_in_call] */
     va_start(ap, relative);
 
     /* no way to protect ourselves from reading too far, so have to

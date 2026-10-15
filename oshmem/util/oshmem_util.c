@@ -30,6 +30,7 @@ void oshmem_output_verbose(int level, int output_id, const char* prefix,
     if (level <= opal_output_get_verbosity(output_id)) {
         UNREFERENCED_PARAMETER(ret);
 
+        /* coverity[uninit_use_in_call] */
         va_start(args, format);
 
         ret = opal_vasprintf(&str, format, args);

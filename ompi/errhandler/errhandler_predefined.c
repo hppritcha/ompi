@@ -272,6 +272,7 @@ void ompi_mpi_errors_return_comm_handler(struct ompi_communicator_t **comm,
     /* Silence some compiler warnings */
 
     va_list arglist;
+    /* coverity[uninit_use_in_call] */
     va_start(arglist, error_code);
     va_end(arglist);
 }
@@ -296,6 +297,7 @@ void ompi_mpi_errors_return_win_handler(struct ompi_win_t **win,
     /* Silence some compiler warnings */
 
     va_list arglist;
+    /* coverity[uninit_use_in_call] */
     va_start(arglist, error_code);
     va_end(arglist);
 }
@@ -308,6 +310,7 @@ void ompi_mpi_errors_return_instance_handler (struct ompi_instance_t **instance,
     /* Silence some compiler warnings */
 
     va_list arglist;
+    /* coverity[uninit_use_in_call] */
     va_start(arglist, error_code);
     va_end(arglist);
 }

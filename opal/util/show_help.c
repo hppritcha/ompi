@@ -287,6 +287,7 @@ int opal_show_help(const char *filename, const char *topic, int want_error_heade
     int rc;
 
     /* Convert it to a single string */
+    /* coverity[uninit_use_in_call] */
     va_start(arglist, want_error_header);
     rc = opal_show_vhelp(filename, topic, want_error_header, arglist);
     va_end(arglist);

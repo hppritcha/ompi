@@ -31,6 +31,7 @@ static inline void V_OUTPUT_ERR(const char *fmt, ... )
     va_list list;
     char *str;
     int ret;
+    /* coverity[uninit_use_in_call] */
     va_start(list, fmt);
     ret = opal_vasprintf(&str, fmt, list);
     assert(-1 != ret);

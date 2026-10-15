@@ -398,6 +398,7 @@ struct ompi_osc_rdma_peer_t *ompi_osc_rdma_peer_lookup (struct ompi_osc_rdma_mod
 
         opal_mutex_lock (&module->peer_lock);
         peer = ompi_osc_rdma_peer_lookup_internal (module, peer_id, &rc);
+        /* coverity[double_unlock] */
         opal_mutex_unlock (&module->peer_lock);
     }
 

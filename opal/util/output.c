@@ -379,6 +379,7 @@ void opal_output(int output_id, const char *format, ...)
 {
     if (output_id >= 0 && output_id < OPAL_OUTPUT_MAX_STREAMS) {
         va_list arglist;
+        /* coverity[uninit_use_in_call] */
         va_start(arglist, format);
         output(output_id, format, arglist);
         va_end(arglist);

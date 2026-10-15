@@ -352,7 +352,7 @@ static inline int mca_coll_acoll_allgather_intra(const void *sbuf, size_t scount
 
     /* Do ring/rd based allgather across start ranks of subgroups */
     is_pow2_num_sgs = 0;
-    if (num_sgs == (1 << opal_hibit(num_sgs, comm->c_cube_dim))) {
+    if (0 == (num_sgs & (num_sgs - 1))) {
         is_pow2_num_sgs = 1;
     }
     use_rd_base = is_pow2_num_sgs ? ((last_subgrp_rcnt == bcount) ? 1 : 0) : 0;
@@ -560,7 +560,7 @@ int mca_coll_acoll_allgather(const void *sbuf, size_t scount, struct ompi_dataty
     /* Perform allgather across node leaders */
     if (rank == node_start) {
         int is_pow2_num_nodes = 0;
-        if (num_nodes == (1 << opal_hibit(num_nodes, comm->c_cube_dim))) {
+        if (0 == (num_nodes & (num_nodes - 1))) {
             is_pow2_num_nodes = 1;
         }
         use_rd_base = is_pow2_num_nodes ? ((last_node_size == node_size) ? 1 : 0) : 0;

@@ -40,6 +40,7 @@ int mca_btl_base_err(const char *fmt, ...)
     va_list list;
     int ret;
 
+    /* coverity[uninit_use_in_call] */
     va_start(list, fmt);
     ret = vfprintf(stderr, fmt, list);
     va_end(list);
@@ -51,6 +52,7 @@ int mca_btl_base_out(const char *fmt, ...)
     va_list list;
     int ret;
 
+    /* coverity[uninit_use_in_call] */
     va_start(list, fmt);
     ret = vfprintf(stdout, fmt, list);
     va_end(list);

@@ -1055,6 +1055,7 @@ void ompi_rte_abort(int error_code, char *fmt, ...)
     struct timespec tp = {0, 100000};
 
     /* If there was a message, output it */
+    /* coverity[uninit_use_in_call] */
     va_start(arglist, fmt);
     if( NULL != fmt ) {
         opal_vasprintf( &buffer, fmt, arglist );
