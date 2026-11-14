@@ -184,9 +184,9 @@ OMPI_DECLSPEC extern bool ompi_mpi_spc_dump_enabled;
 OMPI_DECLSPEC extern uint32_t ompi_pmix_connect_timeout;
 
 /**
- * A comma-delimited list of additional environment variable names to check
- * when detecting if running in a PMI environment. This supplements the built-in
- * sentinels (PMI_FD, PMI_CONTROL_PORT).
+ * A comma-delimited list of environment variable names to check when
+ * detecting if running in a PMI environment. Default is
+ * "PMI_FD,PMI_CONTROL_PORT".
  */
 OMPI_DECLSPEC extern char * ompi_mpi_pmi_sentinels;
 
