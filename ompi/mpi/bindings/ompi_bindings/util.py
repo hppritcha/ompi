@@ -1,4 +1,4 @@
-# Copyright (c) 2024-2025 Triad National Security, LLC. All rights
+# Copyright (c) 2024-2026 Triad National Security, LLC. All rights
 #                         reserved.
 # Copyright (c) 2026      Jeffrey M. Squyres.  All rights reserved.
 #
@@ -83,9 +83,10 @@ def fortran_name(fn_name, bigcount=False, needs_ts=False, gen_f90=False):
         name = f'MPI_{fn_name.capitalize()}{ts}'
     return name
 
-def fortran_generic_interface_name(fn_name):
+def fortran_generic_interface_name(fn_name, bigcount=False):
     """Produce the generic interface name from the base_name."""
-    return f'MPI_{fn_name.capitalize()}'
+    suffix = '_c' if bigcount else ''
+    return f'MPI_{fn_name.capitalize()}{suffix}'
 
 def break_param_lines_fortran(start, params, end):
     """Break parameters for a fortran call onto multiple lines.
@@ -194,6 +195,7 @@ def abi_internal_name(extname):
 BIGCOUNT_TYPE_NAMES = [
     'COUNT',
     'COUNT_ARRAY',
+    'COUNT_ARRAY_OUT',
     'DISP',
     'DISP_ARRAY',
     'DISP_OUT',
@@ -206,11 +208,61 @@ BIGCOUNT_TYPE_NAMES = [
     'INT_AINT_OUT',
     'USER_FUNCTION',
     'DATAREP_CONVERSION_FUNCTION',
+    # Fortran name of DATAREP_CONVERSION_FUNCTION
+    'DATAREP_CONVERSION_FN',
 ]
 
 def prototype_has_bigcount(prototype):
     """Should this prototype have a bigcount version?"""
     return any(param.type_name in BIGCOUNT_TYPE_NAMES for param in prototype.params)
+
+# Callback types whose bigcount version differs only in the procedure's
+# interface (e.g. MPI_User_function_c).
+BIGCOUNT_PROCEDURE_TYPE_NAMES = [
+    'USER_FUNCTION',
+    'DATAREP_CONVERSION_FUNCTION',
+    'DATAREP_CONVERSION_FN',
+]
+
+def prototype_bigcount_is_separate(prototype):
+    """Does the Fortran bigcount version need its own generic interface?
+
+    When the only bigcount arguments are procedures, a generic interface
+    cannot tell the two versions apart, so the standard names the bigcount
+    one explicitly (MPI_Op_create_c, MPI_Register_datarep_c) instead of
+    overloading the regular name as it does for, e.g., MPI_Send.
+    """
+    bigcount_types = [param.type_name for param in prototype.params
+                      if param.type_name in BIGCOUNT_TYPE_NAMES]
+    return (len(bigcount_types) > 0 and
+            all(name in BIGCOUNT_PROCEDURE_TYPE_NAMES for name in bigcount_types))
+
+# Types whose bigcount version only changes INTEGER(KIND=MPI_ADDRESS_KIND)
+# to INTEGER(KIND=MPI_COUNT_KIND).
+BIGCOUNT_AINT_TYPE_NAMES = [
+    'AINT_COUNT',
+    'AINT_COUNT_ARRAY',
+    'AINT_COUNT_OUT',
+    'AINT_COUNT_INOUT',
+]
+
+# Fortran preprocessor condition for MPI_COUNT_KIND and MPI_ADDRESS_KIND
+# being different kinds (see configure-fortran-output.h).
+DISTINCT_COUNT_ADDRESS_KINDS = 'OMPI_MPI_COUNT_KIND != OMPI_MPI_ADDRESS_KIND'
+
+def prototype_bigcount_needs_distinct_kinds(prototype):
+    """Does the Fortran bigcount version only exist if MPI_COUNT_KIND and
+    MPI_ADDRESS_KIND are different?
+
+    When the only bigcount arguments are INTEGER(KIND=MPI_ADDRESS_KIND) in
+    the regular version (e.g. MPI_Type_get_extent), the two versions have
+    the same type signature if the kinds are the same, and then the
+    standard says the _c specific procedure is not provided.
+    """
+    bigcount_types = [param.type_name for param in prototype.params
+                      if param.type_name in BIGCOUNT_TYPE_NAMES]
+    return (len(bigcount_types) > 0 and
+            all(name in BIGCOUNT_AINT_TYPE_NAMES for name in bigcount_types))
 
 BUFFER_TYPE_NAMES = [
     'BUFFER',
@@ -225,6 +277,23 @@ def prototype_has_buffers(prototype):
         return True
     else:
         return False
+
+# Return types of the Fortran templates for subroutines: VOID gives an
+# ierror argument, and VOID_NO_IERROR is for the few subroutines that the
+# standard defines without one (e.g. MPI_F_sync_reg).  Any other return
+# type makes the procedure a function returning that type, without an
+# ierror argument (e.g. MPI_Aint_add).
+IERROR_RETURN_TYPE_NAME = 'VOID'
+NO_IERROR_RETURN_TYPE_NAME = 'VOID_NO_IERROR'
+
+def prototype_is_function(prototype):
+    """Is the Fortran procedure a function rather than a subroutine?"""
+    return prototype.return_type.type_name not in (IERROR_RETURN_TYPE_NAME,
+                                                   NO_IERROR_RETURN_TYPE_NAME)
+
+def prototype_has_ierror(prototype):
+    """Does the Fortran procedure have an ierror argument?"""
+    return prototype.return_type.type_name == IERROR_RETURN_TYPE_NAME
 
 USER_CALLBACK_NAMES = [
     'COMM_COPY_ATTR_FUNCTION',

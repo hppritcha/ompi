@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #
 # Copyright (c) 2026      Jeffrey M. Squyres.  All rights reserved.
+# Copyright (c) 2026      Triad National Security, LLC. All rights
+#                         reserved.
 # $COPYRIGHT$
 #
 # Additional copyrights may follow
@@ -43,6 +45,7 @@ _TEST_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 _TOP_SRCDIR = _TEST_DIR.parent.parent.parent
 _BINDINGS_DIR = _TOP_SRCDIR / 'ompi' / 'mpi' / 'bindings'
 _C_TEMPLATE_DIR = _TOP_SRCDIR / 'ompi' / 'mpi' / 'c'
+_F08_TEMPLATE_DIR = _TOP_SRCDIR / 'ompi' / 'mpi' / 'fortran' / 'use-mpi-f08'
 _MPI_H_IN = _TOP_SRCDIR / 'ompi' / 'include' / 'mpi.h.in'
 
 sys.path.insert(0, str(_BINDINGS_DIR))
@@ -52,8 +55,9 @@ sys.path.insert(0, str(_BINDINGS_DIR))
 # has a main() guard, so importing it here runs no work and needs neither
 # pympistandard nor any command-line arguments.
 import c_header                                         # noqa: E402
-from ompi_bindings import c, consts, util               # noqa: E402
+from ompi_bindings import c, consts, fortran, util      # noqa: E402
 from ompi_bindings.c_type import Type                   # noqa: E402
+from ompi_bindings.fortran_type import FortranType      # noqa: E402
 from ompi_bindings.parser import Parameter, Prototype, ReturnType, SourceTemplate  # noqa: E402
 
 
@@ -85,6 +89,20 @@ def render(template_name, abi_type):
         c.ompi_abi(base_name, template, out)
     else:
         c.standard_abi(base_name, template, out)
+    return buf.getvalue()
+
+
+def render_fortran(template_name, lang):
+    """Render a real mpi_f08 template; return the Fortran or C text.
+
+    lang is 'fortran' for the Fortran procedure (api_f08_generated.F90), or
+    'c' for the C wrapper that it calls (base/api_f08_generated.c).
+    """
+    template = SourceTemplate.load(str(_F08_TEMPLATE_DIR / template_name),
+                                   type_constructor=FortranType.construct)
+    buf = io.StringIO()
+    fortran.print_binding(template.prototype, lang, util.OutputFile(buf),
+                          template=template)
     return buf.getvalue()
 
 
@@ -217,6 +235,67 @@ class TestPrototypeClassification(unittest.TestCase):
     def test_does_not_need_callback_wrappers(self):
         self.assertFalse(util.prototype_needs_callback_wrappers(
             make_prototype('send', 'BUFFER_CONST buf', 'COUNT count', 'COMM comm')))
+
+
+class TestFortranProcedureKind(unittest.TestCase):
+    """The return type of an mpi_f08 template gives the kind of procedure."""
+
+    @staticmethod
+    def prototype(return_type):
+        return Prototype('x', ReturnType(return_type, type_constructor=FortranType.construct), [])
+
+    def test_void_is_a_subroutine_with_ierror(self):
+        self.assertFalse(util.prototype_is_function(self.prototype('VOID')))
+        self.assertTrue(util.prototype_has_ierror(self.prototype('VOID')))
+
+    def test_void_no_ierror_is_a_subroutine_without_ierror(self):
+        self.assertFalse(util.prototype_is_function(self.prototype('VOID_NO_IERROR')))
+        self.assertFalse(util.prototype_has_ierror(self.prototype('VOID_NO_IERROR')))
+
+    def test_other_types_are_functions_without_ierror(self):
+        self.assertTrue(util.prototype_is_function(self.prototype('AINT')))
+        self.assertFalse(util.prototype_has_ierror(self.prototype('AINT')))
+
+    def test_every_template_uses_a_known_return_type(self):
+        # Anything but VOID or VOID_NO_IERROR is taken as the type of a
+        # function, so a misspelling (e.g. "void") would not be noticed
+        # until the generator failed to find that type.
+        for path in sorted(_F08_TEMPLATE_DIR.glob('*.c.in*')):
+            with self.subTest(template=path.name):
+                template = SourceTemplate.load(str(path),
+                                               type_constructor=FortranType.construct)
+                name = template.prototype.return_type.type_name
+                self.assertTrue(name in (util.IERROR_RETURN_TYPE_NAME,
+                                         util.NO_IERROR_RETURN_TYPE_NAME)
+                                or name in FortranType.TYPES, name)
+
+
+class TestFortranRendering(unittest.TestCase):
+    """Real mpi_f08 templates render as subroutines or functions."""
+
+    def test_subroutine(self):
+        text = render_fortran('comm_rank.c.in', 'fortran')
+        self.assertIn('subroutine MPI_Comm_rank_f08(', text)
+        self.assertIn('end subroutine MPI_Comm_rank_f08', text)
+        self.assertIn('INTEGER, OPTIONAL, INTENT(OUT) :: ierror', text)
+        self.assertIn('call ompi_comm_rank_wrapper_f08(', text)
+        self.assertIn('void ompi_comm_rank_wrapper_f08(',
+                      render_fortran('comm_rank.c.in', 'c'))
+
+    def test_function(self):
+        text = render_fortran('aint_add.c.in', 'fortran')
+        self.assertIn('function MPI_Aint_add_f08(', text)
+        self.assertIn('end function MPI_Aint_add_f08', text)
+        self.assertIn('INTEGER(MPI_ADDRESS_KIND) :: MPI_Aint_add_f08', text)
+        # The interface of the C wrapper is a function too
+        self.assertIn('function ompi_aint_add_wrapper_f08(', text)
+        self.assertIn('INTEGER(MPI_ADDRESS_KIND) :: ompi_aint_add_wrapper_f08', text)
+        self.assertIn('MPI_Aint_add_f08 = ompi_aint_add_wrapper_f08(', text)
+        self.assertNotIn('subroutine', text)
+        self.assertNotIn('ierror', text)
+        text = render_fortran('aint_add.c.in', 'c')
+        self.assertIn('MPI_Aint ompi_aint_add_wrapper_f08(MPI_Aint *base, MPI_Aint *', text)
+        self.assertNotIn('ierr', text)
 
 
 class TestGenerateReplacements(unittest.TestCase):

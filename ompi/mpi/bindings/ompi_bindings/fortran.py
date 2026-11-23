@@ -62,6 +62,14 @@ def standard_parameter_names(pympistd_dir, use_f90):
                         continue
                     names[kind][key.lower()] = [p.name.lower() for p in kind_attr.parameters
                                           if p.name.lower() != consts.FORTRAN_ERROR_NAME]
+                # The large count version, under the name of its *.c.in_obc
+                # template (e.g. mpi_type_get_envelope_c)
+                embiggen = getattr(proc.express, 'embiggen', None)
+                kind_attr = getattr(embiggen, 'f08', None) if embiggen is not None else None
+                if kind_attr is not None:
+                    names['f08'].setdefault(key.lower() + '_c',
+                                            [p.name.lower() for p in kind_attr.parameters
+                                             if p.name.lower() != consts.FORTRAN_ERROR_NAME])
     _STANDARD_PARAMETER_NAMES = names
     return names[lang]
 
@@ -73,11 +81,18 @@ class FortranBinding:
                  gen_f90=False, param_names=None):
         # Generate bigcount interface version
         self.bigcount = bigcount
-        self.fn_name = template.prototype.name
+        self.fn_name = template_fn_name(template)
         self.out = out
         self.template = template
         self.needs_ts = needs_ts
         self.gen_f90 = gen_f90
+        self.has_ierror = util.prototype_has_ierror(self.template.prototype)
+        # A function (e.g. MPI_Aint_add) returns its result through the C
+        # wrapper's return value
+        self.result = None
+        if util.prototype_is_function(self.template.prototype):
+            self.result = self.template.prototype.return_type.construct(
+                name=self.fn_name, fn_name=self.fn_name, bigcount=bigcount, gen_f90=gen_f90)
         self.parameters = []
         for param in self.template.prototype.params:
             self.parameters.append(param.construct(fn_name=self.fn_name,
@@ -98,6 +113,17 @@ class FortranBinding:
         """Write to the output file."""
         self.out.dump(*pargs, **kwargs)
 
+    @property
+    def procedure_keyword(self):
+        """Return the Fortran keyword for the kind of procedure."""
+        return 'subroutine' if self.result is None else 'function'
+
+    @property
+    def f_name(self):
+        """Return the name of the Fortran procedure."""
+        return util.fortran_name(self.fn_name, bigcount=self.bigcount, gen_f90=self.gen_f90,
+                                 needs_ts=self.needs_ts)
+
     def _fn_name_suffix(self):
         """Return a suffix for function names."""
         return '_c' if self.bigcount else ''
@@ -116,7 +142,8 @@ class FortranBinding:
     def _use(self):
         """Determine the Fortran use-statements needed."""
         use = {}
-        for param in self.parameters:
+        types = self.parameters if self.result is None else self.parameters + [self.result]
+        for param in types:
             for mod, name in param.use():
                 if mod not in use:
                     use[mod] = set()
@@ -141,7 +168,8 @@ class FortranBinding:
         """Return a list of required includes needed."""
         includes = []
         names = []
-        for param in self.parameters:
+        types = self.parameters if self.result is None else self.parameters + [self.result]
+        for param in types:
             name = param.include()
             if name != '':
                 if name in names:
@@ -156,9 +184,10 @@ class FortranBinding:
         self.dump('    interface')
 
         # Print the subroutine and parameter list, breaking parameters across lines
-        subroutine_start = f'        subroutine {name}('
-        params = [param.name for param in self.parameters]
-        params.append(consts.FORTRAN_ERROR_NAME)
+        subroutine_start = f'        {self.procedure_keyword} {name}('
+        params = [name for param in self.parameters for name in param.cbinding_params()]
+        if self.has_ierror:
+            params.append(consts.FORTRAN_ERROR_NAME)
         lines = util.break_param_lines_fortran(start=subroutine_start, params=params, end=') &')
         for line in lines:
             self.dump(line)
@@ -172,9 +201,13 @@ class FortranBinding:
         for stmt in include_stmts:
             self.dump(f'            {stmt}')
         for param in self.parameters:
-            self.dump(f'            {param.declare_cbinding_fortran()}')
-        self.dump(f'            INTEGER, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
-        self.dump(f'        end subroutine {name}')
+            for line in param.declare_cbinding_fortran().split('\n'):
+                self.dump(f'            {line}')
+        if self.has_ierror:
+            self.dump(f'            INTEGER, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
+        if self.result is not None:
+            self.dump(f'            {self.result.declare_result(name)}')
+        self.dump(f'        end {self.procedure_keyword} {name}')
         self.dump('    end interface')
 
     def _print_fortran_header(self, is_interface=False):
@@ -197,24 +230,26 @@ class FortranBinding:
                 self.dump_lines(param.interface_predeclare())
             self.dump_lines(param.declare())
         # Add the integer error manually
-        if self.gen_f90 == True:
-            self.dump(f'    INTEGER, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
-        else:
-            self.dump(f'    INTEGER, OPTIONAL, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
+        if self.has_ierror:
+            if self.gen_f90 == True:
+                self.dump(f'    INTEGER, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
+            else:
+                self.dump(f'    INTEGER, OPTIONAL, INTENT(OUT) :: {consts.FORTRAN_ERROR_NAME}')
+        if self.result is not None:
+            self.dump(f'    {self.result.declare_result(self.f_name)}')
 
     def _print_fortran_subroutine(self):
-        """Output the Fortran subroutine line."""
-        sub_name = util.fortran_name(self.fn_name, bigcount=self.bigcount, gen_f90=self.gen_f90, needs_ts=self.needs_ts)
+        """Output the Fortran subroutine (or function) line."""
         params = [param.name for param in self.parameters]
-        params.append(consts.FORTRAN_ERROR_NAME)
-        lines = util.break_param_lines_fortran(f'subroutine {sub_name}(', params, ')')
+        if self.has_ierror:
+            params.append(consts.FORTRAN_ERROR_NAME)
+        lines = util.break_param_lines_fortran(f'{self.procedure_keyword} {self.f_name}(', params, ')')
         for line in lines:
             self.dump(line)
 
     def _print_fortran_subroutine_end(self):
-        """Output the Fortran end subroutine line."""
-        sub_name = util.fortran_name(self.fn_name, bigcount=self.bigcount, gen_f90=self.gen_f90, needs_ts=self.needs_ts)
-        self.dump(f'end subroutine {sub_name}')
+        """Output the Fortran end subroutine (or function) line."""
+        self.dump(f'end {self.procedure_keyword} {self.f_name}')
 
     def dump_lines(self, line_text):
         for line in line_text.split('\n'):
@@ -228,7 +263,8 @@ class FortranBinding:
         self._print_fortran_header()
 
         # Temporaries
-        self.dump(f'    INTEGER :: {consts.C_ERROR_TMP_NAME}')
+        if self.has_ierror:
+            self.dump(f'    INTEGER :: {consts.C_ERROR_TMP_NAME}')
         for param in self.parameters:
             self.dump_lines(param.declare_tmp())
 
@@ -243,18 +279,23 @@ class FortranBinding:
             self.dump_lines(param.pre_c_call())
 
         # Call into the C function
-        call_start = f'    call {self.c_func_name}('
-        params = [param.argument() for param in self.parameters]
-        params.append(consts.C_ERROR_TMP_NAME)
+        if self.result is None:
+            call_start = f'    call {self.c_func_name}('
+        else:
+            call_start = f'    {self.f_name} = {self.c_func_name}('
+        params = [arg for param in self.parameters for arg in param.cbinding_arguments()]
+        if self.has_ierror:
+            params.append(consts.C_ERROR_TMP_NAME)
         lines = util.break_param_lines_fortran(start=call_start, params=params, end=')')
         for line in lines:
             self.dump(line)
 
         # Convert error type
-        if self.gen_f90:
-            self.dump(f'    {consts.FORTRAN_ERROR_NAME} = {consts.C_ERROR_TMP_NAME}')
-        else:
-            self.dump(f'    if (present({consts.FORTRAN_ERROR_NAME})) {consts.FORTRAN_ERROR_NAME} = {consts.C_ERROR_TMP_NAME}')
+        if self.has_ierror:
+            if self.gen_f90:
+                self.dump(f'    {consts.FORTRAN_ERROR_NAME} = {consts.C_ERROR_TMP_NAME}')
+            else:
+                self.dump(f'    if (present({consts.FORTRAN_ERROR_NAME})) {consts.FORTRAN_ERROR_NAME} = {consts.C_ERROR_TMP_NAME}')
 
         for param in self.parameters:
             self.dump_lines(param.post())
@@ -266,19 +307,22 @@ class FortranBinding:
         if self.template is None:
             return
         parameters = [param.c_parameter() for param in self.parameters]
-        # Always append the integer error
-        parameters.append(f'MPI_Fint *{consts.C_ERROR_NAME}')
+        # Append the integer error, if the procedure has one
+        if self.has_ierror:
+            parameters.append(f'MPI_Fint *{consts.C_ERROR_NAME}')
         parameters = ', '.join(parameters)
         # Just put the signature here to silence `-Wmissing-prototypes`
         c_func = self.c_func_name
-        self.dump(f'void {c_func}({parameters});')
-        self.dump(f'void {c_func}({parameters})')
+        c_return_type = 'void' if self.result is None else self.result.c_return_type()
+        self.dump(f'{c_return_type} {c_func}({parameters});')
+        self.dump(f'{c_return_type} {c_func}({parameters})')
         count_type, disp_type, count_fint_type = ('MPI_Count', 'MPI_Aint', 'MPI_Count') if self.bigcount else ('int', 'int', 'MPI_Fint')
         self.template.print_body(c_func, out=self.out,
                                  replacements={'INNER_CALL': self.inner_call,
                                                'COUNT_TYPE': count_type,
                                                'COUNT_FINT_TYPE': count_fint_type,
                                                'DISP_TYPE': disp_type,
+                                               'BIGCOUNT_SUFFIX': '_c' if self.bigcount else '',
                                                'LOGICAL_TYPE': 'int'})
 
     def print_interface(self):
@@ -301,17 +345,25 @@ def print_profiling_rename_macros(templates, out, args):
     """
     gen_f90 = True if args.fort_std == 'f90' else False
     out.dump('#if OMPI_BUILD_MPI_PROFILING')
+    # The nbc and obc templates of a procedure share its generic name
+    done = set()
     for template in templates:
         has_buffers = util.prototype_has_buffers(template.prototype)
         needs_ts = has_buffers and args.generate_ts_suffix
-        names = {util.fortran_name(template.prototype.name, gen_f90=gen_f90, needs_ts=needs_ts)}
+        fn_name = template_fn_name(template)
+        names = set()
+        if template_has_regular(template):
+            names.add(util.fortran_name(fn_name, gen_f90=gen_f90, needs_ts=needs_ts))
         # Check for bigcount version
-        if util.prototype_has_bigcount(template.prototype):
-            names.add(util.fortran_name(template.prototype.name, gen_f90=gen_f90, bigcount=True, needs_ts=needs_ts))
-        interface_name = util.fortran_generic_interface_name(template.prototype.name)
+        if template_has_bigcount(template):
+            names.add(util.fortran_name(fn_name, gen_f90=gen_f90, bigcount=True, needs_ts=needs_ts))
+        interface_name = util.fortran_generic_interface_name(fn_name)
         names.add(interface_name)
-        for name in sorted(names):
+        if util.prototype_bigcount_is_separate(template.prototype):
+            names.add(util.fortran_generic_interface_name(fn_name, bigcount=True))
+        for name in sorted(names - done):
             out.dump(f'#define {name} P{name}')
+        done |= names
     out.dump('#endif /* OMPI_BUILD_MPI_PROFILING */')
 
 
@@ -324,8 +376,10 @@ def print_c_source_header(out):
     out.dump('#include "ompi/mpi/fortran/mpif-h/status-conversion.h"')
     out.dump('#include "ompi/mpi/fortran/base/constants.h"')
     out.dump('#include "ompi/mpi/fortran/base/fint_2_int.h"')
+    out.dump('#include "ompi/mpi/fortran/base/fortran_base_strings.h"')
     out.dump('#include "ompi/mpi/fortran/base/fortran_base_topo_neighbors.h"')
     out.dump('#include "ompi/request/request.h"')
+    out.dump('#include "ompi/request/grequest.h"')
     out.dump('#include "ompi/communicator/communicator.h"')
     out.dump('#include "ompi/win/win.h"')
     out.dump('#include "ompi/file/file.h"')
@@ -335,6 +389,7 @@ def print_c_source_header(out):
     out.dump('#include "ompi/mca/coll/base/coll_base_util.h"')
     out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/ts.h"')
     out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/bigcount.h"')
+    out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/datarep_f08.h"')
 
 
 def print_binding(prototype, lang, out, bigcount=False, template=None, needs_ts=False, gen_f90=False, param_names=None):
@@ -347,12 +402,48 @@ def print_binding(prototype, lang, out, bigcount=False, template=None, needs_ts=
         binding.print_c_source()
 
 
+# As for the C bindings, a procedure whose large count version differs
+# from the regular one in more than the kinds of its arguments (e.g.
+# MPI_Type_get_envelope, which has an extra num_large_counts argument) has
+# two templates: <name>.c.in_nbc ("no big count") for just the regular
+# version, and <name>_c.c.in_obc ("only big count") for just the large
+# count version.
+NBC_TEMPLATE_SUFFIX = '.c.in_nbc'
+OBC_TEMPLATE_SUFFIX = '.c.in_obc'
+
+
 def load_function_templates(prototype_files):
     """Load the templates from a file list."""
-    return [
-        SourceTemplate.load(fname, type_constructor=FortranType.construct)
-        for fname in prototype_files
-    ]
+    templates = []
+    for fname in prototype_files:
+        template = SourceTemplate.load(fname, type_constructor=FortranType.construct)
+        template.no_bigcount = fname.endswith(NBC_TEMPLATE_SUFFIX)
+        template.only_bigcount = fname.endswith(OBC_TEMPLATE_SUFFIX)
+        if template.only_bigcount and not template.prototype.name.endswith('_c'):
+            raise util.BindingError(f'{fname}: the procedure name of a {OBC_TEMPLATE_SUFFIX} '
+                                    'template must end in _c')
+        templates.append(template)
+    return templates
+
+
+def template_fn_name(template):
+    """Return the base name of the procedure, without the _c of an obc template."""
+    name = template.prototype.name
+    return name[:-len('_c')] if getattr(template, 'only_bigcount', False) else name
+
+
+def template_has_regular(template):
+    """Does the template give the regular version of the procedure?"""
+    return not getattr(template, 'only_bigcount', False)
+
+
+def template_has_bigcount(template):
+    """Does the template give the large count version of the procedure?"""
+    if getattr(template, 'only_bigcount', False):
+        return True
+    if getattr(template, 'no_bigcount', False):
+        return False
+    return util.prototype_has_bigcount(template.prototype)
 
 
 def generate_code(args, out):
@@ -387,12 +478,21 @@ def generate_code(args, out):
             continue
         out.dump()
         param_names = std_names.get('mpi_' + template.prototype.name.lower())
-        print_binding(template.prototype, args.lang, out, template=template, needs_ts=needs_ts,
-                      gen_f90=gen_f90, param_names=param_names)
-        if util.prototype_has_bigcount(template.prototype) and gen_f90 == False:
+        if template_has_regular(template):
+            print_binding(template.prototype, args.lang, out, template=template, needs_ts=needs_ts,
+                          gen_f90=gen_f90, param_names=param_names)
+        if template_has_bigcount(template) and gen_f90 == False:
             out.dump()
+            # The C wrapper is always built; it is only called if the
+            # Fortran procedure is.
+            guard = (args.lang == 'fortran' and
+                     util.prototype_bigcount_needs_distinct_kinds(template.prototype))
+            if guard:
+                out.dump(f'#if {util.DISTINCT_COUNT_ADDRESS_KINDS}')
             print_binding(template.prototype, args.lang, bigcount=True, out=out, template=template,
                           needs_ts=needs_ts, param_names=param_names)
+            if guard:
+                out.dump('#endif')
 
 
 def generate_interface(args, out):
@@ -403,8 +503,10 @@ def generate_interface(args, out):
     print_profiling_rename_macros(templates, out, args)
 
     if args.fort_std == 'f08' or args.fort_std == None:
+        print("I am setting gen_f90 to false")
         gen_f90 = False
     else:
+        print("I am setting gen_f90 to true")
         gen_f90 = True
 
     # The interface specifications are part of the user-visible use mpi(_f08)
@@ -412,17 +514,39 @@ def generate_interface(args, out):
     std_names = standard_parameter_names(args.pympistd_dir, use_f90=gen_f90)
 
     for template in templates:
-        ext_name = util.ext_api_func_name(template.prototype.name)
+        # use mpi has no large count versions
+        if gen_f90 and not template_has_regular(template):
+            continue
+        ext_name = util.ext_api_func_name(template_fn_name(template))
+        # The regular and large count versions of a procedure with nbc and
+        # obc templates are in two interface blocks for the same generic
+        # name, which Fortran allows.
         out.dump(f'interface {ext_name}')
         has_buffers = util.prototype_has_buffers(template.prototype)
         needs_ts = has_buffers and args.generate_ts_suffix
         param_names = std_names.get('mpi_' + template.prototype.name.lower())
-        binding = FortranBinding(template.prototype, template=template, needs_ts=needs_ts,
-                                 gen_f90=gen_f90, out=out, param_names=param_names)
-        binding.print_interface()
-        if util.prototype_has_bigcount(template.prototype) and gen_f90 == False:
-            out.dump()
+        if template_has_regular(template):
+            binding = FortranBinding(template.prototype, template=template, needs_ts=needs_ts,
+                                     gen_f90=gen_f90, out=out, param_names=param_names)
+            binding.print_interface()
+        if template_has_bigcount(template) and gen_f90 == False:
+            if util.prototype_bigcount_is_separate(template.prototype):
+                # The bigcount version cannot be told apart from the regular
+                # one, so it gets its own generic name, e.g. MPI_Op_create_c
+                out.dump(f'end interface {ext_name}')
+                ext_name = util.ext_api_func_name(template_fn_name(template), bigcount=True)
+                out.dump(f'interface {ext_name}')
+            elif template_has_regular(template):
+                out.dump()
+            # If the two versions differ only in INTEGER(KIND=MPI_ADDRESS_KIND)
+            # vs. INTEGER(KIND=MPI_COUNT_KIND), they cannot be told apart when
+            # the kinds are the same; the standard then omits the _c version.
+            guard = util.prototype_bigcount_needs_distinct_kinds(template.prototype)
+            if guard:
+                out.dump(f'#if {util.DISTINCT_COUNT_ADDRESS_KINDS}')
             binding_c = FortranBinding(template.prototype, out=out, template=template,
                                        needs_ts=needs_ts, bigcount=True, param_names=param_names)
             binding_c.print_interface()
+            if guard:
+                out.dump('#endif')
         out.dump(f'end interface {ext_name}')

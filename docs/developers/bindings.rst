@@ -234,10 +234,27 @@ For use mpi_f08 Layer
 1. **Create the template:** Add ``<function_name>.c.in`` in
    ``ompi/mpi/fortran/use-mpi-f08/``. This file:
 
-   * Contains a ``PROTOTYPE`` declaration (see existing files for syntax)
+   * Contains a ``PROTOTYPE`` declaration (see existing files for syntax).
+     The return type is ``VOID``, which gives the subroutine an ``ierror``
+     argument, or ``VOID_NO_IERROR`` for the few subroutines that the
+     standard defines without one (e.g., ``MPI_F_sync_reg``).  Any other
+     return type (e.g., ``AINT`` for ``MPI_Aint_add``) gives a function
+     that returns that type, without an ``ierror`` argument; the C
+     wrapper returns the value of the ``@INNER_CALL@``.  The type class
+     in ``fortran_type.py`` must then implement ``declare_result()`` and
+     ``c_return_type()``
    * Uses placeholders like ``@INNER_CALL@`` that the build system expands
    * Handles type conversions for Fortran 2008 types
    * Manages ``MPI_F08_STATUS_IGNORE`` and similar constants
+
+   One template normally gives both the regular and the large count
+   (``_c``) versions of a procedure.  If the large count version has
+   different arguments (e.g., the extra ``num_large_counts`` of
+   ``MPI_Type_get_envelope``), use two templates instead, as for the C
+   bindings: ``<function_name>.c.in_nbc`` ("no big count") gives only the
+   regular version, and ``<function_name>_c.c.in_obc`` ("only big
+   count"), whose ``PROTOTYPE`` name ends in ``_c``, gives only the large
+   count version.
 
 2. **Update prototype list:** Add the template filename to
    ``prototype_files`` in
