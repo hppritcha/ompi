@@ -187,8 +187,8 @@ api_f90_generated.F90: $(template_files) $(OMPI_BINDINGS_GENERATOR)
 	    fortran \
 	    $(gen_ts) \
         --pympistd-dir $(abs_top_srcdir)/3rd-party/pympistandard \
-	    --fort-std f90 \
 	    code \
+	    --fort-std f90 \
 	    --lang fortran \
 	    --prototype-files $(template_files)
 
