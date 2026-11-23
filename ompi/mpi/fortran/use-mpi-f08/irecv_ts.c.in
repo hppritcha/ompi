@@ -22,7 +22,7 @@
  * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
  */
 
-PROTOTYPE void irecv(BUFFER_OUT x, COUNT count, DATATYPE datatype,
+PROTOTYPE VOID irecv(BUFFER_OUT x, COUNT count, DATATYPE datatype,
                      RANK source, TAG tag, COMM comm,
                      REQUEST_OUT request)
 {

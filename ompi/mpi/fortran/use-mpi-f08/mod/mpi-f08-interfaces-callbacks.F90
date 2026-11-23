@@ -4,6 +4,8 @@
 !                         All rights reserved.
 ! Copyright (c) 2015-2018 Research Organization for Information Science
 !                         and Technology (RIST).  All rights reserved.
+! Copyright (c) 2026      Triad National Security, LLC. All rights
+!                         reserved.
 ! $COPYRIGHT$
 ! SPDX-License-Identifier: BSD-3-Clause-Open-MPI
 
@@ -18,6 +20,17 @@ OMPI_ABSTRACT INTERFACE
     IMPLICIT NONE
     TYPE(C_PTR), VALUE :: invec, inoutvec
     INTEGER :: len
+    TYPE(MPI_Datatype) :: datatype
+  END SUBROUTINE
+END INTERFACE
+
+OMPI_ABSTRACT INTERFACE
+  SUBROUTINE MPI_User_function_c(invec, inoutvec, len, datatype)
+    USE mpi_f08_types
+    USE, INTRINSIC :: ISO_C_BINDING, ONLY : C_PTR
+    IMPLICIT NONE
+    TYPE(C_PTR), VALUE :: invec, inoutvec
+    INTEGER(KIND=MPI_COUNT_KIND) :: len
     TYPE(MPI_Datatype) :: datatype
   END SUBROUTINE
 END INTERFACE
@@ -220,6 +233,21 @@ SUBROUTINE MPI_Datarep_conversion_function(userbuf, datatype, count, &
    INTEGER :: count, ierror
    INTEGER(KIND=MPI_OFFSET_KIND) :: position
    INTEGER(KIND=MPI_ADDRESS_KIND) :: extra_state
+END SUBROUTINE
+END INTERFACE
+
+OMPI_ABSTRACT INTERFACE
+SUBROUTINE MPI_Datarep_conversion_function_c(userbuf, datatype, count, &
+                                             filebuf, position, extra_state, ierror)
+   USE mpi_f08_types
+   USE, INTRINSIC :: ISO_C_BINDING, ONLY : C_PTR
+   IMPLICIT NONE
+   TYPE(C_PTR), VALUE :: userbuf, filebuf
+   TYPE(MPI_Datatype) :: datatype
+   INTEGER(KIND=MPI_COUNT_KIND) :: count
+   INTEGER(KIND=MPI_OFFSET_KIND) :: position
+   INTEGER(KIND=MPI_ADDRESS_KIND) :: extra_state
+   INTEGER :: ierror
 END SUBROUTINE
 END INTERFACE
 

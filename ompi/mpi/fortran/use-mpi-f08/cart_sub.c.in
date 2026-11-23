@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2019 IBM Corporation. All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+ */
+
+PROTOTYPE VOID cart_sub(COMM comm, LOGICAL_PTR_ARRAY remain_dims, COMM_OUT newcomm)
+{
+    int c_ierr;
+    MPI_Comm c_comm, c_newcomm;
+    /*
+     * remain_dims is the Fortran LOGICAL array.  When sizeof(LOGICAL) !=
+     * sizeof(int) or the Fortran TRUE value is not 1, it has to be
+     * converted, and for that we need its length: the number of
+     * dimensions of the communicator's Cartesian topology.
+     */
+#if OMPI_FORTRAN_MUST_CONVERT_LOGICAL_2_INT == 1
+    int ndims = 0, topo;
+#endif
+    OMPI_LOGICAL_ARRAY_NAME_DECL(remain_dims);
+
+    c_comm = PMPI_Comm_f2c(*comm);
+
+#if OMPI_FORTRAN_MUST_CONVERT_LOGICAL_2_INT == 1
+    /* If comm has no Cartesian topology, convert nothing and leave it to
+     * MPI_Cart_sub to report the error. */
+    c_ierr = PMPI_Topo_test(c_comm, &topo);
+    if (MPI_SUCCESS == c_ierr && MPI_CART == topo) {
+        c_ierr = PMPI_Cartdim_get(c_comm, &ndims);
+    }
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+#endif
+    OMPI_ARRAY_LOGICAL_2_INT(remain_dims, ndims);
+
+    c_ierr = @INNER_CALL@(c_comm,
+                          OMPI_LOGICAL_ARRAY_NAME_CONVERT(remain_dims),
+                          &c_newcomm);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (MPI_SUCCESS == c_ierr) {
+        *newcomm = PMPI_Comm_c2f(c_newcomm);
+    }
+
+    OMPI_ARRAY_LOGICAL_2_INT_CLEANUP(remain_dims);
+}

@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID win_create_dynamic(INFO info, COMM comm, WIN_OUT win)
+{
+    int c_ierr;
+    MPI_Win c_win;
+    MPI_Info c_info;
+    MPI_Comm c_comm;
+
+    c_comm = PMPI_Comm_f2c(*comm);
+    c_info = PMPI_Info_f2c(*info);
+
+    c_ierr = @INNER_CALL@(c_info, c_comm, &c_win);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (MPI_SUCCESS == c_ierr) {
+       *win = PMPI_Win_c2f(c_win);
+    }
+}

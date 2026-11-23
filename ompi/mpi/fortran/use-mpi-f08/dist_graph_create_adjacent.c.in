@@ -1,0 +1,84 @@
+/* -*- Mode: C; c-basic-offset:4 ; indent-tabs-mode:nil -*- */
+/*
+ * Copyright (c) 2011-2013 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2011-2013 Inria.  All rights reserved.
+ * Copyright (c) 2011-2013 Université Bordeaux 1
+ * Copyright (c) 2013-2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2014      Los Alamos National Security, LLC. All rights
+ *                         reserved.
+ * Copyright (c) 2015-2019 Research Organization for Information Science
+ *                         and Technology (RIST).  All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+
+PROTOTYPE VOID dist_graph_create_adjacent(COMM comm_old, 
+                                          INT indegree,
+                                          INT_ARRAY sources:indegree, 
+                                          INT_ARRAY sourceweights,
+                                          INT outdegree,
+                                          INT_ARRAY destinations:outdegree, 
+                                          INT_ARRAY  destweights,
+                                          INFO info,
+                                          LOGICAL reorder, 
+                                          COMM_OUT comm_graph)
+{
+    MPI_Info c_info;
+    MPI_Comm c_comm_old, c_comm_graph;
+    int c_ierr;
+    int *tmp_sources = NULL;
+    int *tmp_sourceweights = NULL;
+    int *tmp_destinations = NULL;
+    int *tmp_destweights = NULL;
+
+    c_info = PMPI_Info_f2c(*info);
+    c_comm_old = PMPI_Comm_f2c(*comm_old);
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sources, tmp_sources, *indegree);
+    if (OMPI_IS_FORTRAN_UNWEIGHTED(sourceweights)) {
+        tmp_sourceweights = MPI_UNWEIGHTED;
+    } else if (OMPI_IS_FORTRAN_WEIGHTS_EMPTY(sourceweights)) {
+        tmp_sourceweights = MPI_WEIGHTS_EMPTY;
+    } else {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sourceweights, tmp_sourceweights, *indegree);
+    }
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(destinations, tmp_destinations, *outdegree);
+    if (OMPI_IS_FORTRAN_UNWEIGHTED(destweights)) {
+        tmp_destweights = MPI_UNWEIGHTED;
+    } else if (OMPI_IS_FORTRAN_WEIGHTS_EMPTY(destweights)) {
+        tmp_destweights = MPI_WEIGHTS_EMPTY;
+    } else {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(destweights, tmp_destweights, *outdegree);
+    }
+
+    c_ierr = @INNER_CALL@(c_comm_old, OMPI_FINT_2_INT(*indegree),
+                          tmp_sources,
+                          tmp_sourceweights,
+                          OMPI_FINT_2_INT(*outdegree),
+                          tmp_destinations,
+                          tmp_destweights,
+                          c_info,
+                          *reorder,
+                          &c_comm_graph);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+    if (OMPI_SUCCESS == c_ierr) {
+        *comm_graph = PMPI_Comm_c2f(c_comm_graph);
+    }
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(sources, tmp_sources);
+    if( MPI_UNWEIGHTED != tmp_sourceweights && MPI_WEIGHTS_EMPTY != tmp_sourceweights ) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(sourceweights, tmp_sourceweights);
+    }
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(destinations, tmp_destinations);
+    if( MPI_UNWEIGHTED != tmp_destweights && MPI_WEIGHTS_EMPTY != tmp_destweights ) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(destweights, tmp_destweights);
+    }
+}

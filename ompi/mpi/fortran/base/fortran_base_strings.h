@@ -10,6 +10,8 @@
  * Copyright (c) 2004-2005 The Regents of the University of California.
  *                         All rights reserved.
  * Copyright (c) 2010-2018 Cisco Systems, Inc.  All rights reserved
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -127,6 +129,19 @@ BEGIN_C_DECLS
      */
     OMPI_DECLSPEC int ompi_fortran_multiple_argvs_f2c(int count, char *array, int len,
                                                       char ****argv);
+
+    /**
+     * Free an argv-style array returned by ompi_fortran_argv_blank_f2c()
+     * or ompi_fortran_argv_count_f2c(), or one element of the array
+     * returned by ompi_fortran_multiple_argvs_f2c().
+     *
+     * @param argv The array to free (may be NULL)
+     *
+     * This lets callers that must not depend on OPAL directly -- e.g.
+     * the generated mpi_f08 bindings -- free these arrays without
+     * calling opal_argv_free() themselves.
+     */
+    OMPI_DECLSPEC void ompi_fortran_argv_free(char **argv);
 
 END_C_DECLS
 

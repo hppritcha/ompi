@@ -13,7 +13,7 @@
  * Copyright (c) 2012      University of Oregon.  All rights reserved.
  * Copyright (c) 2015-2019 Research Organization for Information Science
  *                         and Technology (RIST).  All rights reserved.
- * Copyright (c) 2024      Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2026 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -23,7 +23,12 @@
  * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
  */
 
-PROTOTYPE VOID f_sync_reg(BUFFER x)
+/*
+ * The standard defines MPI_F_sync_reg without an ierror argument.  The
+ * buffer is ASYNCHRONOUS and has no INTENT, so the compiler must assume
+ * that the call may have read or modified it.
+ */
+PROTOTYPE VOID_NO_IERROR f_sync_reg(BUFFER_ASYNC_OUT x)
 {
     /* This is a noop in C to disable potential Fortran optimizations. */
     return;

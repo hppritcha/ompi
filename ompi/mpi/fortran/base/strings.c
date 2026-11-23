@@ -13,6 +13,8 @@
  * Copyright (c) 2017      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2025      Jeffrey M. Squyres.  All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -94,23 +96,21 @@ int ompi_fortran_string_f2c(char *fstr, int len, char **cstr)
  */
 int ompi_fortran_string_c2f(const char *cstr, char *fstr, int len)
 {
-    int i;
+    size_t clen;
 
-    opal_string_copy(fstr, cstr, len);
-
-    // If len < len(cstr), then opal_string_copy() will have copied a
-    // trailing \0 into the last position in fstr.  This is not what
-    // Fortran wants; overwrite that \0 with the actual last character
-    // that will fit into fstr.
-    if (len <= (int) strlen(cstr)) {
-        fstr[len - 1] = cstr[len - 1];
-    } else {
-        // Otherwise, pad the end of the resulting Fortran string with
-        // spaces.
-        for (i = (int) strlen(cstr); i < len; ++i) {
-            fstr[i] = ' ';
-        }
+    // A zero-length Fortran string has no room for anything.
+    if (len <= 0) {
+        return OMPI_SUCCESS;
     }
+
+    // Copy as much of cstr as fits (Fortran strings are not
+    // \0-terminated), then pad the rest of fstr with spaces.
+    clen = strlen(cstr);
+    if (clen > (size_t) len) {
+        clen = (size_t) len;
+    }
+    memcpy(fstr, cstr, clen);
+    memset(fstr + clen, ' ', (size_t) len - clen);
 
     return OMPI_SUCCESS;
 }
@@ -234,4 +234,14 @@ int ompi_fortran_multiple_argvs_f2c(int num_argv_arrays, char *array,
     }
     *argv = argv_array;
     return OMPI_SUCCESS;
+}
+
+
+/*
+ * Free an argv array returned by the functions above, so that callers
+ * do not need to call opal_argv_free() themselves.
+ */
+void ompi_fortran_argv_free(char **argv)
+{
+    opal_argv_free(argv);
 }

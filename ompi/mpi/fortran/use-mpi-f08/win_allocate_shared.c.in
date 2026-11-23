@@ -15,6 +15,8 @@
  * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
  *                         reserved.
  * Copyright (c) 2026      Jeffrey M. Squyres.  All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -39,6 +41,9 @@ PROTOTYPE VOID win_allocate_shared(AINT size, DISP disp_unit,
     c_ierr = @INNER_CALL@(*size, c_disp_unit,
                                      c_info, c_comm,
                                      baseptr, &c_win);
-    *win = PMPI_Win_c2f(c_win);
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (MPI_SUCCESS == c_ierr) {
+        *win = PMPI_Win_c2f(c_win);
+    }
 }

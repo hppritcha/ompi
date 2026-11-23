@@ -1,0 +1,75 @@
+/*
+ * Copyright (c) 2011-2013 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2011-2013 Inria.  All rights reserved.
+ * Copyright (c) 2011-2013 Université Bordeaux 1
+ * Copyright (c) 2015-2019 Research Organization for Information Science
+ *                         and Technology (RIST).  All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ */
+
+PROTOTYPE VOID dist_graph_neighbors(COMM comm, INT maxindegree,
+                                    INT_ARRAY_OUT sources:maxindegree, 
+                                    INT_ARRAY_OUT sourceweights,
+                                    INT maxoutdegree,
+                                    INT_ARRAY_OUT destinations:maxoutdegree,
+                                    INT_ARRAY_OUT destweights)
+{
+    MPI_Comm c_comm;
+    int c_maxindegree;
+    int c_maxoutdegree;
+    int *tmp_sources=NULL;
+    int *tmp_sourceweights=NULL;
+    int *tmp_destinations=NULL;
+    int *tmp_destweights=NULL;
+    int c_ierr;
+
+    c_comm = PMPI_Comm_f2c(*comm);
+
+    c_maxindegree = OMPI_FINT_2_INT(*maxindegree);
+    c_maxoutdegree = OMPI_FINT_2_INT(*maxoutdegree);
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sources, tmp_sources, c_maxindegree);
+    if( !OMPI_IS_FORTRAN_UNWEIGHTED(sourceweights) ) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sourceweights, tmp_sourceweights, c_maxindegree);
+    }
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(destinations, tmp_destinations, c_maxoutdegree);
+    if( !OMPI_IS_FORTRAN_UNWEIGHTED(destweights) ) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(destweights, tmp_destweights, c_maxoutdegree);
+    }
+
+    c_ierr = @INNER_CALL@(c_comm, 
+                          c_maxindegree,
+                          tmp_sources,
+                          OMPI_IS_FORTRAN_UNWEIGHTED(sourceweights) ? MPI_UNWEIGHTED : tmp_sourceweights,
+                          c_maxoutdegree, 
+                          tmp_destinations,
+                          OMPI_IS_FORTRAN_UNWEIGHTED(destweights) ? MPI_UNWEIGHTED : tmp_destweights);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (OMPI_SUCCESS == c_ierr) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(sources, tmp_sources, c_maxindegree);
+        if( !OMPI_IS_FORTRAN_UNWEIGHTED(sourceweights) ) {
+            OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(sourceweights, tmp_sourceweights, c_maxindegree);
+        }
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(destinations, tmp_destinations, c_maxoutdegree);
+        if( !OMPI_IS_FORTRAN_UNWEIGHTED(destweights) ) {
+            OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(destweights, tmp_destweights, c_maxoutdegree);
+        }
+    }
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(sources, tmp_sources);
+    if( !OMPI_IS_FORTRAN_UNWEIGHTED(sourceweights) ) {
+       OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(sourceweights, tmp_sourceweights);
+    }
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(destinations, tmp_destinations);
+    if( !OMPI_IS_FORTRAN_UNWEIGHTED(destweights) ) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(destweights, tmp_destweights);
+    }
+}
+

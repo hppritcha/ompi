@@ -12,6 +12,8 @@
  * Copyright (c) 2006      Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2018      Research Organization for Information Science
  *                         and Technology (RIST).  All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -104,6 +106,11 @@ struct ompi_grequest_t {
     ompi_grequestx_poll_fct_t greq_poll;
 #endif
     void *greq_state;
+    /* Copy of the extra_state of a request started from mpi_f08.  Fortran
+       callbacks take extra_state by reference, so greq_state points
+       here rather than at the caller's variable, which need not outlive
+       the call to MPI_Grequest_start. */
+    MPI_Aint greq_fortran_state;
     bool greq_funcs_are_c;
     bool greq_user_freed;
 };

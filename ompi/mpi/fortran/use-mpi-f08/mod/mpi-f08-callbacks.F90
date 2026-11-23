@@ -1,6 +1,8 @@
 ! -*- f90 -*-
 ! Copyright (c) 2016      Research Organization for Information Science
 !                         and Technology (RIST). All rights reserved.
+! Copyright (c) 2026      Triad National Security, LLC. All rights
+!                         reserved.
 ! $COPYRIGHT$
 ! SPDX-License-Identifier: BSD-3-Clause-Open-MPI
 
@@ -136,6 +138,21 @@ subroutine MPI_CONVERSION_FN_NULL(userbuf, datatype, count, &
     integer :: count, ierror
     integer(kind=MPI_OFFSET_KIND) :: position
     integer(kind=MPI_ADDRESS_KIND) :: extra_state
+
+    ! Do nothing
+end subroutine
+
+subroutine MPI_CONVERSION_FN_NULL_C(userbuf, datatype, count, &
+       filebuf, position, extra_state, ierror)
+    use, intrinsic :: iso_c_binding, only : c_ptr
+    use mpi_f08_types
+    implicit none
+    type(c_ptr), value :: userbuf, filebuf
+    type(MPI_Datatype) :: datatype
+    integer(kind=MPI_COUNT_KIND) :: count
+    integer(kind=MPI_OFFSET_KIND) :: position
+    integer(kind=MPI_ADDRESS_KIND) :: extra_state
+    integer :: ierror
 
     ! Do nothing
 end subroutine

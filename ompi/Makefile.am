@@ -91,7 +91,6 @@ SUBDIRS = \
         mpi/fortran/mpiext-use-mpi \
         mpi/fortran/use-mpi-f08/base \
         mpi/fortran/use-mpi-f08/mod \
-        mpi/fortran/use-mpi-f08/bindings \
         $(OMPI_MPIEXT_USEMPIF08_DIRS) \
         mpi/fortran/use-mpi-f08 \
         mpi/fortran/mpiext-use-mpi-f08 \
@@ -124,7 +123,6 @@ DIST_SUBDIRS = \
         mpi/fortran/use-mpi-f08 \
         mpi/fortran/use-mpi-f08/base \
         mpi/fortran/use-mpi-f08/mod \
-        mpi/fortran/use-mpi-f08/bindings \
         mpi/fortran/mpiext-use-mpi-f08 \
         test \
         $(OMPI_MPIEXT_ALL_SUBDIRS) \

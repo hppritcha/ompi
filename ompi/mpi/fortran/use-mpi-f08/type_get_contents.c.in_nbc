@@ -1,0 +1,86 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2020 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015      Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+ */
+
+/*
+ * The large count version has extra max_large_counts and
+ * array_of_large_counts arguments, so it has its own template,
+ * type_get_contents_c.c.in_obc.
+ *
+ * MPI_Type_get_contents only sets as many elements of the arrays as the
+ * datatype has, which may be fewer than the max_* arguments.  So the
+ * temporary C datatypes are set to MPI_DATATYPE_NULL first, and only the
+ * ones that MPI_Type_get_contents set are copied out; the integers are
+ * copied in and out whole if they need converting.
+ */
+PROTOTYPE VOID type_get_contents(DATATYPE datatype,
+                                 COUNT max_integers,
+                                 COUNT max_addresses,
+                                 COUNT max_datatypes,
+                                 INT_ARRAY_OUT array_of_integers:max_integers,
+                                 AINT_ARRAY_OUT array_of_addresses:max_addresses,
+                                 DATATYPE_ARRAY_OUT array_of_datatypes:max_datatypes)
+{
+    int c_ierr;
+    MPI_Datatype c_type = PMPI_Type_f2c(*datatype);
+    @COUNT_TYPE@ c_max_integers = (@COUNT_TYPE@) *max_integers;
+    @COUNT_TYPE@ c_max_addresses = (@COUNT_TYPE@) *max_addresses;
+    @COUNT_TYPE@ c_max_datatypes = (@COUNT_TYPE@) *max_datatypes;
+    int *c_integers = NULL;
+    MPI_Datatype *c_datatypes = NULL;
+
+    if (c_max_datatypes > 0) {
+        c_datatypes = (MPI_Datatype *) malloc(c_max_datatypes * sizeof(MPI_Datatype));
+        if (NULL == c_datatypes) {
+            c_ierr = OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_NO_MEM, FUNC_NAME);
+            if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+            return;
+        }
+        for (@COUNT_TYPE@ i = 0; i < c_max_datatypes; ++i) {
+            c_datatypes[i] = MPI_DATATYPE_NULL;
+        }
+    }
+    if (c_max_integers > 0) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(array_of_integers, c_integers, c_max_integers);
+    }
+
+    c_ierr = @INNER_CALL@(c_type,
+                          c_max_integers,
+                          c_max_addresses,
+                          c_max_datatypes,
+                          c_integers,
+                          array_of_addresses,
+                          c_datatypes);
+    if (MPI_SUCCESS == c_ierr) {
+        OMPI_FORTRAN_BIGCOUNT_ARRAY_COPYOUT(array_of_integers, c_integers, c_max_integers);
+        for (@COUNT_TYPE@ i = 0; i < c_max_datatypes; ++i) {
+            if (MPI_DATATYPE_NULL != c_datatypes[i]) {
+                array_of_datatypes[i] = PMPI_Type_c2f(c_datatypes[i]);
+            }
+        }
+    }
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(array_of_integers, c_integers);
+    free(c_datatypes);
+}

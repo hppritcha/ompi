@@ -12,6 +12,8 @@
  * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
  * $COPYRIGHT$
  *
  * Additional copyrights may follow
@@ -32,6 +34,7 @@ PROTOTYPE VOID request_get_status_any(INT count, REQUEST_ARRAY array_of_requests
     /* Shortcut to avoid malloc(0) if *count==0.  We're intentionally
        skipping other parameter error checks. */
     if (OPAL_UNLIKELY(0 == OMPI_FINT_2_INT(*count))) {
+        *flag = OMPI_FORTRAN_VALUE_TRUE;
         *indx = OMPI_INT_2_FINT(MPI_UNDEFINED);
         PMPI_Status_c2f(&ompi_status_empty, status);
         *ierr = OMPI_INT_2_FINT(MPI_SUCCESS);
@@ -56,20 +59,18 @@ PROTOTYPE VOID request_get_status_any(INT count, REQUEST_ARRAY array_of_requests
                           &c_status);
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
+    /* The requests are not freed, so they are left alone, and the
+       status is only set if flag is true. */
     if (MPI_SUCCESS == c_ierr) {
-
-        *indx = OMPI_INT_2_FINT(c_indx);
         *flag = OMPI_INT_2_FINT(c_flag);
 
         /* Increment index by one for fortran conventions */
-
-        OMPI_SINGLE_INT_2_FINT(indx);
-        if (MPI_UNDEFINED != *(OMPI_SINGLE_NAME_CONVERT(indx))) {
-            array_of_requests[OMPI_INT_2_FINT(*indx)] =
-                c_req[OMPI_INT_2_FINT(*indx)]->req_f_to_c_index;
-            ++(*indx);
+        if (MPI_UNDEFINED == c_indx) {
+            *indx = OMPI_INT_2_FINT(MPI_UNDEFINED);
+        } else {
+            *indx = OMPI_INT_2_FINT(c_indx + 1);
         }
-        if (!OMPI_IS_FORTRAN_STATUS_IGNORE(status)) {
+        if (c_flag && !OMPI_IS_FORTRAN_STATUS_IGNORE(status)) {
             PMPI_Status_c2f(&c_status, status);
         }
     }

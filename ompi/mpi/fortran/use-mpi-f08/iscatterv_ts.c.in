@@ -13,7 +13,7 @@
  * Copyright (c) 2015-2019 Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
  * Copyright (c) 2018      FUJITSU LIMITED.  All rights reserved.
- * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2026 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -42,7 +42,7 @@ PROTOTYPE VOID iscatterv(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
 
     if (OMPI_COMM_IS_INTER(c_comm)) {
         if (MPI_ROOT == c_root) {
-            int size = ompi_comm_size(c_comm);
+            int size = ompi_comm_remote_size(c_comm);
             c_sendtype = PMPI_Type_f2c(*sendtype);
             OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);
             if (MPI_SUCCESS != c_ierr) {
@@ -65,14 +65,14 @@ PROTOTYPE VOID iscatterv(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
         if (ompi_comm_rank(c_comm) == c_root) {
             int size = ompi_comm_size(c_comm);
             c_sendtype = PMPI_Type_f2c(*sendtype);
-            OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sendcounts, tmp_sendcounts, size);
-            OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(displs, tmp_displs, size);
             OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);
             if (MPI_SUCCESS != c_ierr) {
                 if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
                 OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
                 return;
             }
+            OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(sendcounts, tmp_sendcounts, size);
+            OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(displs, tmp_displs, size);
         }
         if (OMPI_IS_FORTRAN_IN_PLACE(recvbuf)) {
             recvbuf = MPI_IN_PLACE;
@@ -82,6 +82,8 @@ PROTOTYPE VOID iscatterv(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
             if (MPI_SUCCESS != c_ierr) {
                 if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
                 OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
+                OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(sendcounts, tmp_sendcounts);
+                OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(displs, tmp_displs);
                 return;
             }
         }

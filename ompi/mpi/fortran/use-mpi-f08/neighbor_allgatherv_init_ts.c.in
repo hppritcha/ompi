@@ -15,7 +15,7 @@
  *                         reserved.
  * Copyright (c) 2015-2019 Research Organization for Information Science
  *                         and Technology (RIST).  All rights reserved.
- * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2026 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -37,7 +37,7 @@ PROTOTYPE VOID neighbor_allgatherv_init(BUFFER x1, COUNT sendcount, DATATYPE sen
     MPI_Datatype c_recvtype = PMPI_Type_f2c(*recvtype);
     MPI_Request c_request;
     MPI_Info c_info;
-    int size, c_ierr, idx=0;
+    int indegree, outdegree, c_ierr, idx=0;
     @COUNT_TYPE@ *tmp_recvcounts = NULL;
     @DISP_TYPE@ *tmp_displs = NULL;
 
@@ -49,6 +49,12 @@ PROTOTYPE VOID neighbor_allgatherv_init(BUFFER x1, COUNT sendcount, DATATYPE sen
         OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME)
         return;
     }
+    c_ierr = ompi_fortran_neighbor_count(c_comm, &indegree, &outdegree);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
+        return;
+    }
     OMPI_CFI_2_C(x1, c_sendcount, c_sendtype, c_senddatatype, c_ierr);
     if (MPI_SUCCESS != c_ierr) {
         if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
@@ -56,9 +62,8 @@ PROTOTYPE VOID neighbor_allgatherv_init(BUFFER x1, COUNT sendcount, DATATYPE sen
         return;
     }
 
-    PMPI_Comm_size(c_comm, &size);
-    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(recvcounts, tmp_recvcounts, size);
-    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(displs, tmp_displs, size);
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(recvcounts, tmp_recvcounts, indegree);
+    OMPI_FORTRAN_BIGCOUNT_ARRAY_SET(displs, tmp_displs, indegree);
 
     sendbuf = (char *) OMPI_F2C_IN_PLACE(sendbuf);
     sendbuf = (char *) OMPI_F2C_BOTTOM(sendbuf);

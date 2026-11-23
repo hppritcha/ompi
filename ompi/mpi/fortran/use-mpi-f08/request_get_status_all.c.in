@@ -12,7 +12,7 @@
  * Copyright (c) 2011-2012 Cisco Systems, Inc.  All rights reserved.
  * Copyright (c) 2015      Research Organization for Information Science
  *                         and Technology (RIST). All rights reserved.
- * Copyright (c) 2024-2025 Triad National Security, LLC. All rights
+ * Copyright (c) 2024-2026 Triad National Security, LLC. All rights
  *                         reserved.
  * $COPYRIGHT$
  *
@@ -32,6 +32,7 @@ PROTOTYPE VOID request_get_status_all(INT count, REQUEST_ARRAY array_of_requests
     /* Shortcut to avoid malloc(0) if *count==0.  We're intentionally
        skipping other parameter error checks. */
     if (OPAL_UNLIKELY(0 == OMPI_FINT_2_INT(*count))) {
+        *flag = OMPI_FORTRAN_VALUE_TRUE;
         *ierr = OMPI_INT_2_FINT(MPI_SUCCESS);
         return;
     }
@@ -54,12 +55,15 @@ PROTOTYPE VOID request_get_status_all(INT count, REQUEST_ARRAY array_of_requests
     c_ierr = @INNER_CALL@(OMPI_FINT_2_INT(*count), c_req, &c_flag, c_status);
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
+    /* The statuses are only set if all the operations have completed.
+       The requests are not freed, so they are left alone. */
     if (MPI_SUCCESS == c_ierr) {
         *flag = OMPI_INT_2_FINT(c_flag);
+    }
+    if (MPI_SUCCESS == c_ierr && c_flag &&
+        !OMPI_IS_FORTRAN_STATUSES_IGNORE(array_of_statuses)) {
         for (i = 0; i < OMPI_FINT_2_INT(*count); ++i) {
-            array_of_requests[i] = c_req[i]->req_f_to_c_index;
-            if (!OMPI_IS_FORTRAN_STATUSES_IGNORE(array_of_statuses) &&
-                !OMPI_IS_FORTRAN_STATUS_IGNORE(&array_of_statuses[i])) {
+            if (!OMPI_IS_FORTRAN_STATUS_IGNORE(&array_of_statuses[i])) {
                 PMPI_Status_c2f( &c_status[i], &array_of_statuses[i * (sizeof(MPI_Status) / sizeof(int))]);
             }
         }

@@ -36,10 +36,9 @@ noinst_LTLIBRARIES = libusempif08_ccode.la
 libusempif08_ccode_la_SOURCES = \
         ts.h \
         bigcount.h \
-        api_f08_generated.c \
-	ompi_type_get_extent_f_c.c \
-	ompi_type_get_envelope_f_c.c \
-        ompi_type_get_contents_f_c.c
+        datarep_f08.h \
+        datarep_f08.c \
+        api_f08_generated.c
 
 if OMPI_FORTRAN_HAVE_TS
 libusempif08_ccode_la_SOURCES += \

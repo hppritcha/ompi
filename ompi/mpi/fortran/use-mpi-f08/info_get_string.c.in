@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2020 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2006-2012 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015-2017 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+ */
+
+PROTOTYPE VOID info_get_string(INFO info, CHAR_ARRAY key, INT_INOUT buflen,
+                               CHAR_ARRAY_OUT value, LOGICAL_OUT flag)
+{
+    int c_ierr, c_flag, c_buflen;
+    MPI_Info c_info = PMPI_Info_f2c(*info);
+    char *c_value = NULL;
+
+    /* In Fortran, buflen is the number of characters available in
+       value, with no space needed for a '\0'.  Never write beyond the
+       actual Fortran string, whatever buflen claims. */
+    c_buflen = OMPI_FINT_2_INT(*buflen);
+    if (c_buflen < 0) {
+        c_ierr = OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG, FUNC_NAME);
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+    if (c_buflen > value_len) {
+        c_buflen = value_len;
+    }
+    if (c_buflen > 0) {
+        c_value = (char *) malloc(c_buflen + 1);
+        if (NULL == c_value) {
+            c_ierr = OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_NO_MEM, FUNC_NAME);
+            if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+            return;
+        }
+        /* The C buflen includes the '\0' */
+        c_buflen += 1;
+    }
+
+    c_ierr = @INNER_CALL@(c_info, key, &c_buflen, c_value, &c_flag);
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    if (MPI_SUCCESS == c_ierr) {
+        if (c_flag) {
+            if (NULL != c_value) {
+                ompi_fortran_string_c2f(c_value, value, value_len);
+            }
+            /* C reports the required size including the '\0' */
+            *buflen = OMPI_INT_2_FINT(c_buflen - 1);
+        }
+        *flag = OMPI_INT_2_FINT(c_flag);
+    }
+    free(c_value);
+}

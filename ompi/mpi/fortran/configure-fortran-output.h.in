@@ -5,6 +5,8 @@
 !                         All rights reserved.
 ! Copyright (c) 2017-2020 Research Organization for Information Science
 !                         and Technology (RIST).  All rights reserved.
+! Copyright (c) 2026      Triad National Security, LLC. All rights
+!                         reserved.
 !
 ! $COPYRIGHT$
 !
@@ -49,6 +51,11 @@
 #define OMPI_F08_IGNORE_TKR_TYPE @OMPI_F08_IGNORE_TKR_TYPE@
 
 #define OMPI_FORTRAN_BUILD_SIZEOF @OMPI_FORTRAN_BUILD_SIZEOF@
+
+! The values of MPI_ADDRESS_KIND and MPI_COUNT_KIND
+#define OMPI_MPI_ADDRESS_KIND @OMPI_MPI_ADDRESS_KIND@
+#define OMPI_MPI_COUNT_KIND @OMPI_MPI_COUNT_KIND@
+
 ! Integers
 
 #define OMPI_HAVE_FORTRAN_INTEGER1 @OMPI_HAVE_FORTRAN_INTEGER1@

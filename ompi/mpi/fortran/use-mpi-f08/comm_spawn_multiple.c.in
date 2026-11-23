@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2004-2007 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2010-2018 Cisco Systems, Inc.  All rights reserved
+ * Copyright (c) 2015-2019 Research Organization for Information Science
+ *                         and Technology (RIST).  All rights reserved.
+ * Copyright (c) 2016      Los Alamos National Security, LLC. All rights
+ *                         reserved.
+ * Copyright (c) 2023      Jeffrey M. Squyres.  All rights reserved.
+ * Copyright (c) 2026      NVIDIA Corporation.  All rights reserved.
+ * Copyright (c) 2026      Triad National Security, LLC. All rights
+ *                         reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+ */
+
+PROTOTYPE VOID comm_spawn_multiple(INT count,
+                                   STRING_ARRAY array_of_commands:count,
+                                   STRING_ARRAY_2D array_of_argv:count,
+                                   INT_ARRAY array_of_maxprocs:count,
+                                   INFO_ARRAY array_of_info:count,
+                                   INT root, COMM comm, COMM_OUT intercomm,
+                                   ERRCODES_ARRAY array_of_errcodes)
+{
+    MPI_Comm c_comm, c_intercomm;
+    MPI_Info *c_info = NULL;
+    int c_count, c_ierr, i;
+    /* Only read when MPI_Fint and int differ in size */
+    int __opal_attribute_unused__ maxprocs;
+    int *c_errs;
+    char **c_commands = NULL;
+    char ***c_argvs = MPI_ARGVS_NULL;
+    OMPI_ARRAY_NAME_DECL(array_of_maxprocs);
+    OMPI_ARRAY_NAME_DECL(array_of_errcodes);
+
+    c_comm = PMPI_Comm_f2c(*comm);
+    c_count = OMPI_FINT_2_INT(*count);
+
+    OMPI_ARRAY_FINT_2_INT(array_of_maxprocs, c_count);
+
+    /* Convert the commands, argvs, and infos.  count and these arrays
+       are only significant at the root, so count may be zero elsewhere. */
+
+    c_ierr = MPI_SUCCESS;
+    if (OMPI_SUCCESS != ompi_fortran_argv_count_f2c(array_of_commands, c_count,
+                                                    array_of_commands_len,
+                                                    array_of_commands_len,
+                                                    &c_commands)) {
+        c_ierr = MPI_ERR_NO_MEM;
+    }
+
+    /* It's allowed to have no argv */
+
+    if (MPI_SUCCESS == c_ierr && !OMPI_IS_FORTRAN_ARGVS_NULL(array_of_argv) &&
+        OMPI_SUCCESS != ompi_fortran_multiple_argvs_f2c(c_count, array_of_argv,
+                                                        array_of_argv_len,
+                                                        &c_argvs)) {
+        c_ierr = MPI_ERR_NO_MEM;
+    }
+
+    if (MPI_SUCCESS == c_ierr && c_count > 0) {
+        c_info = (MPI_Info *) malloc(c_count * sizeof(MPI_Info));
+        if (NULL == c_info) {
+            c_ierr = MPI_ERR_NO_MEM;
+        } else {
+            for (i = 0; i < c_count; ++i) {
+                c_info[i] = PMPI_Info_f2c(array_of_info[i]);
+            }
+        }
+    }
+
+    if (MPI_SUCCESS == c_ierr) {
+        /* It's allowed to ignore the errcodes */
+
+        maxprocs = 0;
+        if (OMPI_IS_FORTRAN_ERRCODES_IGNORE(array_of_errcodes)) {
+            c_errs = MPI_ERRCODES_IGNORE;
+        } else {
+            for (i = 0; i < c_count; ++i) {
+                maxprocs += OMPI_ARRAY_NAME_CONVERT(array_of_maxprocs)[i];
+            }
+            /* Seed the temporary from the caller's array rather than just
+               allocating it: MPI_Comm_spawn_multiple leaves the error codes
+               untouched when it fails a parameter check, and the copy back
+               below cannot tell that case apart from a failure of the spawn
+               itself, which does fill them in.  Starting from the caller's own
+               values makes the copy back a no-op in the former case, so the
+               caller's array survives unchanged the way it does when a Fortran
+               INTEGER is the same size as a C int and no temporary is used at
+               all. */
+            OMPI_ARRAY_FINT_2_INT(array_of_errcodes, maxprocs);
+            c_errs = OMPI_ARRAY_NAME_CONVERT(array_of_errcodes);
+        }
+
+        c_ierr = @INNER_CALL@(c_count, c_commands, c_argvs,
+                              OMPI_ARRAY_NAME_CONVERT(array_of_maxprocs),
+                              c_info,
+                              OMPI_FINT_2_INT(*root),
+                              c_comm, &c_intercomm, c_errs);
+
+        if (MPI_SUCCESS == c_ierr) {
+            *intercomm = PMPI_Comm_c2f(c_intercomm);
+        }
+
+        if (!OMPI_IS_FORTRAN_ERRCODES_IGNORE(array_of_errcodes)) {
+            OMPI_ARRAY_INT_2_FINT(array_of_errcodes, maxprocs);
+        }
+    } else {
+        c_ierr = OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
+    }
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+    free(c_info);
+    ompi_fortran_argv_free(c_commands);
+    if (MPI_ARGVS_NULL != c_argvs) {
+        for (i = 0; i < c_count; ++i) {
+            ompi_fortran_argv_free(c_argvs[i]);
+        }
+        free(c_argvs);
+    }
+    OMPI_ARRAY_FINT_2_INT_CLEANUP(array_of_maxprocs);
+}
