@@ -57,7 +57,7 @@ PROTOTYPE VOID waitall(INT count, REQUEST_ARRAY_INOUT array_of_requests:count,
 
     if (OMPI_FORTRAN_COMPLETION_OUTPUTS_VALID(c_ierr)) {
         for (i = 0; i < OMPI_FINT_2_INT(*count); ++i) {
-            array_of_requests[i] = c_req[i]->req_f_to_c_index;
+            array_of_requests[i] = PMPI_Request_c2f(c_req[i]);
             if (!OMPI_IS_FORTRAN_STATUSES_IGNORE(array_of_statuses) &&
                 !OMPI_IS_FORTRAN_STATUS_IGNORE(&array_of_statuses[i])) {
                 PMPI_Status_c2f( &c_status[i], &array_of_statuses[i * (sizeof(MPI_Status) / sizeof(int))]);

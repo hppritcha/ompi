@@ -69,7 +69,7 @@ PROTOTYPE VOID testany(INT count, REQUEST_ARRAY_INOUT array_of_requests:count, I
         if (c_flag &&
             MPI_UNDEFINED != tmp_indx) {
             array_of_requests[tmp_indx] =
-                c_req[tmp_indx]->req_f_to_c_index;
+                PMPI_Request_c2f(c_req[tmp_indx]);
             *indx = OMPI_INT_2_FINT(tmp_indx+1);
             *flag = OMPI_INT_2_FINT(c_flag);
         }

@@ -36,7 +36,7 @@ PROTOTYPE VOID test(REQUEST_INOUT request, LOGICAL_OUT flag, STATUS status)
     }
 
     if (MPI_SUCCESS == c_ierr && c_flag) {
-        *request = OMPI_INT_2_FINT(c_req->req_f_to_c_index);
+        *request = PMPI_Request_c2f(c_req);
         if (!OMPI_IS_FORTRAN_STATUS_IGNORE(status)) {
             PMPI_Status_c2f(&c_status, status);
         }

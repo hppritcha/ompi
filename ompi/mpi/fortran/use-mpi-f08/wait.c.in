@@ -29,7 +29,7 @@ PROTOTYPE VOID wait(REQUEST_INOUT request, STATUS status)
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
     if (MPI_SUCCESS == c_ierr) {
-        *request = OMPI_INT_2_FINT(c_req->req_f_to_c_index);
+        *request = PMPI_Request_c2f(c_req);
         if (!OMPI_IS_FORTRAN_STATUS_IGNORE(status)) {
             PMPI_Status_c2f(&c_status, status);
         }

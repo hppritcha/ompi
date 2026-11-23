@@ -69,7 +69,7 @@ PROTOTYPE VOID testsome(INT incount, REQUEST_ARRAY_INOUT array_of_requests:incou
             /* Increment indexes by one for fortran conventions */
             for (i = 0; i < c_outcount; ++i) {
                 array_of_requests[array_of_indices[i]] =
-                    c_req[array_of_indices[i]]->req_f_to_c_index;
+                    PMPI_Request_c2f(c_req[array_of_indices[i]]);
                 ++array_of_indices[i];
             }
             if (!OMPI_IS_FORTRAN_STATUSES_IGNORE(array_of_statuses)) {
