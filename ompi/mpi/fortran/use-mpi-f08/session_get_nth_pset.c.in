@@ -40,10 +40,11 @@ PROTOTYPE VOID session_get_nth_pset(SESSION session, INFO info, INT n,
        whatever pset_len claims. */
     c_len = OMPI_FINT_2_INT(*pset_len);
     if (c_len < 0) {
-        if (ompi_instance_invalid(c_session)) {
-            c_ierr = OMPI_ERRHANDLER_NOHANDLE_INVOKE(MPI_ERR_ARG, FUNC_NAME);
-        } else {
-            c_ierr = OMPI_ERRHANDLER_INVOKE(c_session, MPI_ERR_ARG, FUNC_NAME);
+        /* This reports an invalid session itself, and returns
+           MPI_SUCCESS if the session's error handler returns */
+        c_ierr = PMPI_Session_call_errhandler(c_session, MPI_ERR_ARG);
+        if (MPI_SUCCESS == c_ierr) {
+            c_ierr = MPI_ERR_ARG;
         }
         if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
         return;
