@@ -29,6 +29,7 @@ PROTOTYPE VOID ialltoallw(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
                           COMM comm, REQUEST_OUT request)
 {
     MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_inter;
     MPI_Datatype *c_sendtypes = NULL, *c_recvtypes;
     MPI_Request c_request;
     int size, idx = 0, c_ierr;
@@ -37,6 +38,12 @@ PROTOTYPE VOID ialltoallw(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
     @DISP_TYPE@ *tmp_sdispls = NULL;
     @COUNT_TYPE@ *tmp_recvcounts = NULL;
     @DISP_TYPE@ *tmp_rdispls = NULL;
+
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
 
     OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);
     if (MPI_SUCCESS != c_ierr) {
@@ -50,7 +57,11 @@ PROTOTYPE VOID ialltoallw(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
         OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
         return;
     }
-    size = OMPI_COMM_IS_INTER(c_comm)?ompi_comm_remote_size(c_comm):ompi_comm_size(c_comm);
+    if (c_inter) {
+        PMPI_Comm_remote_size(c_comm, &size);
+    } else {
+        PMPI_Comm_size(c_comm, &size);
+    }
 
     if (!OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
         c_sendtypes = (MPI_Datatype *) malloc(size * sizeof(MPI_Datatype));

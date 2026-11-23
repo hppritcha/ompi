@@ -29,6 +29,7 @@ PROTOTYPE VOID alltoall_init(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype
 {
     int c_ierr;
     MPI_Comm c_comm;
+    int c_inter;
     MPI_Request c_req;
     MPI_Datatype c_sendtype, c_recvtype;
     MPI_Info c_info;
@@ -41,7 +42,13 @@ PROTOTYPE VOID alltoall_init(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype
     c_recvtype = PMPI_Type_f2c(*recvtype);
     c_info = PMPI_Info_f2c(*info);
 
-    if (OMPI_COMM_IS_INTER(c_comm) || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+
+    if (c_inter || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
         OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);
         if (MPI_SUCCESS != c_ierr) {
             if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

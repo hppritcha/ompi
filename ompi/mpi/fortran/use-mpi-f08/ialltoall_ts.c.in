@@ -28,12 +28,19 @@ PROTOTYPE VOID ialltoall(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
 {
     int c_ierr;
     MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_inter;
     MPI_Datatype c_sendtype = NULL, c_recvtype = PMPI_Type_f2c(*recvtype);
     void *sendbuf = OMPI_CFI_BASE_ADDR(x1), *recvbuf = OMPI_CFI_BASE_ADDR(x2);
     @COUNT_TYPE@ c_sendcount = 0, c_recvcount = (@COUNT_TYPE@)*recvcount;
     MPI_Request c_request;
 
-    if (OMPI_COMM_IS_INTER(c_comm) || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+
+    if (c_inter || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
         c_sendtype = PMPI_Type_f2c(*sendtype);
         c_sendcount = (@COUNT_TYPE@)*sendcount;
         OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);

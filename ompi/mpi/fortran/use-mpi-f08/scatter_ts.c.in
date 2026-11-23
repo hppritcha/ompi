@@ -29,12 +29,19 @@ PROTOTYPE VOID scatter(BUFFER x1, COUNT sendcount,
 {
     int c_ierr;
     MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_inter, c_rank;
     int c_root = OMPI_FINT_2_INT(*root);
     MPI_Datatype c_sendtype = NULL, c_recvtype = NULL, c_recvdatatype = NULL;
     void *sendbuf = OMPI_CFI_BASE_ADDR(x1), *recvbuf = OMPI_CFI_BASE_ADDR(x2);
     @COUNT_TYPE@ c_sendcount = 0, c_recvcount = 0;
 
-    if (OMPI_COMM_IS_INTER(c_comm)) {
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+
+    if (c_inter) {
         if (MPI_ROOT == c_root) {
             c_sendtype = PMPI_Type_f2c(*sendtype);
             c_sendcount = (@COUNT_TYPE@) *sendcount;
@@ -55,7 +62,8 @@ PROTOTYPE VOID scatter(BUFFER x1, COUNT sendcount,
             }
         }
     } else {
-        if (ompi_comm_rank(c_comm) == c_root) {
+        PMPI_Comm_rank(c_comm, &c_rank);
+        if (c_root == c_rank) {
             c_sendtype = PMPI_Type_f2c(*sendtype);
             c_sendcount = (@COUNT_TYPE@) *sendcount;
             OMPI_CFI_CHECK_CONTIGUOUS(x1, c_ierr);

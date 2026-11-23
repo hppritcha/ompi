@@ -30,6 +30,7 @@ PROTOTYPE VOID igatherv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
 
     int c_ierr, idx=0;
     MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_inter, c_rank;
     int c_root = OMPI_FINT_2_INT(*root);
     MPI_Datatype c_senddatatype = NULL, c_sendtype = NULL, c_recvtype = NULL;
     @COUNT_TYPE@ c_sendcount = 0;
@@ -38,9 +39,16 @@ PROTOTYPE VOID igatherv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
     @COUNT_TYPE@ *tmp_recvcounts = NULL;
     @DISP_TYPE@ *tmp_displs = NULL;
 
-    if (OMPI_COMM_IS_INTER(c_comm)) {
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
+
+    if (c_inter) {
         if (MPI_ROOT == c_root) {
-            int size = ompi_comm_remote_size(c_comm);
+            int size;
+            PMPI_Comm_remote_size(c_comm, &size);
             c_recvtype = PMPI_Type_f2c(*recvtype);
             OMPI_CFI_CHECK_CONTIGUOUS(x2, c_ierr);
             if (MPI_SUCCESS != c_ierr) {
@@ -61,8 +69,10 @@ PROTOTYPE VOID igatherv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
             }
         }
     } else {
-        if (ompi_comm_rank(c_comm) == c_root) {
-            int size = ompi_comm_size(c_comm);
+        PMPI_Comm_rank(c_comm, &c_rank);
+        if (c_root == c_rank) {
+            int size;
+            PMPI_Comm_size(c_comm, &size);
             c_recvtype = PMPI_Type_f2c(*recvtype);
             OMPI_CFI_CHECK_CONTIGUOUS(x2, c_ierr);
             if (MPI_SUCCESS != c_ierr) {

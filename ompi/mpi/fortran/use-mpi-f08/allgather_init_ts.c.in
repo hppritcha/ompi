@@ -29,12 +29,19 @@ PROTOTYPE VOID allgather_init(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtyp
 {
     int c_ierr;
     MPI_Comm c_comm = PMPI_Comm_f2c(*comm);
+    int c_inter;
     MPI_Request c_req;
     MPI_Datatype c_sendtype = NULL, c_recvtype = NULL, c_senddatatype = NULL;
     MPI_Info c_info;
     void *sendbuf = OMPI_CFI_BASE_ADDR(x1), *recvbuf = OMPI_CFI_BASE_ADDR(x2);
     @COUNT_TYPE@ c_sendcount = (@COUNT_TYPE@) *sendcount;
     @COUNT_TYPE@ c_recvcount = (@COUNT_TYPE@) *recvcount;
+
+    c_ierr = PMPI_Comm_test_inter(c_comm, &c_inter);
+    if (MPI_SUCCESS != c_ierr) {
+        if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+        return;
+    }
 
     OMPI_CFI_CHECK_CONTIGUOUS(x2, c_ierr);
     if (MPI_SUCCESS != c_ierr) {
@@ -53,7 +60,7 @@ PROTOTYPE VOID allgather_init(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtyp
     sendbuf = (char *) OMPI_F2C_BOTTOM(sendbuf);
     recvbuf = (char *) OMPI_F2C_BOTTOM(recvbuf);
 
-    if (OMPI_COMM_IS_INTER(c_comm) || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
+    if (c_inter || !OMPI_IS_FORTRAN_IN_PLACE(sendbuf)) {
         OMPI_CFI_2_C(x1, c_sendcount, c_sendtype, c_senddatatype, c_ierr);
         if (MPI_SUCCESS != c_ierr) {
             if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
