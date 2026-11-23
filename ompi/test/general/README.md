@@ -161,6 +161,21 @@ for most of the uncovered lines above.
   translation (`translate_to_fint`/`_aint`/`_c`).  The residual is
   error/out-of-resource/`abort()` paths only (not reachable in a passing
   single-process test).
+- **mpi_f08 template bindings**: `error_class_f08`, `strings_f08`,
+  `info_f08`, and `session_f08` are self-checking mpi_f08 programs for
+  bindings generated from the `ompi/mpi/fortran/use-mpi-f08/*.c.in`
+  templates (built only when the mpi_f08 bindings are configured).
+  `strings_f08` focuses on character arguments: string results must be
+  blank-padded (no `\0`), must not overrun the Fortran buffer (each
+  output is followed by guard characters, and names of exactly
+  `MPI_MAX_OBJECT_NAME` characters are tested because the C bound is one
+  larger), and blank-padded input strings must behave as if trimmed.
+  `info_f08` covers the `valuelen`/`buflen` semantics of `MPI_Info_get`
+  and `MPI_Info_get_string`, and `session_f08` the `pset_len` semantics
+  of `MPI_Session_get_nth_pset` (the Fortran length has no `\0`) and
+  `MPI_Session_get_pset_info`.  `MPI_Publish_name` needs a name server,
+  which a singleton lacks, so only the failing-lookup path of
+  `MPI_Lookup_name` is tested.
 - **debuggers**: `ompi_debuggers.c`, `ompi_common_dll.c`, and
   `ompi_msgq_dll.c` are the TotalView message-queue DLL, driven by
   debugger-supplied memory-read callbacks (`mqs_*`).  They cannot be

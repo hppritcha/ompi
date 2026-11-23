@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2026      Jeffrey M. Squyres.  All rights reserved.
 # Copyright (c) 2026      NVIDIA Corporation.  All rights reserved.
+# Copyright (c) 2026      Triad National Security, LLC. All rights
+#                         reserved.
 # $COPYRIGHT$
 #
 # Additional copyrights may follow
@@ -41,20 +43,37 @@
 #    job-level timeout kills it.
 
 EXTRA_DIST = \
+        aint_f08.f90 \
         async_modex_wireup.c \
         any_source_oneway.c \
+        cart_f08.f90 \
         comm_idup_overlap.c \
+        completion_f08.f90 \
+        comm_spawn_f08.f90 \
+        count_x_f08.f90 \
+        error_outputs_f08.f90 \
+        file_sync_f08.f90 \
+        grequest_start_f08.f90 \
+        group_range_f08.f90 \
         late_first_contact.c \
+        op_create_f08.f90 \
+        parrived_f08.f90 \
+        register_datarep_f08.f90 \
+        register_datarep_f08_c.c \
         session_first_touch.c \
         session_partial_batch.c \
         spawn_first_touch.c \
         tcp_stranger_connect.c \
         thread_sendrecv.c \
+        type_get_contents_f08.f90 \
+        type_set_name_f08.f90 \
+        vcoll_sizes_f08.f90 \
         wireup_stress.c
 
 # Deliberately built by the check-mpirun target rather than by Automake:
 # these are compiled with the *installed* wrapper compiler.
 MPICC = mpicc
+MPIFORT = mpifort
 MPIRUN = mpirun
 OMPI_INFO = ompi_info
 
@@ -77,7 +96,9 @@ oversub_runner = $(MPIRUN) --timeout $(MPIRUN_TIMEOUT) --oversubscribe \
 
 # Three processes, oversubscribed.  A test whose point is that one rank
 # is left out of an early communicator needs a rank to leave out, and
-# three is the fewest that gives the pair something to exclude.
+# three is the fewest that gives the pair something to exclude.  It is
+# also the fewest for an intercommunicator whose groups differ in size,
+# or a neighborhood smaller than the communicator.
 TRIO_NP = 3
 trio_runner = $(MPIRUN) --timeout $(MPIRUN_TIMEOUT) --oversubscribe \
         -n $(TRIO_NP) --map-by ppr:$(TRIO_NP):node
@@ -301,16 +322,88 @@ check-mpirun:
 	    $(MPICC) -g "$(srcdir)/spawn_first_touch.c" -o spawn_first_touch; \
 	    echo "=== spawn first touch, direct modex ==="; \
 	    run env $(DIRECT_MODEX) $(spawn_runner) ./spawn_first_touch; \
+	    if command -v $(MPIFORT) >/dev/null 2>&1 && \
+	            $(OMPI_INFO) --parsable 2>/dev/null \
+	            | grep -q '^bindings:use_mpi_f08:yes'; then \
+	        $(MPIFORT) -g "$(srcdir)/group_range_f08.f90" -o group_range_f08; \
+	        echo "=== mpi_f08 group range incl/excl ==="; \
+	        run $(oversub_runner) ./group_range_f08; \
+	        $(MPIFORT) -g "$(srcdir)/cart_f08.f90" -o cart_f08; \
+	        echo "=== mpi_f08 cart_sub / cart_get LOGICAL arrays ==="; \
+	        run $(mpirun_runner) ./cart_f08; \
+	        $(MPIFORT) -g "$(srcdir)/type_set_name_f08.f90" -o type_set_name_f08; \
+	        echo "=== mpi_f08 type_set_name ==="; \
+	        run $(mpirun_runner) ./type_set_name_f08; \
+	        $(MPIFORT) -g "$(srcdir)/comm_spawn_f08.f90" -o comm_spawn_f08; \
+	        echo "=== mpi_f08 comm_spawn / comm_spawn_multiple ==="; \
+	        run $(spawn_runner) ./comm_spawn_f08; \
+	        $(MPIFORT) -g "$(srcdir)/op_create_f08.f90" -o op_create_f08; \
+	        echo "=== mpi_f08 op_create / op_create_c ==="; \
+	        run $(mpirun_runner) ./op_create_f08; \
+	        $(MPIFORT) -g "$(srcdir)/grequest_start_f08.f90" -o grequest_start_f08; \
+	        echo "=== mpi_f08 grequest_start ==="; \
+	        run $(mpirun_runner) ./grequest_start_f08; \
+	        $(MPICC) -g -c "$(srcdir)/register_datarep_f08_c.c" \
+	            -o register_datarep_f08_c.o; \
+	        $(MPIFORT) -g "$(srcdir)/register_datarep_f08.f90" \
+	            register_datarep_f08_c.o -o register_datarep_f08; \
+	        echo "=== mpi_f08 register_datarep ==="; \
+	        run $(mpirun_runner) ./register_datarep_f08; \
+	        $(MPIFORT) -g "$(srcdir)/count_x_f08.f90" -o count_x_f08; \
+	        echo "=== mpi_f08 type_size_x / type_get_(true_)extent_x / status_set_elements_x ==="; \
+	        run $(mpirun_runner) ./count_x_f08; \
+	        $(MPIFORT) -g "$(srcdir)/type_get_contents_f08.f90" -o type_get_contents_f08; \
+	        echo "=== mpi_f08 type_get_envelope / type_get_contents ==="; \
+	        run $(mpirun_runner) ./type_get_contents_f08; \
+	        $(MPIFORT) -g "$(srcdir)/parrived_f08.f90" -o parrived_f08; \
+	        echo "=== mpi_f08 parrived ==="; \
+	        run $(mpirun_runner) ./parrived_f08; \
+	        $(MPIFORT) -g "$(srcdir)/completion_f08.f90" -o completion_f08; \
+	        echo "=== mpi_f08 testsome, waitsome, testall, request_get_status_* ==="; \
+	        run $(mpirun_runner) ./completion_f08; \
+	        $(MPIFORT) -g "$(srcdir)/file_sync_f08.f90" -o file_sync_f08; \
+	        echo "=== mpi_f08 file_preallocate / file_sync ==="; \
+	        run $(mpirun_runner) ./file_sync_f08; \
+	        $(MPIFORT) -g "$(srcdir)/error_outputs_f08.f90" -o error_outputs_f08; \
+	        echo "=== mpi_f08 output handles of failed calls ==="; \
+	        run $(mpirun_runner) ./error_outputs_f08; \
+	        $(MPIFORT) -g "$(srcdir)/vcoll_sizes_f08.f90" -o vcoll_sizes_f08; \
+	        echo "=== mpi_f08 neighborhood and intercommunicator v-collectives ==="; \
+	        run $(trio_runner) ./vcoll_sizes_f08; \
+	        $(MPIFORT) -g "$(srcdir)/aint_f08.f90" -o aint_f08; \
+	        echo "=== mpi_f08 aint_add / aint_diff ==="; \
+	        run $(mpirun_runner) ./aint_f08; \
+	    else \
+	        echo "SKIP: the mpi_f08 module is not built"; \
+	    fi; \
 	fi
 
 clean-local:
-	rm -rf async_modex_wireup async_modex_wireup.dSYM \
+	rm -rf aint_f08 aint_f08.dSYM \
+	    async_modex_wireup async_modex_wireup.dSYM \
 	    any_source_oneway any_source_oneway.dSYM \
+	    cart_f08 cart_f08.dSYM \
 	    comm_idup_overlap comm_idup_overlap.dSYM \
+	    comm_spawn_f08 comm_spawn_f08.dSYM \
+	    completion_f08 completion_f08.dSYM \
+	    count_x_f08 count_x_f08.dSYM \
+	    error_outputs_f08 error_outputs_f08.dSYM \
+	    file_sync_f08 file_sync_f08.dSYM file_sync_f08.*.tmp \
+	    grequest_start_f08 grequest_start_f08.dSYM \
+	    group_range_f08 group_range_f08.dSYM \
 	    late_first_contact late_first_contact.dSYM \
+	    op_create_f08 op_create_f08.dSYM \
+	    parrived_f08 parrived_f08.dSYM \
+	    register_datarep_f08 register_datarep_f08.dSYM \
+	    register_datarep_f08_c.o \
 	    session_first_touch session_first_touch.dSYM \
 	    session_partial_batch session_partial_batch.dSYM \
 	    spawn_first_touch spawn_first_touch.dSYM \
 	    tcp_stranger_connect tcp_stranger_connect.dSYM \
 	    thread_sendrecv thread_sendrecv.dSYM \
-	    wireup_stress wireup_stress.dSYM
+	    type_get_contents_f08 type_get_contents_f08.dSYM \
+	    type_set_name_f08 type_set_name_f08.dSYM \
+	    vcoll_sizes_f08 vcoll_sizes_f08.dSYM \
+	    wireup_stress wireup_stress.dSYM \
+	    grequest_start_f08_fns.mod op_create_f08_fns.mod \
+	    register_datarep_f08_fns.mod

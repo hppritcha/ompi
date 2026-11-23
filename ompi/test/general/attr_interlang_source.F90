@@ -217,13 +217,13 @@
       call MPI_ATTR_GET(comm2, keyval_f_mpi11, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-1 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-1 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -255,13 +255,13 @@
       call MPI_ATTR_GET(comm2, keyval_f_mpi12, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-1 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-1 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -294,7 +294,7 @@
       call MPI_ATTR_GET(comm2, keyval_f_mpi13, val_read, flag, ierr)
       if (.true. .eqv.  flag) then
          print *, "ERROR: reading MPI-1 Fortran attribute got flag=.true."
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -369,7 +369,7 @@
       call MPI_ATTR_GET(MPI_COMM_SELF, key, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (check_c == 1) then
          call C_CHECK_MPI1(key, val_read)
@@ -378,7 +378,7 @@
             print *, "ERROR: reading attribute got value=", &
                 val_read
             print *, "ERROR: when expecting value=", expected_value
-            stop
+            stop 1
          endif
       endif
 
@@ -667,13 +667,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the comm; it should follow
@@ -689,13 +689,13 @@
           flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-2 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -719,13 +719,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the comm; it should follow
@@ -741,13 +741,13 @@
           flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-2 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -771,13 +771,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the comm; it should NOT follow (it was created with a NULL_COPY
@@ -794,7 +794,7 @@
           flag, ierr)
       if (.true. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.true."
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -852,13 +852,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the type; it should follow
@@ -874,13 +874,13 @@
           flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-2 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -904,13 +904,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the type; it should follow
@@ -926,13 +926,13 @@
           flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp * 2) then
          print *, "ERROR: reading MPI-2 Fortran attribute got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp * 2
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -956,13 +956,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Dup the type; it should NUL follow (it was created with a NULL_COPY
@@ -979,7 +979,7 @@
           flag, ierr)
       if (.true. .eqv.  flag) then
          print *, "ERROR: reading MPI-2 Fortran attribute got flag=.true."
-         stop
+         stop 1
       endif
 
 ! Ok
@@ -1038,13 +1038,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Write attribute 2
@@ -1065,13 +1065,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
 ! Write attribute 3
@@ -1092,13 +1092,13 @@
           val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute 1 got flag=.false."
-         stop
+         stop 1
       endif
       if (val_read .ne. tmp) then
          print *, "ERROR: reading attribute 1 got value=", &
                   val_read
          print *, "ERROR: when expecting value=", tmp
-         stop
+         stop 1
       endif
 
       return
@@ -1192,7 +1192,7 @@
       call MPI_COMM_GET_ATTR(MPI_COMM_SELF, key, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (c_check == 1) then
          call C_CHECK_MPI2(key, val_read)
@@ -1201,7 +1201,7 @@
             print *, "ERROR: reading attribute got value=", &
                 val_read
             print *, "ERROR: when expecting value=", expected_value
-            stop
+            stop 1
          endif
       endif
 
@@ -1223,7 +1223,7 @@
       call MPI_TYPE_GET_ATTR(MPI_INTEGER, key, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (c_check == 1) then
          call C_CHECK_MPI2(key, val_read)
@@ -1232,7 +1232,7 @@
             print *, "ERROR: reading attribute got value=", &
                 val_read
             print *, "ERROR: when expecting value=", expected_value
-            stop
+            stop 1
          endif
       endif
 
@@ -1256,7 +1256,7 @@
       call MPI_WIN_GET_ATTR(win, key, val_read, flag, ierr)
       if (.false. .eqv.  flag) then
          print *, "ERROR: reading attribute got flag=.false."
-         stop
+         stop 1
       endif
       if (c_check == 1) then
          call C_CHECK_MPI2(key, val_read)
@@ -1265,7 +1265,7 @@
             print *, "ERROR: reading attribute got value=", &
                 val_read
             print *, "ERROR: when expecting value=", expected_value
-            stop
+            stop 1
          endif
       endif
 
