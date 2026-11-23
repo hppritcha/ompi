@@ -73,7 +73,7 @@ PROTOTYPE VOID neighbor_allgather_init(BUFFER x1, COUNT sendcount, DATATYPE send
 			  &c_request);
 
     if (c_senddatatype != c_sendtype) {
-        ompi_datatype_destroy(&c_senddatatype);
+        PMPI_Type_free(&c_senddatatype);
     }
 
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

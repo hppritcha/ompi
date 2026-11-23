@@ -81,7 +81,7 @@ PROTOTYPE VOID iallgatherv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
                           c_comm, &c_request);
 
     if (c_senddatatype != c_sendtype && NULL != c_senddatatype) {
-        ompi_datatype_destroy(&c_senddatatype);
+        PMPI_Type_free(&c_senddatatype);
     }
 
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

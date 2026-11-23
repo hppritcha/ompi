@@ -72,7 +72,7 @@ PROTOTYPE VOID allgather_init(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtyp
                           c_recvtype, c_comm, c_info, &c_req);
 
     if (c_senddatatype != c_sendtype) {
-        ompi_datatype_destroy(&c_senddatatype);
+        PMPI_Type_free(&c_senddatatype);
     }
 
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

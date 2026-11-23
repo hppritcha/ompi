@@ -57,7 +57,7 @@ PROTOTYPE VOID raccumulate(BUFFER x, COUNT origin_count,
                           c_target_datatype, c_op, c_win,
                           &c_req);
     if (c_origin_datatype != c_origin_type) {
-        ompi_datatype_destroy(&c_origin_datatype);
+        PMPI_Type_free(&c_origin_datatype);
     }
 
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

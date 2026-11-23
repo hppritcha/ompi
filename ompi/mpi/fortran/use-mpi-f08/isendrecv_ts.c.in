@@ -48,7 +48,7 @@ PROTOTYPE VOID isendrecv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
     if (MPI_SUCCESS != c_ierr) {
         if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
         if (c_senddatatype != c_sendtype) {
-            ompi_datatype_destroy(&c_senddatatype);
+            PMPI_Type_free(&c_senddatatype);
         }
         OMPI_ERRHANDLER_INVOKE(c_comm, c_ierr, FUNC_NAME);
         return;
@@ -63,10 +63,10 @@ PROTOTYPE VOID isendrecv(BUFFER_ASYNC x1, COUNT sendcount, DATATYPE sendtype,
                           OMPI_FINT_2_INT(*recvtag),
                           c_comm, &c_req);
     if (c_senddatatype != c_sendtype) {
-        ompi_datatype_destroy(&c_senddatatype);
+        PMPI_Type_free(&c_senddatatype);
     }
     if (c_recvdatatype != c_recvtype) {
-        ompi_datatype_destroy(&c_recvdatatype);
+        PMPI_Type_free(&c_recvdatatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 

@@ -90,7 +90,7 @@ PROTOTYPE VOID gather(BUFFER x1, COUNT sendcount, DATATYPE sendtype,
                         c_root,
                         c_comm);
     if (c_senddatatype != c_sendtype) {
-        ompi_datatype_destroy(&c_senddatatype);
+        PMPI_Type_free(&c_senddatatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 }

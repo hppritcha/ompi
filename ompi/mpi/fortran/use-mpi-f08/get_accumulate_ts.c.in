@@ -53,7 +53,7 @@ PROTOTYPE VOID get_accumulate(BUFFER_ASYNC x1, COUNT origin_count,
     if (MPI_SUCCESS != c_ierr) {
         if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
         if (c_origin_datatype != c_origin_type) {
-            ompi_datatype_destroy(&c_origin_datatype);
+            PMPI_Type_free(&c_origin_datatype);
         }
         OMPI_ERRHANDLER_INVOKE(c_win, c_ierr, FUNC_NAME)
         return;
@@ -69,10 +69,10 @@ PROTOTYPE VOID get_accumulate(BUFFER_ASYNC x1, COUNT origin_count,
                           OMPI_FINT_2_INT(*target_count),
                           c_target_datatype, c_op, c_win);
     if (c_origin_datatype != c_origin_type) {
-        ompi_datatype_destroy(&c_origin_datatype);
+        PMPI_Type_free(&c_origin_datatype);
     }
     if (c_result_datatype != c_result_type) {
-        ompi_datatype_destroy(&c_result_datatype);
+        PMPI_Type_free(&c_result_datatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 }

@@ -49,7 +49,7 @@ PROTOTYPE VOID mrecv(BUFFER x, COUNT count, DATATYPE datatype,
                           c_datatype, &c_message,
                           c_status);
     if (c_datatype != c_type) {
-        ompi_datatype_destroy(&c_datatype);
+        PMPI_Type_free(&c_datatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 

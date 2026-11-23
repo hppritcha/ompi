@@ -118,6 +118,6 @@ PROTOTYPE VOID scatterv_init(BUFFER x1, COUNT_ARRAY sendcounts,
     }
 
      if ((c_recvdatatype != NULL ) && (c_recvdatatype != c_recvtype)){
-        ompi_datatype_destroy(&c_recvdatatype);
+        PMPI_Type_free(&c_recvdatatype);
     }
 }

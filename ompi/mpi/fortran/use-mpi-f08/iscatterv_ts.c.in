@@ -101,7 +101,7 @@ PROTOTYPE VOID iscatterv(BUFFER_ASYNC x1, COUNT_ARRAY sendcounts,
                           (c_recvdatatype == MPI_DATATYPE_NULL) ? c_recvtype : c_recvdatatype,
                           c_root, c_comm, &c_request);
     if (c_recvdatatype != MPI_DATATYPE_NULL && c_recvdatatype != c_recvtype) {
-        ompi_datatype_destroy(&c_recvdatatype);
+        PMPI_Type_free(&c_recvdatatype);
     }
 
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);

@@ -29,13 +29,13 @@ int ompi_ts_create_datatype(CFI_cdesc_t *cdesc, int oldcount, MPI_Datatype oldty
 
 #if OPAL_ENABLE_DEBUG
     {
-        size_t size;
+        MPI_Count size;
         assert(cdesc->rank <= MAX_RANK);
-        ompi_datatype_type_size(oldtype, &size);
+        PMPI_Type_size_c(oldtype, &size);
         /* When cdesc->elem_len != size, things suddenly become complicated. Generally, it is hard to create
          * a composite datatype based on two datatypes. Currently we don't support it and doubt it is useful.
          */
-        assert(cdesc->elem_len == size);
+        assert((MPI_Count) cdesc->elem_len == size);
     }
 #endif
 

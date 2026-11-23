@@ -48,7 +48,7 @@ PROTOTYPE VOID get(BUFFER_ASYNC x, COUNT origin_count,
                           OMPI_FINT_2_INT(*target_count),
                           c_target_datatype, c_win);
     if (c_origin_datatype != c_origin_type) {
-        ompi_datatype_destroy(&c_origin_datatype);
+        PMPI_Type_free(&c_origin_datatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 }

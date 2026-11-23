@@ -51,7 +51,7 @@ PROTOTYPE VOID sendrecv_replace(BUFFER_OUT x, COUNT count, DATATYPE datatype,
                           OMPI_FINT_2_INT(*recvtag),
                           c_comm, &c_status);
     if (c_datatype != c_type) {
-        ompi_datatype_destroy(&c_datatype);
+        PMPI_Type_free(&c_datatype);
     }
     if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
 
