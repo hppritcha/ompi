@@ -36,7 +36,13 @@ PROTOTYPE VOID testany(INT count, REQUEST_ARRAY_INOUT array_of_requests:count, I
     if (OPAL_UNLIKELY(0 == OMPI_FINT_2_INT(*count))) {
         *flag = OMPI_FORTRAN_VALUE_TRUE;
         *indx = OMPI_INT_2_FINT(MPI_UNDEFINED);
-        PMPI_Status_c2f(&ompi_status_empty, status);
+        /* An empty status */
+        c_status.MPI_SOURCE = MPI_ANY_SOURCE;
+        c_status.MPI_TAG = MPI_ANY_TAG;
+        c_status.MPI_ERROR = MPI_SUCCESS;
+        PMPI_Status_set_elements(&c_status, MPI_BYTE, 0);
+        PMPI_Status_set_cancelled(&c_status, 0);
+        PMPI_Status_c2f(&c_status, status);
         *ierr = OMPI_INT_2_FINT(MPI_SUCCESS);
         return;
     }
