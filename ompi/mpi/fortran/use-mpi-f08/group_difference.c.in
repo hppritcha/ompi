@@ -22,7 +22,7 @@
 PROTOTYPE VOID group_difference(GROUP group1, GROUP group2, GROUP_OUT newgroup)
 {
   int c_ierr;
-  ompi_group_t *c_group1, *c_group2, *c_newgroup;
+  MPI_Group c_group1, c_group2, c_newgroup;
 
   /* Make the fortran to c representation conversion */
   c_group1 = PMPI_Group_f2c(*group1);
@@ -33,6 +33,6 @@ PROTOTYPE VOID group_difference(GROUP group1, GROUP group2, GROUP_OUT newgroup)
 
   /* translate the results from c to fortran */
   if (MPI_SUCCESS == c_ierr) {
-    *newgroup = c_newgroup->grp_f_to_c_index;
+    *newgroup = PMPI_Group_c2f(c_newgroup);
   }
 }

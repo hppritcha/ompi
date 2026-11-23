@@ -24,7 +24,7 @@ PROTOTYPE VOID group_translate_ranks(GROUP group1, INT n,
 				     INT_ARRAY_OUT ranks2:n)
 {
     int c_ierr;
-    ompi_group_t *c_group1, *c_group2;
+    MPI_Group c_group1, c_group2;
     int *tmp_ranks1 = NULL;
     int *tmp_ranks2 = NULL;
 

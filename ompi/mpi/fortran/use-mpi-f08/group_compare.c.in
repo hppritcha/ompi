@@ -23,7 +23,7 @@ PROTOTYPE VOID group_compare(GROUP group1, GROUP group2,
                              INT_OUT result)
 {
     int c_ierr;
-    ompi_group_t *c_group1, *c_group2;
+    MPI_Group c_group1, c_group2;
     int c_result;
 
     /* make the fortran to c representation conversion */

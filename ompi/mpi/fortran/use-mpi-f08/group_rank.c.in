@@ -22,7 +22,7 @@
 PROTOTYPE VOID group_rank(GROUP group, INT_OUT rank)
 {
   int c_ierr;
-  ompi_group_t *c_group;
+  MPI_Group c_group;
   int c_rank;
 
   /* Make the fortran to c representation conversion */

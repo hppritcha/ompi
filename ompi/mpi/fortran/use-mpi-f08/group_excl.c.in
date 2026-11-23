@@ -23,7 +23,7 @@ PROTOTYPE VOID group_excl(GROUP group, INT n,
 		          INT_ARRAY ranks:n, GROUP_OUT newgroup)
 {
     int c_ierr;
-    ompi_group_t *c_group, *c_newgroup;
+    MPI_Group c_group, c_newgroup;
     int *tmp_ranks = NULL;
 
     /* Make the fortran to c representation conversion */
@@ -38,7 +38,7 @@ PROTOTYPE VOID group_excl(GROUP group, INT n,
 
     /* translate the results from c to fortran */
     if (MPI_SUCCESS == c_ierr) {
-        *newgroup = c_newgroup->grp_f_to_c_index;
+        *newgroup = PMPI_Group_c2f(c_newgroup);
     }
     OMPI_FORTRAN_BIGCOUNT_ARRAY_CLEANUP(ranks, tmp_ranks);
 }

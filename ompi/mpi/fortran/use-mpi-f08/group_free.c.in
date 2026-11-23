@@ -22,7 +22,7 @@
 PROTOTYPE VOID group_free(GROUP_INOUT group)
 {
     int c_ierr;
-    ompi_group_t *c_group;
+    MPI_Group c_group;
 
     /* Make the fortran to c representation conversion */
 

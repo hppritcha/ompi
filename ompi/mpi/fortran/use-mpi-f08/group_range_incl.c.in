@@ -38,7 +38,7 @@ PROTOTYPE VOID group_range_incl(GROUP group, INT n, RANGE_ARRAY ranges:n, GROUP_
 
     /* translate the results from c to fortran */
     if (MPI_SUCCESS == c_ierr) {
-        *newgroup = OMPI_INT_2_FINT(PMPI_Group_c2f(c_newgroup));
+        *newgroup = PMPI_Group_c2f(c_newgroup);
     }
 
     OMPI_ARRAY_FINT_2_INT_CLEANUP(ranges);

@@ -22,7 +22,7 @@
 PROTOTYPE VOID group_size(GROUP group, INT_OUT size)
 {
     int c_ierr;
-    ompi_group_t *c_group;
+    MPI_Group c_group;
     int c_size;
 
     /* Make the fortran to c representation conversion */
