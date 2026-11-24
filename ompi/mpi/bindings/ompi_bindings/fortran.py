@@ -310,7 +310,7 @@ class FortranBinding:
         # Append the integer error, if the procedure has one
         if self.has_ierror:
             parameters.append(f'MPI_Fint *{consts.C_ERROR_NAME}')
-        parameters = ', '.join(parameters)
+        parameters = ', '.join(parameters) or 'void'
         # Just put the signature here to silence `-Wmissing-prototypes`
         c_func = self.c_func_name
         c_return_type = 'void' if self.result is None else self.result.c_return_type()

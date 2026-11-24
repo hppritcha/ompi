@@ -221,13 +221,25 @@ class WBufferType(FortranType):
 @FortranType.add('C_PTR_OUT')
 class CptrType(FortranType):
     def declare(self):
-        return f'TYPE(C_PTR), INTENT(OUT) :: {self.name}'
+        if self.gen_f90 == False:
+            return f'TYPE(C_PTR), INTENT(OUT) :: {self.name}'
+        else:
+            return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(OUT) :: {self.name}'
 
     def use(self):
-        return [('ISO_C_BINDING', 'C_PTR')]
+        if self.gen_f90 == False:
+            return [('ISO_C_BINDING', 'C_PTR')]
+        else:
+            return []
 
     def c_parameter(self):
         return f'char *{self.name}'
+
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return f"mpif-config.h"
 
 @FortranType.add('COUNT')
 class CountType(FortranType):
@@ -682,15 +694,6 @@ class CommInOutType(CommType):
 
     def declare_cbinding_fortran(self):
         return f'INTEGER, INTENT(INOUT) :: {self.name}'
-            
-    def argument(self):
-        return f'{self.name}%MPI_VAL'
-    
-    def use(self):
-        return [('mpi_f08_types', 'MPI_Comm')]
-
-    def c_parameter(self):
-        return f'MPI_Fint *{self.name}'
 
 @FortranType.add('GROUP')
 class GroupType(FortranType):
@@ -938,7 +941,7 @@ class RequestArrayTypeInOut(RequestArrayType):
         if self.gen_f90 == False:
             return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}({self.count_param})'
         else:
-            return f'TYPE(MPI_Request), INTENT(INOUT) :: {self.name}(*)'
+            return f'INTEGER, INTENT(INOUT) :: {self.name}(*)'
 
     def declare_cbinding_fortran(self):
         if self.gen_f90 == False:
@@ -978,13 +981,22 @@ class IntArray(FortranType):
         return f'INTEGER, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
-        if self.count_param == 'MPI_STATUS_SIZE':
-            return [('mpi_f08_types', 'MPI_STATUS_SIZE')]
+        if self.gen_f90 == False:
+            if self.count_param == 'MPI_STATUS_SIZE':
+                return [('mpi_f08_types', 'MPI_STATUS_SIZE')]
+            else:
+                return []
         else:
             return []
 
     def c_parameter(self):
         return f'MPI_Fint *{self.name}'
+
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return f"mpif-config.h"
 
 @FortranType.add('INT_ARRAY_OUT')
 class IntArrayOut(IntArray):
@@ -1066,10 +1078,13 @@ class CountArray(IntArray):
         return f'INTEGER{kind}, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+        if self.gen_f90 == False:
+            if self.bigcount:
+                return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+            else:
+                return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
         else:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+            return []
 
     def include(self):
         if self.gen_f90 == False:
@@ -1159,15 +1174,23 @@ class AintCountTypeInOut(FortranType):
             return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(INOUT) :: {self.name}'
 
     def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+        if self.gen_f90 == False:
+            if self.bigcount:
+                return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+            else:
+                return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
         else:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+            return []
 
     def c_parameter(self):
         type_ = 'MPI_Count' if self.bigcount else 'MPI_Aint'
         return f'{type_} *{self.name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return "mpif-config.h"
 
 @FortranType.add('AINT_COUNT_OUT')
 class AintCountTypeOut(FortranType):
@@ -1179,15 +1202,23 @@ class AintCountTypeOut(FortranType):
             return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(OUT) :: {self.name}'
 
     def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+        if self.gen_f90 == False:
+            if self.bigcount:
+                return [('mpi_f08_types', 'MPI_COUNT_KIND')]
+            else:
+                return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
         else:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+            return []
 
     def c_parameter(self):
         type_ = 'MPI_Count' if self.bigcount else 'MPI_Aint'
         return f'{type_} *{self.name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return "mpif-config.h"
 
 @FortranType.add('AINT_ARRAY')
 class AintArrayType(FortranType):
@@ -1199,11 +1230,19 @@ class AintArrayType(FortranType):
         return f'INTEGER(KIND=MPI_ADDRESS_KIND), INTENT(IN) OMPI_ASYNCHRONOUS :: {self.name}({size})'
 
     def use(self):
-        return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+        if self.gen_f90 == False:
+            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+        else:
+            return []
 
     def c_parameter(self):
         return f'MPI_Aint *{self.name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return "mpif-config.h"
 
 @FortranType.add('AINT_ARRAY_OUT')
 class AintArrayOutType(AintArrayType):
@@ -1223,26 +1262,30 @@ class Disp(FortranType):
         return f'INTEGER{kind}, INTENT(IN) :: {self.name}'
 
     def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
-        return []
+        if self.gen_f90 == False:
+            if self.bigcount:
+                return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+            return []
+        else:
+            return []
 
     def c_parameter(self):
         count_type = 'MPI_Aint' if self.bigcount else 'MPI_Fint'
         return f'{count_type} *{self.name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return "mpif-config.h"
+
 @FortranType.add('DISP_OUT')
-class DispOut(FortranType):
+class DispOut(Disp):
     """Displacecment out type."""
 
     def declare(self):
         kind = '(KIND=MPI_ADDRESS_KIND)' if self.bigcount else ''
         return f'INTEGER{kind}, INTENT(OUT) :: {self.name}'
-
-    def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
-        return []
 
     def c_parameter(self):
         count_type = 'MPI_Aint' if self.bigcount else 'MPI_Fint'
@@ -1259,14 +1302,22 @@ class DispArray(IntArray):
         return f'INTEGER{kind}, INTENT(IN) :: {self.name}({size})'
 
     def use(self):
-        if self.bigcount:
-            return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
-        return []
+        if self.gen_f90 == False:
+            if self.bigcount:
+                return [('mpi_f08_types', 'MPI_ADDRESS_KIND')]
+            return []
+        else:
+            return []
 
     def c_parameter(self):
         count_type = 'MPI_Aint' if self.bigcount else 'MPI_Fint'
         return f'{count_type} *{self.name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return "mpif-config.h"
 
 @FortranType.add('OP')
 class Op(FortranType):
@@ -1669,17 +1720,35 @@ class CharArrayOut(FortranType):
     def use(self):
 #       print("self COUNT count_param" + str(self.count_param))
         if self.count_param == 'MPI_MAX_OBJECT_NAME':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_OBJECT_NAME')]
+            if self.gen_f90 == False:
+               return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_OBJECT_NAME')]
+            else:
+               return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         elif self.count_param == 'MPI_MAX_PORT_NAME':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_PORT_NAME')]
+            if self.gen_f90 == False:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_PORT_NAME')]
+            else:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         elif self.count_param == 'MPI_MAX_ERROR_STRING':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_ERROR_STRING')]
+            if self.gen_f90 == False:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_ERROR_STRING')]
+            else:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         elif self.count_param == 'MPI_MAX_PROCESSOR_NAME':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_PROCESSOR_NAME')]
+            if self.gen_f90 == False:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_PROCESSOR_NAME')]
+            else:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         elif self.count_param == 'MPI_MAX_LIBRARY_VERSION_STRING':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_LIBRARY_VERSION_STRING')]
+            if self.gen_f90 == False:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_MAX_LIBRARY_VERSION_STRING')]
+            else:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         elif self.count_param == 'MPI_STATUS_SIZE':
-            return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_STATUS_SIZE')]
+            if self.gen_f90 == False:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int'), ('mpi_f08_types', 'MPI_STATUS_SIZE')]
+            else:
+                return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
         else:
             return [('iso_c_binding', 'c_char'), ('iso_c_binding', 'c_int')]
 
@@ -1705,6 +1774,11 @@ class CharArrayOut(FortranType):
     def c_parameter(self):
         return f'char *{self.name}, int {self.len_name}'
 
+    def include(self):
+        if self.gen_f90 == False:
+            return ''
+        else:
+            return f"mpif-config.h"
 
 @FortranType.add('STRING_ARRAY')
 class StringArray(FortranType):
@@ -2106,3 +2180,17 @@ class RangeArray(FortranType):
 
     def c_parameter(self):
         return f'MPI_Fint {self.name}[][3]'
+
+@FortranType.add('DOUBLEPRECISION')
+class IntType(FortranType):
+    def declare(self):
+        return f'DOUBLE PRECISION, INTENT(IN) :: {self.name}'
+
+    def c_parameter(self):
+        return f'double *{self.name}'
+
+    def declare_result(self, name):
+        return f'DOUBLE PRECISION :: {name}'
+
+    def c_return_type(self):
+        return 'double'

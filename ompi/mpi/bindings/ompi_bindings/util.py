@@ -94,10 +94,8 @@ def break_param_lines_fortran(start, params, end):
     This is often necessary to avoid going over the max line length of 132
     characters.
     """
-    assert len(params) > 0, 'expected at least one parameter'
-#
-#   handle special case of just one parameter and return
-#
+    if len(params) == 0:
+        return [f'{start}{end}']
     if len(params) == 1:
         result_lines = [f'{start}{params[0]}{end}']
         return result_lines    
