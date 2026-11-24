@@ -186,8 +186,8 @@ The Three Fortran Binding Layers
 
 3. **use mpi (ignore TKR)** (``ompi/mpi/fortran/use-mpi-ignore-tkr/``) —
    An alternative Fortran 90/95 interface using compiler directives to
-   ignore type/kind/rank checks. Interface declarations are in
-   ``mpi-ignore-tkr-interfaces.h.in``.
+   ignore type/kind/rank checks. Interface declarations are generated
+   via the bindings code.
 
 Checklist for Adding a New Fortran Function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

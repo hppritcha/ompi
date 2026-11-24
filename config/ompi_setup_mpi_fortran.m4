@@ -771,7 +771,6 @@ end type test_mpi_handle],
     # This goes into mpifort-wrapper-data.txt
     AC_SUBST(OMPI_FORTRAN_USEMPI_LIB)
 
-    # These go into mpi-ignore-tkr-interfaces.h / mpi-ignore-tkr-file-interfaces.h
     AC_SUBST(OMPI_FORTRAN_IGNORE_TKR_PREDECL)
     AC_SUBST(OMPI_FORTRAN_IGNORE_TKR_TYPE)
 

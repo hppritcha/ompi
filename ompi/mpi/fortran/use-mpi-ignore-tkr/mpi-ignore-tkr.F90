@@ -45,11 +45,6 @@ module mpi
 
 ! The ignore-TKR version of the MPI interfaces
 
-# include "ompi/mpi/fortran/use-mpi-ignore-tkr/mpi-ignore-tkr-interfaces.h"
-#if OMPI_FORTRAN_HAVE_TYPE_MPI_STATUS
-  include "ompi/mpi/fortran/use-mpi-ignore-tkr/mpi-ignore-tkr-status.h"
-#endif
-# include "ompi/mpi/fortran/use-mpi-ignore-tkr/mpi-ignore-tkr-file-interfaces.h"
 # include "ompi/mpi/fortran/use-mpi-ignore-tkr/mpi-ignore-tkr-interfaces-generated.h"
 #if !defined(OMPI_ENABLE_MPI1_COMPAT)
 
@@ -62,9 +57,6 @@ module mpi
 ! PMPI interfaces start here.
 ! Do not add non-PMPI includes below this point!
 ! The PMPI #defines leak and can infect the new interfaces.
-
-# include "ompi/mpi/fortran/use-mpi-ignore-tkr/pmpi-ignore-tkr-interfaces.h"
-# include "ompi/mpi/fortran/use-mpi-ignore-tkr/pmpi-ignore-tkr-file-interfaces.h"
 
 # define OMPI_BUILD_MPI_PROFILING 1
 # include "ompi/mpi/fortran/use-mpi-ignore-tkr/mpi-ignore-tkr-interfaces-generated.h"

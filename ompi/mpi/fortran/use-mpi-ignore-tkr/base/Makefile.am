@@ -44,8 +44,8 @@ api_f90_generated.c: $(template_files) $(OMPI_BINDINGS_GENERATOR)
 	    fortran \
 	    --generate-ts-suffix \
         --pympistd-dir $(abs_top_srcdir)/3rd-party/pympistandard \
-	    --fort-std f90 \
 	    code \
+	    --fort-std f90 \
 	    --lang c \
 	    --prototype-files $(template_files)
 

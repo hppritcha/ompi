@@ -31,16 +31,6 @@ module pmpi_f08_interfaces
 #include "mpi-f08-interfaces.h"
 #include "mpi-f08-interfaces-generated.h"
 
-! MPI_Wtick is not a wrapper function
-!
-interface PMPI_Wtick
-function  PMPI_Wtick_f08( ) BIND(C,name="PMPI_Wtick")
-   use, intrinsic :: ISO_C_BINDING
-   implicit none
-   DOUBLE PRECISION :: PMPI_Wtick_f08
-end function  PMPI_Wtick_f08
-end interface PMPI_Wtick
-
 ! MPI_Wtime is not a wrapper function
 !
 interface PMPI_Wtime
