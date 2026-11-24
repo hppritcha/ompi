@@ -378,6 +378,7 @@ def print_c_source_header(out):
     out.dump('#include "ompi/mpi/fortran/base/fint_2_int.h"')
     out.dump('#include "ompi/mpi/fortran/base/fortran_base_strings.h"')
     out.dump('#include "ompi/mpi/fortran/base/fortran_base_topo_neighbors.h"')
+    out.dump('#include "ompi/mpi/fortran/base/ts.h"')
     out.dump('#include "ompi/request/request.h"')
     out.dump('#include "ompi/request/grequest.h"')
     out.dump('#include "ompi/communicator/communicator.h"')
@@ -387,7 +388,6 @@ def print_c_source_header(out):
     out.dump('#include "ompi/datatype/ompi_datatype.h"')
     out.dump('#include "ompi/attribute/attribute.h"')
     out.dump('#include "ompi/mca/coll/base/coll_base_util.h"')
-    out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/ts.h"')
     out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/bigcount.h"')
     out.dump('#include "ompi/mpi/fortran/use-mpi-f08/base/datarep_f08.h"')
 
@@ -473,7 +473,8 @@ def generate_code(args, out):
         needs_ts = has_buffers and args.generate_ts_suffix
 
         # use-mpi needs generated procedure only for the suffixed ts functions
-        # Rest are covered by mpif already
+        # Rest are covered by mpif-h already
+        # TODO: will need to change if mpifhh is removed or significantly refactored
         if gen_f90 and not needs_ts:
             continue
         out.dump()

@@ -56,5 +56,11 @@ libmpi_fortran_base_la_SOURCES = \
         strings.c \
         test_constants_f.c \
         fortran_base_topo_neighbors.h \
-        topo_neighbors.c
+        topo_neighbors.c \
+        ts.h
+if OMPI_FORTRAN_HAVE_TS
+libmpi_fortran_base_la_SOURCES += \
+        ts.c
+endif
+
 endif

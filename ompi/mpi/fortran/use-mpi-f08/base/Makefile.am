@@ -34,16 +34,11 @@ if OMPI_BUILD_FORTRAN_USEMPIF08_BINDINGS
 noinst_LTLIBRARIES = libusempif08_ccode.la
 
 libusempif08_ccode_la_SOURCES = \
-        ts.h \
         bigcount.h \
         datarep_f08.h \
         datarep_f08.c \
         api_f08_generated.c
 
-if OMPI_FORTRAN_HAVE_TS
-libusempif08_ccode_la_SOURCES += \
-        ts.c
-endif
 #
 # api_f08_generated.c should work with all compilers, supporting CFI or TS 29113 support
 # through macros in ts.h and ts.c.
