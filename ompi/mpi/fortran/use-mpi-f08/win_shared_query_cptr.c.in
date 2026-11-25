@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+ *                         University Research and Technology
+ *                         Corporation.  All rights reserved.
+ * Copyright (c) 2004-2005 The University of Tennessee and The University
+ *                         of Tennessee Research Foundation.  All rights
+ *                         reserved.
+ * Copyright (c) 2004-2005 High Performance Computing Center Stuttgart,
+ *                         University of Stuttgart.  All rights reserved.
+ * Copyright (c) 2004-2005 The Regents of the University of California.
+ *                         All rights reserved.
+ * Copyright (c) 2011-2014 Cisco Systems, Inc.  All rights reserved.
+ * Copyright (c) 2015-2017 Research Organization for Information Science
+ *                         and Technology (RIST). All rights reserved.
+ * Copyright (c) 2024-2026 Triad National Security, LLC. All rights
+ *                         reserved.
+ * $COPYRIGHT$
+ *
+ * Additional copyrights may follow
+ *
+ * $HEADER$
+ * SPDX-License-Identifier: BSD-3-Clause-Open-MPI
+ */
+
+PROTOTYPE VOID win_shared_query_cptr(WIN win, INT rank, AINT_OUT size,
+                                     DISP_OUT disp_unit, CPTR_OUT baseptr)
+{
+    int c_ierr;
+    MPI_Win c_win;
+    @DISP_TYPE@ c_disp_unit;
+
+    c_win = PMPI_Win_f2c(*win);
+
+    c_ierr = @INNER_CALL@(c_win, OMPI_FINT_2_INT(*rank), size,
+                          &c_disp_unit, baseptr);
+    if (MPI_SUCCESS == c_ierr) {
+        *disp_unit =  (@COUNT_FINT_TYPE@)(c_disp_unit);
+    }
+    if (NULL != ierr) *ierr = OMPI_INT_2_FINT(c_ierr);
+
+}

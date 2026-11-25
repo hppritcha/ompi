@@ -395,7 +395,9 @@ prototype_files = \
         waitany.c.in \
         waitsome.c.in \
         win_allocate.c.in \
+        win_allocate_cptr.c.in \
         win_allocate_shared.c.in \
+        win_allocate_shared_cptr.c.in \
         win_attach_ts.c.in \
         win_call_errhandler.c.in \
         win_create_errhandler.c.in \
@@ -426,6 +428,7 @@ prototype_files = \
 	win_set_name.c.in \
 	win_start.c.in \
         win_shared_query.c.in \
+        win_shared_query_cptr.c.in \
 	win_sync.c.in \
 	win_test.c.in \
 	win_unlock.c.in \
