@@ -241,6 +241,19 @@ class CptrType(FortranType):
         else:
             return f"mpif-config.h"
 
+@FortranType.add('CPTR_OUT')
+class CptrOutType(FortranType):
+    """Base address of a _cptr procedure: always TYPE(C_PTR), in both modules."""
+
+    def declare(self):
+        return f'TYPE(C_PTR), INTENT(OUT) :: {self.name}'
+
+    def use(self):
+        return [('ISO_C_BINDING', 'C_PTR')]
+
+    def c_parameter(self):
+        return f'char *{self.name}'
+
 @FortranType.add('COUNT')
 class CountType(FortranType):
     def declare(self):

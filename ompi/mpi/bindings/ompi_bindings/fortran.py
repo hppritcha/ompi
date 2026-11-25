@@ -446,6 +446,33 @@ def template_has_bigcount(template):
     return util.prototype_has_bigcount(template.prototype)
 
 
+def template_generic_name(template):
+    """Return the name of the generic interface the procedure belongs to.
+
+    A procedure whose name ends in _cptr is a specific procedure of the
+    generic interface named without the suffix (MPI_Alloc_mem_cptr is a
+    specific procedure of MPI_Alloc_mem).
+    """
+    name = template_fn_name(template)
+    return name[:-len('_cptr')] if name.endswith('_cptr') else name
+
+
+def is_cptr_specific(template):
+    """Is the procedure a _cptr specific of its generic interface?"""
+    return template_generic_name(template) != template_fn_name(template)
+
+
+def omit_cptr_specifics_for_f08(templates, gen_f90):
+    """Drop the _cptr procedures from mpi_f08, which has none.
+
+    The standard's mpi_f08 MPI_Alloc_mem already takes a TYPE(C_PTR) baseptr,
+    so a second TYPE(C_PTR) specific could not share its generic.
+    """
+    if gen_f90:
+        return templates
+    return [template for template in templates if not is_cptr_specific(template)]
+
+
 def generate_code(args, out):
     """Generate binding code based on arguments."""
     templates = load_function_templates(args.prototype_files)
@@ -454,6 +481,7 @@ def generate_code(args, out):
         gen_f90 = False
     else:
         gen_f90 = True
+    templates = omit_cptr_specifics_for_f08(templates, gen_f90)
 
     # Standard dummy-argument names are only applied to the Fortran
     # interfaces, never to the C back-end (whose body refers to the template's
@@ -501,7 +529,6 @@ def generate_interface(args, out):
     out.dump(f'! {consts.GENERATED_MESSAGE}')
 
     templates = load_function_templates(args.prototype_files)
-    print_profiling_rename_macros(templates, out, args)
 
     if args.fort_std == 'f08' or args.fort_std == None:
         print("I am setting gen_f90 to false")
@@ -509,12 +536,21 @@ def generate_interface(args, out):
     else:
         print("I am setting gen_f90 to true")
         gen_f90 = True
+    templates = omit_cptr_specifics_for_f08(templates, gen_f90)
+    print_profiling_rename_macros(templates, out, args)
 
     # The interface specifications are part of the user-visible use mpi(_f08)
     # modules, so they use the standard MPI dummy-argument names too.
     std_names = standard_parameter_names(args.pympistd_dir, use_f90=gen_f90)
 
+    specifics = {}
     for template in templates:
+        if is_cptr_specific(template):
+            specifics.setdefault(template_generic_name(template), []).append(template)
+
+    for template in templates:
+        if is_cptr_specific(template):
+            continue
         # use mpi has no large count versions
         if gen_f90 and not template_has_regular(template):
             continue
@@ -550,4 +586,10 @@ def generate_interface(args, out):
             binding_c.print_interface()
             if guard:
                 out.dump('#endif')
+        for specific in specifics.get(template_fn_name(template), []):
+            specific_param_names = std_names.get('mpi_' + specific.prototype.name.lower())
+            specific_needs_ts = util.prototype_has_buffers(specific.prototype) and args.generate_ts_suffix
+            binding = FortranBinding(specific.prototype, template=specific, needs_ts=specific_needs_ts,
+                                     gen_f90=gen_f90, out=out, param_names=specific_param_names)
+            binding.print_interface()
         out.dump(f'end interface {ext_name}')
