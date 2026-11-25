@@ -430,4 +430,6 @@ prototype_files = \
 	win_test.c.in \
 	win_unlock.c.in \
 	win_unlock_all.c.in \
-	win_wait.c.in
+	win_wait.c.in \
+        wtick.c.in \
+        wtime.c.in
