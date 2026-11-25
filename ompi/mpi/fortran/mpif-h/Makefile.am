@@ -547,6 +547,15 @@ lib@OMPI_LIBMPI_NAME@_mpifh_la_LIBADD += \
         libmpi_mpifh_psizeof.la
 endif
 
+# TS29113 choice-buffer C wrappers for use mpi (see
+# use-mpi-ignore-tkr/Makefile.am for why they live here).
+if OMPI_BUILD_FORTRAN_USEMPI_IGNORE_TKR_BINDINGS
+if OMPI_FORTRAN_HAVE_TS
+lib@OMPI_LIBMPI_NAME@_mpifh_la_LIBADD += \
+        $(top_builddir)/ompi/mpi/fortran/use-mpi-ignore-tkr/base/libusempi_ignore_tkr_ccode.la
+endif
+endif
+
 sizeof_py = $(top_srcdir)/ompi/mpi/fortran/base/gen-mpi-sizeof.py
 
 sizeof_f.f90: $(top_builddir)/config.status

@@ -83,10 +83,10 @@ SUBDIRS = \
         $(MCA_ompi_FRAMEWORK_COMPONENT_STATIC_SUBDIRS) \
         . \
         $(OMPI_MPIEXT_MPIFH_DIRS) \
+        mpi/fortran/use-mpi-ignore-tkr/base \
         mpi/fortran/mpif-h \
         mpi/fortran/use-mpi \
         $(OMPI_MPIEXT_USEMPI_DIR) \
-        mpi/fortran/use-mpi-ignore-tkr/base \
         mpi/fortran/use-mpi-ignore-tkr \
         mpi/fortran/mpiext-use-mpi \
         mpi/fortran/use-mpi-f08/base \

@@ -80,10 +80,12 @@ libusempi_ignore_tkr_api_profile_la_FCFLAGS = \
         $(AM_FCFLAGS) \
         -DOMPI_BUILD_MPI_PROFILING=1
 
+# The C wrappers in base/ are linked into libmpi_mpifh rather than into
+# this archive: on macOS this library is static, and a static archive
+# does not carry the libopen-pal dependency those wrappers need.
 api_f90_generated_libs += \
         libusempi_ignore_tkr_api.la \
-        libusempi_ignore_tkr_api_profile.la \
-        base/libusempi_ignore_tkr_ccode.la
+        libusempi_ignore_tkr_api_profile.la
 endif
 
 libusempi_internal_modules =
