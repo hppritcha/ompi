@@ -37,11 +37,11 @@ prototype_files = \
         bsend_init_ts.c.in \
         bsend_ts.c.in \
         buffer_attach_ts.c.in \
-        buffer_detach.c.in \
+        buffer_detach_f90.c.in \
         buffer_flush.c.in \
         buffer_iflush.c.in \
         comm_attach_buffer_ts.c.in \
-        comm_detach_buffer.c.in \
+        comm_detach_buffer_f90.c.in \
         comm_flush_buffer.c.in \
         comm_iflush_buffer.c.in \
 	cancel.c.in \
@@ -319,7 +319,7 @@ prototype_files = \
         session_attach_buffer_ts.c.in \
 	session_call_errhandler.c.in \
 	session_create_errhandler.c.in \
-        session_detach_buffer.c.in \
+        session_detach_buffer_f90.c.in \
 	session_finalize.c.in \
         session_flush_buffer.c.in \
         session_iflush_buffer.c.in \
@@ -395,7 +395,9 @@ prototype_files = \
         waitany.c.in \
         waitsome.c.in \
         win_allocate.c.in \
+        win_allocate_cptr.c.in \
         win_allocate_shared.c.in \
+        win_allocate_shared_cptr.c.in \
         win_attach_ts.c.in \
         win_call_errhandler.c.in \
         win_create_errhandler.c.in \
@@ -426,6 +428,7 @@ prototype_files = \
 	win_set_name.c.in \
 	win_start.c.in \
         win_shared_query.c.in \
+        win_shared_query_cptr.c.in \
 	win_sync.c.in \
 	win_test.c.in \
 	win_unlock.c.in \
